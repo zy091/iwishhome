@@ -1,0 +1,70 @@
+@import './base.css';
+
+#app {
+
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+a {
+  color:#333;
+}
+.title {
+  margin: 1rem 0;
+}
+
+.subtitle {
+  margin: 0.7rem 0;
+}
+
+.page-container {
+  padding:0 50px;
+}
+
+.test-form {
+  width: 800px;
+  margin: 0 auto;
+  padding-top: 20px;
+}
+
+.grid-content,.grid-content-column {
+  display: flex;
+  justify-self: center;
+  align-self: center;
+  text-align: center;
+  min-height: 100px;
+  gap: 5px;
+  align-items: center;
+}
+.grid-content-column  {
+  flex-direction: column;
+}
+
+.grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.hide-text-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* 限制为两行 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 超出部分用省略号表示 */
+  width: 100%; /* 确保有宽度 */
+}
+
+.layout {
+  padding: 10px 0;
+  & .layout-title {
+      margin: 20px 0;
+  }
+}
