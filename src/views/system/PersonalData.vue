@@ -64,7 +64,7 @@
                         </div>
 
                         <!-- 编辑表单，仅在编辑模式显示 -->
-                        <el-form v-if="isEditing" ref="formRef" :model="userForm" :rules="rules" label-width="120px"
+                        <el-form v-if="isEditing" ref="userFormRef" :model="userForm" :rules="rules" label-width="120px"
                             class="edit-form">
                             <el-form-item label="头像">
                                 <div class="avatar-container">
@@ -92,7 +92,7 @@
                             </el-form-item>
 
                             <el-form-item label="部门" prop="department">
-                                <el-input v-model="userForm.organization_path" />
+                                <el-input v-model="userForm.organization_path" disabled />
                             </el-form-item>
 
                             <el-form-item label="邮箱" prop="email">
@@ -146,7 +146,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { useRoute } from 'vue-router'
 
 const userStore = useUserStore()
-const formRef = ref<FormInstance>()
+const userFormRef = ref()
 const loading = ref(true)
 const isEditing = ref(false)
 const avatarUrl = ref('')
@@ -281,9 +281,9 @@ const removeAvatar = () => {
 
 // 修改提交表单函数，增加头像上传处理
 const submitForm = async () => {
-    if (!formRef.value) return
+    if (!userFormRef.value) return
 
-    await formRef.value.validate(async (valid: boolean) => {
+    await userFormRef.value.validate(async (valid: boolean) => {
         if (valid) {
             loading.value = true
             try {
@@ -354,8 +354,8 @@ const submitForm = async () => {
 
 // 重置表单
 const resetForm = () => {
-    if (formRef.value) {
-        formRef.value.resetFields()
+    if (userFormRef.value) {
+        userFormRef.value.resetFields()
         fetchUserInfo() // 重新获取原始数据
     }
 }

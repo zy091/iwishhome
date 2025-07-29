@@ -184,7 +184,7 @@
         </el-tabs>
 
         <!-- 查看资料对话框 -->
-        <el-dialog title="资料详情" v-model="dialogVisible" width="70%">
+        <el-dialog title="资料详情" v-model="dialogVisible" width="50%">
             <div class="dialog-content">
                 <div class="material-details">
                     <div class="material-header">
@@ -195,28 +195,77 @@
                     <p><strong>平台:</strong> <span>{{ getPlatformName(selectedMaterial?.platform) }}</span></p>
                     <p><strong>位置:</strong> <span>{{ getFolderPath(selectedMaterial) }}</span></p>
                     <p><strong>创建时间:</strong> <span>{{ selectedMaterial?.created_at ? new Date(selectedMaterial.created_at).toLocaleString() : '' }}</span></p>
-                    <div class="material-actions"  v-if="materialContent && (selectedMaterial?.type === 'link' || selectedMaterial?.type === 'video' || selectedMaterial?.type === 'pdf')">
-                        <el-button type="primary" @click="openMaterial(selectedMaterial)">
-                            打开链接
+                    <div class="material-actions">
+                        <el-button type="primary" @click="viewMaterial">
+                            {{ getPreviewButtonText() }}
                         </el-button>
-                    </div>
-                    <!-- 图片直接展示 -->
-                    <el-image v-else-if="selectedMaterial?.type === 'image'" :src="materialContent" fit="contain"
-                        style="max-width: 100%;" />
-
-                    <!-- 普通文本直接用div -->
-                    <div v-else-if="selectedMaterial?.type === 'txt'" v-html="materialContent" class="text-content">
-                    </div>
-
-                    <!-- 其他文件类型则保留当前的编辑器方式 -->
-                    <div v-else class="editor-container">
-                        <div ref="editor"></div>
                     </div>
                 </div>
             </div>
             <template #footer>
                 <el-button @click="dialogVisible = false">关闭</el-button>
             </template>
+        </el-dialog>
+
+        <!-- 文件预览对话框 -->
+        <el-dialog v-model="previewDialogVisible" title="文件预览" width="80%" destroy-on-close>
+            <div class="material-preview">
+                <template v-if="isImageMaterial">
+                    <img :src="materialContent" class="material-image" @click="openFullscreen" />
+                </template>
+                <template v-else-if="isPdfMaterial">
+                    <iframe :src="materialContent" class="material-frame"></iframe>
+                </template>
+                <template v-else-if="isWordMaterial">
+                    <iframe :src="wordPreviewUrl" class="word-preview-frame"></iframe>
+                </template>
+                <template v-else-if="isExcelMaterial">
+                    <iframe :src="wordPreviewUrl" class="word-preview-frame"></iframe>
+                </template>
+                <template v-else-if="isLinkMaterial">
+                    <div class="link-preview">
+                        <p>链接地址：{{ materialContent }}</p>
+                        <el-button type="primary" @click="openLink">打开链接</el-button>
+                    </div>
+                </template>
+                <template v-else-if="isVideoMaterial">
+                    <div class="video-preview">
+                        <video :src="materialContent" controls class="material-video"></video>
+                    </div>
+                </template>
+                <template v-else-if="isTextMaterial">
+                    <div class="text-preview">
+                        <div v-html="materialContent" class="text-content"></div>
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="material-download">
+                        <p>无法预览此类型的文件，请下载后查看</p>
+                        <el-button type="primary" @click="downloadMaterial">下载文件</el-button>
+                    </div>
+                </template>
+            </div>
+            <template #footer>
+                <el-button @click="previewDialogVisible = false">关闭</el-button>
+                <el-button v-if="isImageMaterial || isPdfMaterial || isExcelMaterial" type="primary" @click="openFullscreen">
+                    全屏查看
+                </el-button>
+            </template>
+        </el-dialog>
+
+        <!-- 全屏预览对话框 -->
+        <el-dialog v-model="fullscreenVisible" title="全屏预览" width="100%" top="0" :show-close="true" destroy-on-close class="fullscreen-dialog">
+            <div class="fullscreen-preview">
+                <template v-if="isImageMaterial">
+                    <img :src="materialContent" class="fullscreen-image" />
+                </template>
+                <template v-else-if="isPdfMaterial">
+                    <iframe :src="materialContent" class="fullscreen-frame"></iframe>
+                </template>
+                <template v-else-if="isExcelMaterial">
+                    <iframe :src="wordPreviewUrl" class="fullscreen-frame"></iframe>
+                </template>
+            </div>
         </el-dialog>
 
         <!-- 上传资料对话框 -->
@@ -298,6 +347,9 @@ const typeFilter = ref('')
 const platformFilter = ref('')
 const selectedMaterials = ref<any[]>([])
 const addMaterialDialogVisible = ref(false)
+const previewDialogVisible = ref(false)  // 文件预览对话框
+const fullscreenVisible = ref(false)  // 全屏预览对话框
+const wordPreviewUrl = ref('')  // Word预览URL
 
 // 文件夹管理状态
 const folderLoading = ref(false)
@@ -318,6 +370,47 @@ const materialCache = ref<Map<string, any[]>>(new Map())
 const deletePermissionCache = ref<Map<string, boolean>>(new Map())
 // 添加文件夹选项缓存
 const folderOptionsCache = ref<Map<string, any[]>>(new Map())
+
+// 文件类型判断
+const isImageMaterial = computed(() => {
+    return selectedMaterial.value?.type === 'image'
+})
+
+const isPdfMaterial = computed(() => {
+    return selectedMaterial.value?.type === 'pdf' 
+})
+
+const isWordMaterial = computed(() => {
+    return selectedMaterial.value?.type === 'word' 
+})
+
+const isLinkMaterial = computed(() => {
+    return selectedMaterial.value?.type === 'link'
+})
+
+const isVideoMaterial = computed(() => {
+    return selectedMaterial.value?.type === 'video'
+})
+
+const isTextMaterial = computed(() => {
+    return selectedMaterial.value?.type === 'txt'
+})
+
+const isExcelMaterial = computed(() => {
+    return selectedMaterial.value?.type === 'excel'
+})
+
+// 获取预览按钮文字
+const getPreviewButtonText = () => {
+    if (isImageMaterial.value) return '预览图片'
+    if (isPdfMaterial.value) return '预览PDF'
+    if (isWordMaterial.value) return '预览Word'
+    if (isExcelMaterial.value) return '预览Excel'
+    if (isLinkMaterial.value) return '打开链接'
+    if (isVideoMaterial.value) return '预览视频'
+    if (isTextMaterial.value) return '预览文本'
+    return '查看文件'
+}
 
 const newFolder = reactive({
     name: '',
@@ -465,7 +558,7 @@ const showViewDialog = async (material: any) => {
         console.log('Material content data:', data)
         
         // 如果是链接类型，直接使用链接内容
-        if (material.type === 'link' || material.type === 'video' || material.type === 'pdf') {
+        if (material.type === 'link' || material.type === 'video' || material.type === 'pdf' || material.type === 'ppt' || material.type === 'word' || material.type === 'excel' ) {
             materialContent.value = data.content
         } else {
             // 从 storage 获取文件内容
@@ -473,99 +566,8 @@ const showViewDialog = async (material: any) => {
             console.log('Attempting to fetch file from path:', filePath)
             const path = data.content.split('/materials/').pop()
             try {
-                if (material.type === 'word') {
-                    // Word文件处理逻辑保持不变
-                    const { data: fileData, error: fileError } = await supabase
-                        .storage
-                        .from('materials')
-                        .download(path)
-                        
-                    if (fileError) throw fileError
-                    
-                    const arrayBuffer = await fileData.arrayBuffer()
-                    const result = await mammoth.convertToHtml({ arrayBuffer })
-                    materialContent.value = result.value
-                    
-                    const wordStyles = `
-                        <style>
-                            .word-content {
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                padding: 20px;
-                            }
-                            .word-content p {
-                                margin: 0 0 1em 0;
-                            }
-                            .word-content h1, .word-content h2, .word-content h3 {
-                                margin: 1em 0 0.5em 0;
-                            }
-                            .word-content table {
-                                border-collapse: collapse;
-                                margin: 1em 0;
-                            }
-                            .word-content td, .word-content th {
-                                border: 1px solid #ddd;
-                                padding: 8px;
-                            }
-                        </style>
-                    `
-                    materialContent.value = wordStyles + '<div class="word-content">' + materialContent.value + '</div>'
-                    
-                    // 直接更新编辑器内容
-                    if (joditInstance) {
-                        joditInstance.value = materialContent.value
-                    }
-                } else if (material.type === 'excel') {
-                    // Excel文件处理
-                    const { data: fileData, error: fileError } = await supabase
-                        .storage
-                        .from('materials')
-                        .download(path)
-                        
-                    if (fileError) throw fileError
-                    
-                    const arrayBuffer = await fileData.arrayBuffer()
-                    const workbook = XLSX.read(arrayBuffer, { type: 'array' })
-                    
-                    // 获取第一个工作表
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
-                    const html = XLSX.utils.sheet_to_html(firstSheet)
-                    
-                    // 添加Excel样式
-                    const excelStyles = `
-                        <style>
-                            .excel-content {
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                padding: 20px;
-                            }
-                            .excel-content table {
-                                border-collapse: collapse;
-                                width: 100%;
-                                margin: 1em 0;
-                            }
-                            .excel-content td, .excel-content th {
-                                border: 1px solid #ddd;
-                                padding: 8px;
-                                text-align: left;
-                            }
-                            .excel-content th {
-                                background-color: #f5f5f5;
-                            }
-                            .excel-content tr:nth-child(even) {
-                                background-color: #f9f9f9;
-                            }
-                        </style>
-                    `
-                    materialContent.value = excelStyles + '<div class="excel-content">' + html + '</div>'
-                    
-                    // 直接更新编辑器内容
-                    if (joditInstance) {
-                        joditInstance.value = materialContent.value
-                    }
-                
-                } else if (material.type === 'txt') {
-                    // 文本文件处理保持不变
+                if (material.type === 'txt') {
+                    // 文本文件处理
                     const { data: fileData, error: fileError } = await supabase
                         .storage
                         .from('materials')
@@ -645,12 +647,23 @@ const showViewDialog = async (material: any) => {
     }
 }
 
-// 打开资料
+// 查看资料
+const viewMaterial = () => {
+    if (materialContent.value) {
+        // 如果是Word或Excel文档，准备预览URL
+        if (isWordMaterial.value || isExcelMaterial.value) {
+            wordPreviewUrl.value = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(materialContent.value)}`
+        }
+        previewDialogVisible.value = true
+    }
+}
+
+// 打开资料（保留原有方法）
 const openMaterial = (material: any) => {
     if (!materialContent.value) return
     
     try {
-        if (material.type === 'link' || material.type === 'video' || material.type === 'pdf') {
+        if (material.type === 'link' || material.type === 'video' || material.type === 'pdf' || material.type === 'word' || material.type === 'excel') {
             // 链接类型直接打开
             window.open(materialContent.value, '_blank')
         } else {
@@ -665,6 +678,25 @@ const openMaterial = (material: any) => {
     } catch (error) {
         console.error('打开文件失败:', error)
         ElMessage.error('打开文件失败')
+    }
+}
+
+// 打开全屏预览
+const openFullscreen = () => {
+    fullscreenVisible.value = true
+}
+
+// 打开链接
+const openLink = () => {
+    if (materialContent.value) {
+        window.open(materialContent.value, '_blank')
+    }
+}
+
+// 下载文件
+const downloadMaterial = () => {
+    if (materialContent.value) {
+        window.open(materialContent.value, '_blank')
     }
 }
 
@@ -2008,5 +2040,101 @@ onBeforeUnmount(() => {
     border: 2px solid #ccc;
     margin-top: 20px;
     border-radius: 5px;
+}
+
+.material-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.material-image {
+    max-width: 100%;
+    max-height: 70vh;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.material-image:hover {
+    transform: scale(1.02);
+}
+
+.material-frame {
+    width: 100%;
+    height: 70vh;
+    border: none;
+}
+
+.word-preview-frame {
+    width: 100%;
+    height: 70vh;
+    border: none;
+}
+
+.link-preview {
+    text-align: center;
+    padding: 30px;
+}
+
+.video-preview {
+    text-align: center;
+    padding: 20px;
+}
+
+.material-video {
+    max-width: 100%;
+    max-height: 70vh;
+}
+
+.text-preview {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.material-download {
+    text-align: center;
+    padding: 30px;
+}
+
+.fullscreen-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+.fullscreen-image {
+    max-width: 100%;
+    max-height: 100vh;
+    cursor: pointer;
+}
+
+.fullscreen-frame {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+}
+
+/* 全屏对话框样式 */
+:deep(.fullscreen-dialog .el-dialog) {
+    margin: 0 !important;
+    height: 100vh;
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
+:deep(.fullscreen-dialog .el-dialog__body) {
+    padding: 0;
+    height: calc(100vh - 60px);
+}
+
+:deep(.fullscreen-dialog .el-dialog__header) {
+    padding: 10px 20px;
+    background-color: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
 } 
 </style>

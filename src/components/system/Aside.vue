@@ -40,7 +40,8 @@ import {
     HomeFilled,
     ChromeFilled,
     SetUp,
-    Folder
+    Folder,
+    Notebook
 } from '@element-plus/icons-vue'
 import type { ElSubMenu } from 'element-plus'
 const router = useRouter()

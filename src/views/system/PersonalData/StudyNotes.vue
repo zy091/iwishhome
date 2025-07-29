@@ -5,7 +5,7 @@
                 <div>共计{{ notes.length }}篇笔记</div>
                 <el-button type="primary" @click="showCreateDialog">新建笔记</el-button>
             </div>
-            <el-table v-loading="loading" :data="notes">
+            <el-table v-loading="loading" :data="notes"  height="300px">
                 <el-table-column prop="title" label="标题" />
                 <el-table-column label="状态" width="100">
                     <template #default="{ row }">
@@ -14,28 +14,50 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="created_at" label="创建时间">
+                <el-table-column label="附件" width="80">
+                    <template #default="{ row }">
+                        <el-button 
+                            v-if="row.attachment_url" 
+                            type="primary" 
+                            link 
+                            @click="viewAttachment(row)"
+                        >
+                            <el-icon color="#409EFF" size="18">
+                                <paperclip />
+                            </el-icon>
+                        </el-button>
+                        <span v-else>-</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="created_at" label="创建时间" width="180">
                     <template #default="{ row }">
                         {{ new Date(row.created_at).toLocaleString() }}
                     </template>
                 </el-table-column>
-                <el-table-column label="操作" >
+                <el-table-column prop="updated_at" label="修改时间" width="180">
                     <template #default="{ row }">
-                        <el-button type="primary" @click="showEditDialog(row)">查看</el-button>
+                        {{ row.updated_at ? new Date(row.updated_at).toLocaleString() : '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" width="160">
+                    <template #default="{ row }">
+                        <el-button type="primary"  @click="showViewDialog(row)">查看</el-button>
+                        <el-button type="warning"  @click="showEditDialog(row)" :disabled="!!row.admin_reply">编辑</el-button>
                     </template>
                 </el-table-column>
             </el-table>
         </div>
-        <!-- 创建/编辑对话框 -->
-        <el-dialog :title="isEditing ? '查看笔记' : '新建笔记'" v-model="dialogVisible" width="40%" style="min-width: 400px;">
-            <el-form :model="form" ref="formRef" :rules="rules" v-if="!isEditing">
+        <!-- 创建/编辑/查看对话框 -->
+        <el-dialog :title="getDialogTitle()" v-model="dialogVisible" width="40%" style="min-width: 400px;">
+            <!-- 编辑模式 -->
+            <el-form :model="form" ref="formRef" :rules="rules" v-if="!isViewing">
                 <el-form-item label="标题" prop="title">
                     <el-input v-model="form.title" />
                 </el-form-item>
                 <el-form-item label="内容" prop="content">
                     <el-input v-model="form.content" type="textarea" :rows="6" />
                 </el-form-item>
-                <el-form-item label="附件">
+                <el-form-item label="附件" v-if="!isEditing">
                     <el-upload
                         class="upload-container"
                         drag
@@ -57,12 +79,27 @@
                         </template>
                     </el-upload>
                 </el-form-item>
+                <!-- 编辑模式下显示现有附件 -->
+                <el-form-item label="当前附件" v-if="isEditing && currentNote.attachment_url">
+                    <div class="attachment-box">
+                        <span class="attachment-name">{{ currentNote.attachment_name }}</span>
+                        <el-button type="primary" size="small" @click="downloadAttachment">下载</el-button>
+                    </div>
+                    <div class="el-upload__tip" style="margin-top: 8px;">
+                        注意：编辑模式下暂不支持修改附件
+                    </div>
+                </el-form-item>
             </el-form>
             
             <!-- 查看模式 -->
             <div v-else class="note-view">
                 <h3 class="note-title">{{ currentNote.title }}</h3>
-                <p class="note-meta">提交于: {{ new Date(currentNote.created_at).toLocaleString() }}</p>
+                <div class="note-meta">
+                    <p>提交于: {{ new Date(currentNote.created_at).toLocaleString() }}</p>
+                    <p v-if="currentNote.updated_at && currentNote.updated_at !== currentNote.created_at">
+                        修改于: {{ new Date(currentNote.updated_at).toLocaleString() }}
+                    </p>
+                </div>
                 
                 <div class="note-content-section">
                     <div class="section-title">我的内容:</div>
@@ -73,8 +110,9 @@
                 <div class="note-attachment-section" v-if="currentNote.attachment_url">
                     <div class="section-title">附件:</div>
                     <div class="attachment-box">
+                        <el-icon color="#409EFF" size="16"><paperclip /></el-icon>
                         <span class="attachment-name">{{ currentNote.attachment_name }}</span>
-                        <el-button type="primary" size="small" @click="downloadAttachment">下载</el-button>
+                        <el-button type="primary" size="small" @click="viewAttachmentDialog">查看附件</el-button>
                     </div>
                 </div>
                 
@@ -92,8 +130,26 @@
             
             <template #footer>
                 <el-button @click="dialogVisible = false">关闭</el-button>
-                <el-button v-if="!isEditing" type="primary" @click="handleSubmit">确定</el-button>
+                <el-button v-if="!isViewing" type="primary" @click="handleSubmit">确定</el-button>
             </template>
+        </el-dialog>
+
+        <!-- 附件预览对话框 -->
+        <el-dialog v-model="attachmentDialogVisible" title="附件预览" width="80%" destroy-on-close>
+            <div class="attachment-preview">
+                <template v-if="isImageAttachment">
+                    <img :src="selectedAttachmentUrl" class="attachment-image" />
+                </template>
+                <template v-else-if="isPdfAttachment">
+                    <iframe :src="selectedAttachmentUrl" class="attachment-frame"></iframe>
+                </template>
+                <template v-else>
+                    <div class="attachment-download">
+                        <p>无法预览此类型的文件，请下载后查看</p>
+                        <el-button type="primary" @click="downloadAttachment">下载附件</el-button>
+                    </div>
+                </template>
+            </div>
         </el-dialog>
     </div>
 </template>
@@ -107,16 +163,21 @@ import { UploadFilled } from '@element-plus/icons-vue'
 import { studyNoteService } from '@/stores/studyNoteService'
 import type { StudyNote } from '@/stores/studyNote'
 import { supabase } from '@/lib/supabaseClient'
+import { Paperclip } from '@element-plus/icons-vue'
 
 const loading = ref(false)
 const notes = ref<StudyNote[]>([])
 const dialogVisible = ref(false)
 const isEditing = ref(false)
+const isViewing = ref(false)
 const currentId = ref<string>('')
-const formRef = ref<FormInstance>()
+const formRef = ref()
 const currentNote = ref<StudyNote>({} as StudyNote)
 const fileList = ref<UploadFile[]>([])
 const uploadLoading = ref(false)
+const attachmentDialogVisible = ref(false)
+const selectedAttachmentUrl = ref('')
+const selectedAttachmentType = ref('')
 const attachmentInfo = ref<{
     url: string;
     name: string;
@@ -131,6 +192,24 @@ const form = ref({
 const rules = {
     title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
     content: [{ required: true, message: '请输入内容', trigger: 'blur' }]
+}
+
+// 判断附件类型
+const isImageAttachment = computed(() => {
+    if (!selectedAttachmentType.value) return false
+    return selectedAttachmentType.value.startsWith('image/')
+})
+
+const isPdfAttachment = computed(() => {
+    if (!selectedAttachmentType.value) return false
+    return selectedAttachmentType.value === 'application/pdf'
+})
+
+// 获取对话框标题
+const getDialogTitle = () => {
+    if (isViewing.value) return '查看笔记'
+    if (isEditing.value) return '编辑笔记'
+    return '新建笔记'
 }
 
 // 获取笔记列表
@@ -148,27 +227,67 @@ const fetchNotes = async () => {
 // 显示创建对话框
 const showCreateDialog = () => {
     isEditing.value = false
+    isViewing.value = false
     form.value = { title: '', content: '' }
     fileList.value = []
     attachmentInfo.value = null
     dialogVisible.value = true
 }
 
+// 显示查看对话框
+const showViewDialog = (note: StudyNote) => {
+    isViewing.value = true
+    isEditing.value = false
+    currentId.value = note.id
+    currentNote.value = note
+    dialogVisible.value = true
+}
+
 // 显示编辑对话框
 const showEditDialog = (note: StudyNote) => {
+    if (note.admin_reply) {
+        ElMessage.warning('已回复的笔记不能修改')
+        return
+    }
+    
     isEditing.value = true
+    isViewing.value = false
     currentId.value = note.id
     currentNote.value = note
     form.value = {
         title: note.title,
         content: note.content
     }
+    fileList.value = []
+    attachmentInfo.value = null
     dialogVisible.value = true
+}
+
+// 预览附件
+const viewAttachment = (note: StudyNote) => {
+    if (note.attachment_url) {
+        selectedAttachmentUrl.value = note.attachment_url
+        selectedAttachmentType.value = note.attachment_type || ''
+        attachmentDialogVisible.value = true
+    } else {
+        ElMessage.warning('该笔记没有附件')
+    }
+}
+
+// 从详情对话框查看附件
+const viewAttachmentDialog = () => {
+    if (currentNote.value?.attachment_url) {
+        selectedAttachmentUrl.value = currentNote.value.attachment_url
+        selectedAttachmentType.value = currentNote.value.attachment_type || ''
+        attachmentDialogVisible.value = true
+    }
 }
 
 // 下载附件
 const downloadAttachment = () => {
-    if (currentNote.value.attachment_url) {
+    if (selectedAttachmentUrl.value) {
+        window.open(selectedAttachmentUrl.value, '_blank')
+    } else if (currentNote.value.attachment_url) {
         window.open(currentNote.value.attachment_url, '_blank')
     }
 }
@@ -258,8 +377,11 @@ const handleSubmit = async () => {
         if (valid) {
             try {
                 if (isEditing.value) {
-                    await studyNoteService.updateNote(currentId.value, form.value)
-                    ElMessage.success('更新成功')
+                    await studyNoteService.updateNote(currentId.value, {
+                        title: form.value.title,
+                        content: form.value.content
+                    })
+                    ElMessage.success('修改成功')
                 } else {
                     // 创建笔记，包含附件信息
                     await studyNoteService.createNote({
@@ -273,7 +395,7 @@ const handleSubmit = async () => {
                 dialogVisible.value = false
                 fetchNotes()
             } catch (error) {
-                ElMessage.error(isEditing.value ? '更新失败' : '创建失败')
+                ElMessage.error(isEditing.value ? '修改失败' : '创建失败')
             }
         }
     })
@@ -302,9 +424,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.study-notes {
+/* .study-notes {
     padding:10px 20px;
-}
+} */
 
 .card-header {
     display: flex;
@@ -337,6 +459,10 @@ onMounted(() => {
     color: #909399;
     font-size: 14px;
     margin-bottom: 20px;
+}
+
+.note-meta p {
+    margin: 5px 0;
 }
 
 .section-title {
@@ -423,5 +549,28 @@ onMounted(() => {
 :deep(.el-upload__text em) {
     color: #409EFF;
     font-style: normal;
+}
+
+.attachment-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.attachment-image {
+    max-width: 100%;
+    max-height: 70vh;
+}
+
+.attachment-frame {
+    width: 100%;
+    height: 70vh;
+    border: none;
+}
+
+.attachment-download {
+    text-align: center;
+    padding: 30px;
 }
 </style>

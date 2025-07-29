@@ -25,6 +25,7 @@ export interface StudyNoteView {
     attachment_url?: string
     attachment_name?: string
     attachment_type?: string
+    admin_name?: string  // 添加回复人名字字段
 }
 
 export interface CreateStudyNote {

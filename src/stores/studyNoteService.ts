@@ -167,6 +167,20 @@ export const studyNoteService = {
             throw new Error('没有权限查看所有笔记');
         }
 
+        // 获取当前用户的组织信息
+        const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('organization_id, organization_parent_id, role_id')
+            .eq('user_id', currentUser.user_id)
+            .single()
+
+        if (!profile?.organization_id) {
+            throw new Error('用户未加入组织')
+        }
+
+        // 根据用户角色确定查询范围
+        const isSupperAdmin = profile.role_id === 0 // 超级管理员
+
         const page = options?.page || 1;
         const pageSize = options?.pageSize || 10;
 
@@ -174,6 +188,13 @@ export const studyNoteService = {
         let supabaseQuery = supabase
             .from('simple_user_notes_view')
             .select('*', { count: 'exact' })  // 添加 count 选项
+
+        // 根据角色设置组织过滤条件
+        if (!isSupperAdmin) {
+            // 非超级管理员只能查看本组织的笔记
+            supabaseQuery = supabaseQuery.eq('organization_id', profile.organization_id)
+        }
+        // 超级管理员不添加组织过滤条件，可以查看所有笔记
 
         if (query) {
             supabaseQuery = supabaseQuery
@@ -212,7 +233,7 @@ export const studyNoteService = {
         if (error) throw error;
 
         // 转换数据格式以匹配现有结构
-        const notesWithProfiles = (data || []).map(note => ({
+        let notesWithProfiles = (data || []).map(note => ({
             ...note,
             profile: {
                 user_id: note.user_id,
@@ -220,6 +241,28 @@ export const studyNoteService = {
                 email: note.email
             }
         }));
+
+        // 为有回复的笔记获取回复人名字
+        const notesWithReplies = notesWithProfiles.filter(note => note.admin_id);
+        if (notesWithReplies.length > 0) {
+            const adminIds = [...new Set(notesWithReplies.map(note => note.admin_id))];
+            
+            // 获取回复人的名字
+            const { data: adminProfiles, error: adminError } = await supabase
+                .from('user_profiles')
+                .select('user_id, full_name')
+                .in('user_id', adminIds);
+
+            if (!adminError && adminProfiles) {
+                const adminNameMap = new Map(adminProfiles.map(profile => [profile.user_id, profile.full_name]));
+                
+                // 更新笔记数据，添加回复人名字
+                notesWithProfiles = notesWithProfiles.map(note => ({
+                    ...note,
+                    admin_name: note.admin_id ? adminNameMap.get(note.admin_id) || '未知用户' : undefined
+                }));
+            }
+        }
 
         return {
             data: notesWithProfiles,

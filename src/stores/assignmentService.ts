@@ -11,6 +11,9 @@ export interface Assignment {
     organization_id?: string
     created_at?: string
     updated_at?: string
+    attachment_url?: string
+    attachment_name?: string
+    attachment_type?: string
     replies?: AssignmentReply[]
     creator_profile?: {
         full_name: string
@@ -30,6 +33,9 @@ export interface AssignmentReply {
     full_name: string
     created_at?: string
     updated_at?: string
+    attachment_url?: string
+    attachment_name?: string
+    attachment_type?: string
     profile?: {
         full_name: string
         email: string
@@ -49,21 +55,31 @@ export const assignmentService = {
 
         const { data: profile } = await supabase
             .from('user_profiles')
-            .select('organization_id, organization_parent_id')
+            .select('organization_id, organization_parent_id, role_id')
             .eq('user_id', userStore.user.user_id)
             .single()
 
-        if (!profile?.organization_parent_id) throw new Error('用户未关联上级组织')
+        if (!profile?.organization_id) throw new Error('用户未加入组织')
+
+        // 根据用户角色确定查询范围
+        const isSupperAdmin = profile.role_id === 0 // 超级管理员
 
         // 如果有搜索关键词且需要查询分配人的全名
         if (filters?.query) {
             // 首先获取匹配关键词的用户 ID
-            const { data: matchingUsers } = await supabase
+            const userQuery = supabase
                 .from('user_profiles')
                 .select('user_id')
                 .ilike('full_name', `%${filters.query}%`)
-                .eq('organization_parent_id', profile.organization_parent_id)
             
+            // 根据角色限制用户搜索范围
+            if (!isSupperAdmin) {
+                // 非超级管理员限制在本组织内搜索
+                userQuery.eq('organization_id', profile.organization_id)
+            }
+            // 超级管理员不添加组织限制，可以搜索所有用户
+            
+            const { data: matchingUsers } = await userQuery
             const matchingUserIds = matchingUsers?.map(user => user.user_id) || []
             
             let query = supabase
@@ -74,7 +90,13 @@ export const assignmentService = {
                     assignee_profile:user_profiles!assigned_to(full_name, email),
                     replies:assignment_replies(*, profile:user_profiles(full_name, email))
                 `, { count: 'exact' })
-                .eq('organization_parent_id', profile.organization_parent_id)
+            
+            // 根据角色设置组织过滤条件
+            if (!isSupperAdmin) {
+                // 非超级管理员限制在本组织
+                query = query.eq('organization_id', profile.organization_id)
+            }
+            // 超级管理员不添加组织过滤条件，可以查看所有作业
                 
             // 基于标题或分配给匹配用户的作业进行筛选
             if (matchingUserIds.length > 0) {
@@ -118,7 +140,13 @@ export const assignmentService = {
                     assignee_profile:user_profiles!assigned_to(full_name, email),
                     replies:assignment_replies(*, profile:user_profiles(full_name, email))
                 `, { count: 'exact' })
-                .eq('organization_parent_id', profile.organization_parent_id)
+            
+            // 根据角色设置组织过滤条件
+            if (!isSupperAdmin) {
+                // 非超级管理员限制在本组织
+                query = query.eq('organization_id', profile.organization_id)
+            }
+            // 超级管理员不添加组织过滤条件，可以查看所有作业
             
             // 处理日期范围
             if (filters?.startDate && filters?.endDate) {
@@ -154,7 +182,7 @@ export const assignmentService = {
 
         const { data: profile } = await supabase
             .from('user_profiles')
-            .select('organization_id, organization_parent_id')
+            .select('organization_id, organization_parent_id, role_id')
             .eq('user_id', userStore.user.user_id)
             .single()
 
@@ -162,11 +190,36 @@ export const assignmentService = {
 
         if (!profile?.organization_id) throw new Error('用户未加入组织')
         
-        // 确保有上级组织ID
-        if (!profile.organization_parent_id) {
-            console.log('用户没有上级组织ID，尝试使用organization_id代替');
+        // 根据用户角色确定查询范围
+        const isSupperAdmin = profile.role_id === 0 // 超级管理员
+        
+        if (isSupperAdmin) {
+            // 超级管理员：查看所有用户
+            console.log('超级管理员，查询所有用户');
             
-            // 如果没有organization_parent_id，则使用organization_id作为过滤条件
+            const { data, error } = await supabase
+                .from('user_profiles')
+                .select(`
+                    user_id,
+                    role_id,
+                    full_name,
+                    email,
+                    organization_id,
+                    organization_path
+                `)
+                .neq('user_id', userStore.user.user_id) // 排除当前用户
+
+            console.log('超级管理员查询结果:', data);
+            
+            if (error) {
+                console.error('超级管理员查询错误:', error);
+                throw error;
+            }
+            return data;
+        } else {
+            // 非超级管理员：只能看到本组织成员
+            console.log('非超级管理员，查询本组织成员:', profile.organization_id);
+            
             const { data, error } = await supabase
                 .from('user_profiles')
                 .select(`
@@ -179,68 +232,15 @@ export const assignmentService = {
                 `)
                 .eq('organization_id', profile.organization_id)
                 .neq('user_id', userStore.user.user_id) // 排除当前用户
-            
-            console.log('查询结果:', data); // 添加日志
+
+            console.log('非超级管理员查询结果:', data);
             
             if (error) {
-                console.error('查询错误:', error); // 添加日志
+                console.error('非超级管理员查询错误:', error);
                 throw error;
             }
             return data;
         }
-        
-        // 尝试获取所有与当前用户相同organization_parent_id的成员
-        console.log('使用organization_parent_id查询:', profile.organization_parent_id); // 添加日志
-        
-        const { data, error } = await supabase
-            .from('user_profiles')
-            .select(`
-                user_id,
-                role_id,
-                full_name,
-                email,
-                organization_id,
-                organization_path
-            `)
-            .eq('organization_parent_id', profile.organization_parent_id)
-            .neq('user_id', userStore.user.user_id) // 排除当前用户
-
-        console.log('查询结果:', data); // 添加日志
-        
-        if (error) {
-            console.error('查询错误:', error); // 添加日志
-            throw error;
-        }
-        
-        // 如果没有找到结果，尝试使用更宽松的条件
-        if (!data || data.length === 0) {
-            console.log('没有找到相同parent_id的成员，尝试使用更宽松的条件');
-            
-            // 尝试获取同一组织的成员
-            const { data: orgData, error: orgError } = await supabase
-                .from('user_profiles')
-                .select(`
-                    user_id,
-                    role_id,
-                    full_name,
-                    email,
-                    organization_id,
-                    organization_path
-                `)
-                .eq('organization_id', profile.organization_id)
-                .neq('user_id', userStore.user.user_id);
-                
-            console.log('同组织查询结果:', orgData); // 添加日志
-            
-            if (orgError) {
-                console.error('同组织查询错误:', orgError); // 添加日志
-                throw orgError;
-            }
-            
-            return orgData;
-        }
-        
-        return data;
     },
 
     // 创建作业
@@ -250,25 +250,30 @@ export const assignmentService = {
 
         const { data: profile } = await supabase
             .from('user_profiles')
-            .select('organization_id, organization_parent_id')
+            .select('organization_id, organization_parent_id, role_id')
             .eq('user_id', userStore.user.user_id)
             .single()
 
-        if (!profile?.organization_id) throw new Error('用户未加入组织')
+        // 超级管理员（role_id = 0）可能没有organization_id，这是正常的
+        const isSupperAdmin = profile?.role_id === 0
+        
+        if (!isSupperAdmin && !profile?.organization_id) {
+            throw new Error('用户未加入组织')
+        }
 
         const { data, error } = await supabase
             .from('assignments')
             .insert({
                 ...assignment,
                 created_by: userStore.user.user_id,
-                organization_id: profile.organization_id,
-                organization_parent_id: profile.organization_parent_id
+                organization_id: profile?.organization_id || null, // 超级管理员可以为null
+                organization_parent_id: profile?.organization_parent_id || null
             })
             .select(`
-            *,
-            creator_profile:user_profiles!created_by(full_name, email),
-            assignee_profile:user_profiles!assigned_to(full_name, email)
-        `)
+                *,
+                creator_profile:user_profiles!created_by(full_name, email),
+                assignee_profile:user_profiles!assigned_to(full_name, email)
+            `)
             .single()
 
         if (error) throw error
@@ -314,7 +319,7 @@ export const assignmentService = {
         return data;
     },
 
-    // 获取分配给当前用户的作业
+    // 获取分配给当前用户的作业 - 不受组织限制
     async getPersonalAssignments(page: number = 1, pageSize: number = 10, filters?: {
         query?: string;
         startDate?: string;
@@ -325,47 +330,72 @@ export const assignmentService = {
         if (!userStore.user) throw new Error('用户未登录')
 
         const userId = userStore.user.user_id
+        console.log('获取个人作业，用户ID:', userId)
         
-        // 直接查询指定给当前用户的作业
-        let query = supabase
-            .from('assignments')
-            .select(`
-                *,
-                creator_profile:user_profiles!created_by(full_name, email),
-                assignee_profile:user_profiles!assigned_to(full_name, email),
-                replies:assignment_replies(*, profile:user_profiles(full_name, email))
-            `, { count: 'exact' })
-            .eq('assigned_to', userId) // 直接筛选assigned_to等于当前用户ID的作业
-        
-        // 添加标题搜索
-        if (filters?.query) {
-            query = query.ilike('title', `%${filters.query}%`)
-        }
-        
-        // 处理日期范围
-        if (filters?.startDate && filters?.endDate) {
-            const { startUTC, endUTC } = generateDateRange(filters.startDate, filters.endDate);
-            query = query
-                .gte('created_at', startUTC)
-                .lte('created_at', endUTC);
-        }
-        
-        // 添加回复状态过滤
-        if (filters?.status === 'replied') {
-            // 查询已完成并已回复的作业 (有指定人员和管理员的回复)
-            query = query.not('replies', 'is', null)
-        } else if (filters?.status === 'pending') {
-            // 查询待回复的作业 (没有指定人员的回复)
-            query = query.not('replies', 'is', null)
-        }
+        try {
+            // 直接查询指定给当前用户的作业，不受组织限制
+            let query = supabase
+                .from('assignments')
+                .select(`
+                    *,
+                    creator_profile:user_profiles!created_by(full_name, email, role_id),
+                    assignee_profile:user_profiles!assigned_to(full_name, email),
+                    replies:assignment_replies(*, profile:user_profiles(full_name, email))
+                `, { count: 'exact' })
+                .eq('assigned_to', userId) // 只要assigned_to是当前用户，就能看到，不论创建者来自哪个组织
+            
+            console.log('查询条件: assigned_to =', userId)
+            
+            // 添加标题搜索
+            if (filters?.query) {
+                query = query.ilike('title', `%${filters.query}%`)
+                console.log('添加标题搜索:', filters.query)
+            }
+            
+            // 处理日期范围
+            if (filters?.startDate && filters?.endDate) {
+                const { startUTC, endUTC } = generateDateRange(filters.startDate, filters.endDate);
+                query = query
+                    .gte('created_at', startUTC)
+                    .lte('created_at', endUTC);
+                console.log('添加日期范围:', startUTC, '到', endUTC)
+            }
+            
+            // 添加回复状态过滤
+            if (filters?.status === 'replied') {
+                // 查询已完成并已回复的作业
+                query = query.not('replies', 'is', null)
+                console.log('过滤状态: 已回复')
+            } else if (filters?.status === 'pending') {
+                // 查询待回复的作业
+                query = query.not('replies', 'is', null)
+                console.log('过滤状态: 待回复')
+            }
 
-        // 排序和分页
-        const { data, error, count } = await query
-            .order('created_at', { ascending: false })
-            .range((page - 1) * pageSize, page * pageSize - 1)
+            // 排序和分页
+            const { data, error, count } = await query
+                .order('created_at', { ascending: false })
+                .range((page - 1) * pageSize, page * pageSize - 1)
 
-        if (error) throw error
-        return { data, total: count || 0,error }
+            if (error) {
+                console.error('查询个人作业失败:', error)
+                throw error
+            }
+
+            console.log('查询到的作业数量:', data?.length, '总数:', count)
+            console.log('作业详情:', data?.map(item => ({
+                id: item.id,
+                title: item.title,
+                created_by: item.created_by,
+                assigned_to: item.assigned_to,
+                creator_role: item.creator_profile?.role_id
+            })))
+
+            return { data: data || [], total: count || 0 }
+        } catch (error) {
+            console.error('获取个人作业失败:', error)
+            throw error
+        }
     },
 
     // 删除作业

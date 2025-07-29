@@ -7,6 +7,26 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // 生产环境基础路径配置
+  base: '/',
+  
+  // 构建配置
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    emptyOutDir: true, // 每次构建前清空输出目录
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue', 'vue-router', 'pinia'],
+          elementPlus: ['element-plus'],
+          supabase: ['@supabase/supabase-js']
+        }
+      }
+    }
+  },
+  
   server: {
     port: 9999, // 指定端口
     host: '0.0.0.0', 

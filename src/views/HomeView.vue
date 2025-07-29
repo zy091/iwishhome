@@ -122,28 +122,34 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+// 导入图片
+import trainingImg from '@/assets/home-image/training.png'
+import fileImg from '@/assets/home-image/file.png'
+import googleImg from '@/assets/home-image/google.png'
+import facebookImg from '@/assets/home-image/facebook.png'
+
 const services = ref([
   {
     title: '员工培训',
-    icon: '/src/assets/home-image/training.png',
+    icon: trainingImg,
     link:'/system/training',
     description: '提供完整解决方案，主站化营销、资源整合等，为企业提供全球化市场拓展的全程解决方案'
   },
   {
     title: '客户资料',
-    icon: '/src/assets/home-image/file.png',
+    icon: fileImg,
     link:'/system/training',
     description: '提供完整解决方案，主站化营销、资源整合等，为企业提供全球化市场拓展的全程解决方案'
   },
   {
     title: 'google学习',
-    icon: '/src/assets/home-image/google.png',
+    icon: googleImg,
     link:'/system/training',
     description: '提供完整解决方案，主站化营销、资源整合等，为企业提供全球化市场拓展的全程解决方案'
   },
   {
     title: 'Facebook学习',
-    icon: '/src/assets/home-image/facebook.png',
+    icon: facebookImg,
     link:'/system/training',
     description: '提供完整解决方案，主站化营销、资源整合等，为企业提供全球化市场拓展的全程解决方案'
   }

@@ -66,10 +66,16 @@ const breadbcrum = reactive([
     }
 ])
 
-const googleLogo = ref('/src/assets/logo/google-logo.png')
-const facebookLogo = ref('/src/assets/logo/Facebook-logo.png')
-const googleTitle = ref('/src/assets/logo/google-title-red.png')
-const facebookTitle = ref('/src/assets/logo/Facebook-title.png')
+// 导入图片
+import googleLogoImg from '@/assets/logo/google-logo.png'
+import facebookLogoImg from '@/assets/logo/Facebook-logo.png'
+import googleTitleImg from '@/assets/logo/google-title-red.png'
+import facebookTitleImg from '@/assets/logo/Facebook-title.png'
+
+const googleLogo = ref(googleLogoImg)
+const facebookLogo = ref(facebookLogoImg)
+const googleTitle = ref(googleTitleImg)
+const facebookTitle = ref(facebookTitleImg)
 
 const logo = computed(() => {
     if (platform.value == 'google') {

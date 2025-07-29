@@ -187,15 +187,6 @@ const router = createRouter({
           }
         },
         {
-          path: 'admin-material',
-          name: 'admin-material',
-          component: () => import('@/views/system/DataManagement/AdminMaterial.vue'),
-          meta: {
-            requiresAuth: true,
-            requiresAdmin: true,
-          }
-        },
-        {
           path: 'admin-material-and-folders',
           name: 'admin-material-and-folders',
           component: () => import('@/views/system/DataManagement/AdminMaterialAndFolders.vue'),
@@ -268,6 +259,14 @@ const router = createRouter({
           path: 'company-documents',
           name: 'company-documents',
           component: () => import('@/views/system/CompanyDocuments.vue'),
+          meta: {
+            requiresAuth: true,
+          }
+        },
+        {
+          path: 'case-sharing',
+          name: 'case-sharing',
+          component: () => import('@/views/system/CaseSharing.vue'),
           meta: {
             requiresAuth: true,
           }

@@ -28,7 +28,15 @@
             <el-card v-if="hasPermission" style="min-height: 400px;">
                 <template #header>
                     <div class="card-header">
-                        学习心得管理
+                        <div>
+                            <span>学习心得管理</span>
+                            <el-tooltip v-if="isSupperAdmin" content="您可以查看所有学习心得" placement="right">
+                                <el-tag type="success" size="small" style="margin-left: 8px;">全部</el-tag>
+                            </el-tooltip>
+                            <el-tooltip v-else content="您只能查看本组织的学习心得" placement="right">
+                                <el-tag type="info" size="small" style="margin-left: 8px;">本组织</el-tag>
+                            </el-tooltip>
+                        </div>
                         <div class="header-actions">
                             <el-button type="danger" :disabled="!selectedNotes.length" @click="handleBatchDelete">
                                 批量删除
@@ -113,7 +121,9 @@
                             <div class="section-title">附件</div>
                             <div class="attachment-box">
                                 <span class="attachment-name">{{ selectedNote.attachment_name }}</span>
-                                <el-button type="primary" size="small" @click="viewAttachment">查看附件</el-button>
+                                <el-button type="primary" size="small" @click="viewAttachment">
+                                    {{ isImageAttachment ? '预览图片' : isPdfAttachment ? '预览PDF' : isWordAttachment ? '预览Word' : '查看附件' }}
+                                </el-button>
                             </div>
                         </div>
 
@@ -121,15 +131,28 @@
                         <div v-if="selectedNote?.admin_reply" class="note-section">
                             <div class="section-title">历史回复</div>
                             <div class="previous-reply">
+                                <div class="reply-header">
+                                    <span class="reply-author">{{ selectedNote.admin_name || '未知' }}:</span>
+                                </div>
                                 <div class="admin-reply-content">{{ selectedNote.admin_reply }}</div>
-                                <p class="reply-time" v-if="selectedNote.replied_at">
-                                    回复于: {{ new Date(selectedNote.replied_at).toLocaleString() }}
-                                </p>
+                                <div class="reply-timestamp" v-if="selectedNote.replied_at">
+                                    {{ new Date(selectedNote.replied_at).toLocaleString() }}
+                                </div>
+                                <div class="reply-actions">
+                                    <el-button 
+                                        type="primary" 
+                                        size="small" 
+                                        @click="showEditReply"
+                                        v-if="!isEditingReply"
+                                    >
+                                        修改回复
+                                    </el-button>
+                                </div>
                             </div>
                         </div>
 
                         <!-- 回复表单区 -->
-                        <div class="note-section">
+                        <div class="note-section" v-if="!selectedNote?.admin_reply || isEditingReply">
                             <div class="section-title">{{ selectedNote?.admin_reply ? '修改回复' : '添加回复' }}</div>
                             <el-input 
                                 type="textarea" 
@@ -143,7 +166,7 @@
                 </div>
                 <template #footer>
                     <span class="dialog-footer">
-                        <el-button @click="dialogVisible = false">取消</el-button>
+                        <el-button @click="closeDialog">取消</el-button>
                         <el-button type="primary" @click="submitReply" :loading="submitting">
                             {{ selectedNote?.admin_reply ? '更新回复' : '提交回复' }}
                         </el-button>
@@ -155,10 +178,13 @@
             <el-dialog v-model="attachmentDialogVisible" title="附件预览" width="80%" destroy-on-close>
                 <div class="attachment-preview">
                     <template v-if="isImageAttachment">
-                        <img :src="selectedNote?.attachment_url" class="attachment-image" />
+                        <img :src="selectedNote?.attachment_url" class="attachment-image" @click="openFullscreen" />
                     </template>
                     <template v-else-if="isPdfAttachment">
                         <iframe :src="selectedNote?.attachment_url" class="attachment-frame"></iframe>
+                    </template>
+                    <template v-else-if="isWordAttachment">
+                        <iframe :src="wordPreviewUrl" class="word-preview-frame"></iframe>
                     </template>
                     <template v-else>
                         <div class="attachment-download">
@@ -167,7 +193,27 @@
                         </div>
                     </template>
                 </div>
+                <template #footer>
+                    <el-button @click="attachmentDialogVisible = false">关闭</el-button>
+                    <el-button v-if="isImageAttachment || isPdfAttachment" type="primary" @click="openFullscreen">
+                        全屏查看
+                    </el-button>
+                </template>
             </el-dialog>
+
+            <!-- 全屏预览对话框 -->
+            <el-dialog v-model="fullscreenVisible" title="全屏预览" width="100%" top="0" :show-close="true" destroy-on-close class="fullscreen-dialog">
+                <div class="fullscreen-preview">
+                    <template v-if="isImageAttachment">
+                        <img :src="selectedNote?.attachment_url" class="fullscreen-image" />
+                    </template>
+                    <template v-else-if="isPdfAttachment">
+                        <iframe :src="selectedNote?.attachment_url" class="fullscreen-frame"></iframe>
+                    </template>
+                </div>
+            </el-dialog>
+
+
         </div>
     </div>
 </template>
@@ -201,6 +247,12 @@ const hasPermission = computed(() =>
     hasViewAllNotesPermission(Number(userStore.roleId))
 )
 
+// 判断是否为超级管理员
+const isSupperAdmin = computed(() => {
+    const roleId = Number(userStore.roleId)
+    return roleId === 0
+})
+
 const loading = ref(false)
 const notes = ref<StudyNoteWithProfile[]>([])
 const dialogVisible = ref(false)
@@ -211,6 +263,9 @@ const adminReply = ref('')  // 管理员回复内容
 const submitting = ref(false)  // 提交状态
 const attachmentDialogVisible = ref(false)  // 附件预览对话框
 const activeStatus = ref('all')  // 当前激活的标签页
+const isEditingReply = ref(false)  // 是否正在编辑回复
+const fullscreenVisible = ref(false)  // 全屏预览对话框
+const wordPreviewUrl = ref('')  // Word预览URL
 const shortcuts = [
     {
         text: 'Last week',
@@ -277,7 +332,21 @@ const searchNotes = async () => {
 const showEditDialog = (note: StudyNoteWithProfile) => {
     dialogVisible.value = true
     selectedNote.value = note
-    adminReply.value = note.admin_reply || ''  // 加载已有回复
+    adminReply.value = ''  // 不预填已有回复
+    isEditingReply.value = false  // 重置编辑状态
+}
+
+// 显示编辑回复
+const showEditReply = () => {
+    isEditingReply.value = true
+    adminReply.value = selectedNote.value?.admin_reply || ''  // 加载已有回复用于编辑
+}
+
+// 关闭对话框
+const closeDialog = () => {
+    dialogVisible.value = false
+    isEditingReply.value = false
+    adminReply.value = ''
 }
 
 const handleDelete = async (note: StudyNoteWithProfile) => {
@@ -350,9 +419,19 @@ const isPdfAttachment = computed(() => {
     return selectedNote.value.attachment_type === 'application/pdf'
 })
 
+const isWordAttachment = computed(() => {
+    if (!selectedNote.value?.attachment_type) return false
+    return selectedNote.value.attachment_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+           selectedNote.value.attachment_type === 'application/msword'
+})
+
 // 查看附件
 const viewAttachment = () => {
     if (selectedNote.value?.attachment_url) {
+        // 如果是Word文档，准备预览URL
+        if (isWordAttachment.value) {
+            wordPreviewUrl.value = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(selectedNote.value.attachment_url)}`
+        }
         attachmentDialogVisible.value = true
     }
 }
@@ -363,6 +442,13 @@ const downloadAttachment = () => {
         window.open(selectedNote.value.attachment_url, '_blank')
     }
 }
+
+// 打开全屏预览
+const openFullscreen = () => {
+    fullscreenVisible.value = true
+}
+
+
 
 // 提交管理员回复
 const submitReply = async () => {
@@ -405,6 +491,7 @@ const submitReply = async () => {
         // 重新加载数据
         searchNotes()
         dialogVisible.value = false
+        isEditingReply.value = false  // 重置编辑状态
     } catch (error) {
         console.error('提交回复失败:', error)
         ElMessage.error('提交回复失败: ' + (error instanceof Error ? error.message : '未知错误'))
@@ -533,16 +620,32 @@ onMounted(() => {
 }
 
 .admin-reply-content {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     white-space: pre-wrap;
     word-break: break-word;
+    font-size: 16px;
+    line-height: 1.5;
 }
 
-.reply-time {
-    text-align: right;
-    color: #909399;
+.reply-header {
+    margin-bottom: 8px;
+}
+
+.reply-author {
+    color: #303133;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.reply-timestamp {
+    color: #303133;
     font-size: 12px;
-    margin-bottom: 0;
+    margin-top: 8px;
+}
+
+.reply-actions {
+    margin-top: 15px;
+    text-align: right;
 }
 
 .reply-input {
@@ -609,6 +712,66 @@ onMounted(() => {
 .attachment-download {
     text-align: center;
     padding: 30px;
+}
+
+.word-preview {
+    text-align: center;
+    padding: 30px;
+}
+
+.fullscreen-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+.fullscreen-image {
+    max-width: 100%;
+    max-height: 100vh;
+    cursor: pointer;
+}
+
+.fullscreen-frame {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+}
+
+.word-preview-frame {
+    width: 100%;
+    height: 70vh;
+    border: none;
+}
+
+.attachment-image {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.attachment-image:hover {
+    transform: scale(1.02);
+}
+
+/* 全屏对话框样式 */
+:deep(.fullscreen-dialog .el-dialog) {
+    margin: 0 !important;
+    height: 100vh;
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
+:deep(.fullscreen-dialog .el-dialog__body) {
+    padding: 0;
+    height: calc(100vh - 60px);
+}
+
+:deep(.fullscreen-dialog .el-dialog__header) {
+    padding: 10px 20px;
+    background-color: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
 }
 
 .status-tabs {

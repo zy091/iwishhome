@@ -5,7 +5,7 @@
                 <div>共计{{ testResults.length }}条测试记录</div>
                 <el-button type="primary" @click="startLearning" v-if="hasMark">开始学习</el-button>
             </div>
-            <el-table v-loading="loading" :data="testResults">
+            <el-table v-loading="loading" :data="testResults"  height="300px">
                 <el-table-column prop="test_title" label="测试标题" />
                 <el-table-column prop="score" label="分数/评级">
                     <template #default="scope">
@@ -279,9 +279,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.test-result {
+/* .test-result {
     padding: 10px 20px;
-}
+} */
 
 .test-header {
     display: flex;

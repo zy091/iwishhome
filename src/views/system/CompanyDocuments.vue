@@ -68,6 +68,21 @@
                         </template>
                     </el-table-column>
                     <el-table-column prop="created_by_name" label="创建人" width="120" v-if="hasAdminPerm" />
+                    <el-table-column label="附件" width="80">
+                        <template #default="{ row }">
+                            <el-button 
+                                v-if="row.attachment_url" 
+                                type="primary" 
+                                link 
+                                @click="viewAttachment(row)"
+                            >
+                                <el-icon color="#409EFF" size="18">
+                                    <paperclip />
+                                </el-icon>
+                            </el-button>
+                            <span v-else>-</span>
+                        </template>
+                    </el-table-column>
                     <el-table-column label="操作" width="230" fixed="right">
                         <template #default="{ row }">
                             <el-button-group>
@@ -119,37 +134,10 @@
                         <!-- 附件区 (如果有) -->
                         <div v-if="selectedDocument?.attachment_url" class="document-section">
                             <div class="section-title">附件</div>
-                            <div v-if="attachmentLoading" class="attachment-loading">
-                                <el-skeleton :rows="3" animated />
-                            </div>
-                            <div v-else>
-                                <!-- PDF 直接展示 -->
-                                <div v-if="getFileExtension(selectedDocument.attachment_name) === 'pdf'" class="pdf-viewer">
-                                    <iframe :src="attachmentContent" width="100%" height="600" frameborder="0"></iframe>
-                                </div>
-                                
-                                <!-- 图片直接展示 -->
-                                <el-image v-else-if="isImageFile(selectedDocument.attachment_name)" :src="attachmentContent" fit="contain"
-                                    style="max-width: 100%;" />
-                                
-                                <!-- Word文件展示 -->
-                                <div v-else-if="isWordFile(selectedDocument.attachment_name)" class="document-viewer" v-html="attachmentContent"></div>
-                                
-                                <!-- Excel文件展示 -->
-                                <div v-else-if="isExcelFile(selectedDocument.attachment_name)" class="document-viewer" v-html="attachmentContent"></div>
-                                
-                                <!-- 其他文件则提供下载链接 -->
-                                <div v-else class="attachment-link">
-                                    <a :href="selectedDocument.attachment_url" target="_blank" class="download-link">
-                                        <el-icon><Download /></el-icon>
-                                        下载附件 ({{ selectedDocument.attachment_name }})
-                                    </a>
-                                </div>
-                                
-                                <!-- 编辑器容器，用于需要编辑器显示的情况 -->
-                                <div v-if="needEditor" class="editor-container">
-                                    <div ref="editor"></div>
-                                </div>
+                            <div class="attachment-box">
+                                <el-icon color="#409EFF" size="16"><paperclip /></el-icon>
+                                <span class="attachment-name">{{ selectedDocument.attachment_name }}</span>
+                                <el-button type="primary" size="small" @click="viewAttachmentDialog">查看附件</el-button>
                             </div>
                         </div>
                     </div>
@@ -159,6 +147,24 @@
                         <el-button @click="detailDialogVisible = false">关闭</el-button>
                     </span>
                 </template>
+            </el-dialog>
+
+            <!-- 附件预览对话框 -->
+            <el-dialog v-model="attachmentDialogVisible" title="附件预览" width="80%" destroy-on-close>
+                <div class="attachment-preview">
+                    <template v-if="isImageAttachment">
+                        <img :src="selectedAttachmentUrl" class="attachment-image" />
+                    </template>
+                    <template v-else-if="isPdfAttachment">
+                        <iframe :src="selectedAttachmentUrl" class="attachment-frame"></iframe>
+                    </template>
+                    <template v-else>
+                        <div class="attachment-download">
+                            <p>无法预览此类型的文件，请下载后查看</p>
+                            <el-button type="primary" @click="downloadAttachment">下载附件</el-button>
+                        </div>
+                    </template>
+                </div>
             </el-dialog>
 
             <!-- 创建文档对话框 -->
@@ -219,7 +225,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, reactive, onBeforeUnmount } from 'vue'
-import { Search, User, Calendar, Collection, Download, UploadFilled } from '@element-plus/icons-vue'
+import { Search, User, Calendar, Collection, Download, UploadFilled, Paperclip } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { documentService, hasAdminPermission } from '@/stores'
 import type { Document } from '@/stores'
@@ -227,10 +233,7 @@ import { useUserStore } from '@/stores/user'
 import Breadbcrum from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
-import { Jodit } from 'jodit'
 import { supabase } from '@/lib/supabaseClient'
-import mammoth from 'mammoth'
-import * as XLSX from 'xlsx'
 import { ElForm } from 'element-plus'
 
 const breadbcrum = reactive([
@@ -258,6 +261,9 @@ const activeCategory = ref('all')
 const selectedDocuments = ref<Document[]>([])
 const documentForm = ref()
 const isEditing = ref(false)
+const attachmentDialogVisible = ref(false)
+const selectedAttachmentUrl = ref('')
+const selectedAttachmentType = ref('')
 
 const newDocument = reactive({
     id: '',
@@ -300,11 +306,19 @@ const pagination = reactive<PaginationType>({
 // 文件处理相关状态
 const editor = ref<HTMLElement | null>(null)
 let joditInstance: any = null
-const attachmentLoading = ref(false)
-const attachmentContent = ref('')
-const needEditor = ref(false)
 const fileList = ref<any[]>([])
 const selectedFile = ref<File | null>(null)
+
+// 判断附件类型
+const isImageAttachment = computed(() => {
+    if (!selectedAttachmentType.value) return false
+    return selectedAttachmentType.value.startsWith('image/')
+})
+
+const isPdfAttachment = computed(() => {
+    if (!selectedAttachmentType.value) return false
+    return selectedAttachmentType.value === 'application/pdf'
+})
 
 const shortcuts = [
     {
@@ -398,134 +412,42 @@ const searchDocuments = async () => {
 const showDetailDialog = async (document: Document) => {
     detailDialogVisible.value = true
     selectedDocument.value = document
-    attachmentContent.value = ''
-    attachmentLoading.value = true
-    
-    // 如果有之前的编辑器实例，先销毁
-    if (joditInstance) {
-        joditInstance.destruct()
-        joditInstance = null
-    }
-    
-    // 如果有附件，处理附件内容
-    if (document.attachment_url) {
-        try {
-            // 获取文件扩展名
-            const fileExt = getFileExtension(document.attachment_name)
-            
-            // 从URL中提取存储路径
-            let path = ''
-            if (document.attachment_url && document.attachment_url.includes('/materials/')) {
-                path = document.attachment_url.split('/materials/').pop() || ''
-            }
-            
-            if (isPdfFile(document.attachment_name)) {
-                // PDF 直接使用 URL
-                attachmentContent.value = document.attachment_url
-            } else if (isImageFile(document.attachment_name)) {
-                // 图片直接使用 URL
-                attachmentContent.value = document.attachment_url
-            } else if (isWordFile(document.attachment_name)) {
-                // 处理 Word 文件
-                if (path) {
-                    const { data: fileData, error: fileError } = await supabase
-                        .storage
-                        .from('materials')
-                        .download(path)
-                        
-                    if (fileError) throw fileError
-                    
-                    const arrayBuffer = await fileData.arrayBuffer()
-                    const result = await mammoth.convertToHtml({ arrayBuffer })
-                    
-                    // 添加样式
-                    const wordStyles = `
-                        <style>
-                            .word-content {
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                padding: 20px;
-                            }
-                            .word-content p {
-                                margin: 0 0 1em 0;
-                            }
-                            .word-content h1, .word-content h2, .word-content h3 {
-                                margin: 1em 0 0.5em 0;
-                            }
-                            .word-content table {
-                                border-collapse: collapse;
-                                margin: 1em 0;
-                            }
-                            .word-content td, .word-content th {
-                                border: 1px solid #ddd;
-                                padding: 8px;
-                            }
-                        </style>
-                    `
-                    attachmentContent.value = wordStyles + '<div class="word-content">' + result.value + '</div>'
-                } else {
-                    throw new Error('无法解析文件路径')
-                }
-            } else if (isExcelFile(document.attachment_name)) {
-                // 处理 Excel 文件
-                if (path) {
-                    const { data: fileData, error: fileError } = await supabase
-                        .storage
-                        .from('materials')
-                        .download(path)
-                        
-                    if (fileError) throw fileError
-                    
-                    const arrayBuffer = await fileData.arrayBuffer()
-                    const workbook = XLSX.read(arrayBuffer, { type: 'array' })
-                    
-                    // 获取第一个工作表
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
-                    const html = XLSX.utils.sheet_to_html(firstSheet)
-                    
-                    // 添加 Excel 样式
-                    const excelStyles = `
-                        <style>
-                            .excel-content {
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                padding: 20px;
-                            }
-                            .excel-content table {
-                                border-collapse: collapse;
-                                width: 100%;
-                                margin: 1em 0;
-                            }
-                            .excel-content td, .excel-content th {
-                                border: 1px solid #ddd;
-                                padding: 8px;
-                                text-align: left;
-                            }
-                            .excel-content th {
-                                background-color: #f5f5f5;
-                            }
-                            .excel-content tr:nth-child(even) {
-                                background-color: #f9f9f9;
-                            }
-                        </style>
-                    `
+}
 
-                    attachmentContent.value = excelStyles + '<div class="excel-content">' + html + '</div>'
-                } else {
-                    throw new Error('无法解析文件路径')
-                }
-            } else {
-                // 其他文件类型使用下载链接
-                attachmentContent.value = document.attachment_url
-            }
-        } catch (error: any) {
-            console.error('获取附件内容失败:', error)
-            ElMessage.error(`获取附件内容失败: ${error.message || '未知错误'}`)
-        } finally {
-            attachmentLoading.value = false
-        }
-    } else {
-        attachmentLoading.value = false
+// 从表格点击查看附件
+const viewAttachment = (document: Document) => {
+    if (document.attachment_url) {
+        selectedAttachmentUrl.value = document.attachment_url
+        selectedAttachmentType.value = getFileTypeFromName(document.attachment_name)
+        attachmentDialogVisible.value = true
+    }
+}
+
+// 从详情对话框查看附件
+const viewAttachmentDialog = () => {
+    if (selectedDocument.value?.attachment_url) {
+        selectedAttachmentUrl.value = selectedDocument.value.attachment_url
+        selectedAttachmentType.value = getFileTypeFromName(selectedDocument.value.attachment_name)
+        attachmentDialogVisible.value = true
+    }
+}
+
+// 根据文件名获取文件类型
+const getFileTypeFromName = (filename: string | undefined): string => {
+    if (!filename) return ''
+    const ext = getFileExtension(filename)
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+        return 'image/' + ext
+    } else if (ext === 'pdf') {
+        return 'application/pdf'
+    }
+    return ''
+}
+
+// 下载附件
+const downloadAttachment = () => {
+    if (selectedAttachmentUrl.value) {
+        window.open(selectedAttachmentUrl.value, '_blank')
     }
 }
 
@@ -571,24 +493,7 @@ const getFileExtension = (filename: string | undefined): string => {
     return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : ''
 }
 
-const isImageFile = (filename: string | undefined): boolean => {
-    const ext = getFileExtension(filename)
-    return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)
-}
 
-const isWordFile = (filename: string | undefined): boolean => {
-    const ext = getFileExtension(filename)
-    return ['doc', 'docx'].includes(ext)
-}
-
-const isExcelFile = (filename: string | undefined): boolean => {
-    const ext = getFileExtension(filename)
-    return ['xls', 'xlsx'].includes(ext)
-}
-
-const isPdfFile = (filename: string | undefined): boolean => {
-    return getFileExtension(filename) === 'pdf'
-}
 
 // 文件选择处理函数
 const handleFileChange = (file: any) => {
@@ -899,6 +804,46 @@ onBeforeUnmount(() => {
     gap: 10px;
 }
 
+.attachment-box {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f5f7fa;
+    border-radius: 4px;
+    border: 1px dashed #dcdfe6;
+}
+
+.attachment-name {
+    flex: 1;
+    margin: 0 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.attachment-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.attachment-image {
+    max-width: 100%;
+    max-height: 70vh;
+}
+
+.attachment-frame {
+    width: 100%;
+    height: 70vh;
+    border: none;
+}
+
+.attachment-download {
+    text-align: center;
+    padding: 30px;
+}
+
 .attachment-link {
     margin-top: 10px;
 }
@@ -938,34 +883,6 @@ onBeforeUnmount(() => {
 /* 新增样式 */
 .upload-box {
     width: 100%;
-}
-
-.editor-container {
-    margin-top: 20px;
-    border: 1px solid #dcdfe6;
-    border-radius: 4px;
-    min-height: 400px;
-}
-
-.document-viewer {
-    padding: 20px;
-    border: 1px solid #dcdfe6;
-    border-radius: 4px;
-    margin-top: 10px;
-    background-color: #fff;
-}
-
-.pdf-viewer {
-    margin-top: 10px;
-    border: 1px solid #dcdfe6;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.attachment-loading {
-    padding: 20px;
-    background: #f8f8f8;
-    border-radius: 4px;
 }
 
 :deep(.el-upload) {

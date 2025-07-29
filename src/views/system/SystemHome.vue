@@ -6,9 +6,13 @@
                 <h2>欢迎回来，{{ userName }}</h2>
                 <p class="date">{{ currentDate }}</p>
             </div>
-            <el-carousel indicator-position="outside">
-                <el-carousel-item v-for="item in 4" :key="item">
-                    <h3 text="2xl" justify="center">{{ item }}</h3>
+            <el-carousel indicator-position="outside" height="500px">
+                <el-carousel-item v-for="item in HomeImage" :key="item">
+                    <el-image :src="item">
+                        <template #placeholder>
+                            <div class="image-slot">Loading<span class="dot">...</span></div>
+                        </template>
+                    </el-image>
                 </el-carousel-item>
             </el-carousel>
             <template v-if="hasPermission">
@@ -26,7 +30,8 @@
                             <div class="stat-info">
                                 <div class="stat-title">系统用户</div>
                                 <div class="stat-value">{{ stats.activeUsers }}</div>
-                                <div class="stat-trend" v-show="stats.userTrend > 0" :class="{ 'up': stats.userTrend > 0 }">
+                                <div class="stat-trend" v-show="stats.userTrend > 0"
+                                    :class="{ 'up': stats.userTrend > 0 }">
                                     新增： {{ stats.userTrend > 0 ? '+' : '' }}{{ stats.userTrend }}
                                 </div>
                             </div>
@@ -102,7 +107,8 @@
                         <div class="stat-info">
                             <div class="stat-title">我的心得</div>
                             <div class="stat-value">{{ stats.yourStudyCount }}</div>
-                            <div class="stat-trend" v-show="stats.yourStudyPending > 0" :class="{ 'up': stats.yourStudyPending > 0 }">
+                            <div class="stat-trend" v-show="stats.yourStudyPending > 0"
+                                :class="{ 'up': stats.yourStudyPending > 0 }">
                                 待回复： {{ stats.yourStudyPending > 0 ? '+' : '' }}{{ stats.yourStudyPending }}
                             </div>
                         </div>
@@ -120,7 +126,8 @@
                         <div class="stat-info">
                             <div class="stat-title">我的测试</div>
                             <div class="stat-value">{{ stats.yourTestCount }}</div>
-                            <div class="stat-trend" v-show="stats.yourTestPending > 0" :class="{ 'up': stats.yourTestPending > 0 }">
+                            <div class="stat-trend" v-show="stats.yourTestPending > 0"
+                                :class="{ 'up': stats.yourTestPending > 0 }">
                                 待批改：{{ stats.yourTestPending > 0 ? '+' : '' }}{{ stats.yourTestPending }}
                             </div>
                         </div>
@@ -156,7 +163,8 @@
                         <div class="stat-info">
                             <div class="stat-title">我的反馈</div>
                             <div class="stat-value">{{ stats.myFeedbackCount }}</div>
-                            <div class="stat-trend" v-show="stats.myFeedbackTrend > 0" :class="{ 'up': stats.myFeedbackTrend > 0 }">
+                            <div class="stat-trend" v-show="stats.myFeedbackTrend > 0"
+                                :class="{ 'up': stats.myFeedbackTrend > 0 }">
                                 待处理：{{ stats.myFeedbackTrend > 0 ? '+' : '' }}{{ stats.myFeedbackTrend }}
                             </div>
                         </div>
@@ -168,7 +176,7 @@
             <el-row :gutter="20" class="main-content">
                 <!-- 左侧：待办任务和通知 -->
                 <el-col :span="16">
-                    <el-card class="task-card">
+                    <el-card class="task-card"  style="min-height: 200px;">
                         <template #header>
                             <div class="card-header">
                                 <span>待办任务</span>
@@ -190,10 +198,15 @@
                                     </div>
 
                                     <p>{{ task.description }}</p>
-                                    <p v-if="!task.isOverdue" 
-                                        style="color: #909399;font-size: 12px;margin-top: 10px;">距离截止日期：{{ task.diffDays }}天</p>
-                                    <p v-else
-                                        style="color: #F56C6C;font-size: 12px;margin-top: 10px;">已过期：{{ task.diffDays }}天</p>
+                                    <p v-if="task.isToday" style="color: #E6A23C;font-size: 12px;margin-top: 10px;font-weight: bold;">
+                                        今天到期
+                                    </p>
+                                    <p v-else-if="!task.isOverdue" style="color: #909399;font-size: 12px;margin-top: 10px;">
+                                        距离截止日期：{{ task.diffDays }}天
+                                    </p>
+                                    <p v-else style="color: #F56C6C;font-size: 12px;margin-top: 10px;">
+                                        已过期：{{ task.diffDays }}天
+                                    </p>
                                 </el-card>
                             </el-timeline-item>
                         </el-timeline>
@@ -265,7 +278,7 @@
                                         getNoticeTypeText(notice.type) }}</el-tag>
                                     <span class="notice-title">{{ notice.title || '' }}</span>
                                     <span class="notice-time">{{ notice.created_at ? formatDate(notice.created_at) : ''
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </transition-group>
                         </div>
@@ -306,6 +319,14 @@ import { useUserStore } from '@/stores/user'
 import { supabase } from '@/lib/supabaseClient'
 import { formatDate } from '@/utils/dateUtils'
 
+// 导入图片
+import bannerImg from '@/assets/home-image/banner.png'
+import iwishUsImg from '@/assets/iwish-us.jpg'
+
+const HomeImage = ref([
+    bannerImg,
+    iwishUsImg,
+])
 
 const editor = ref<HTMLElement | null>(null)
 let joditInstance: any = null
@@ -319,7 +340,7 @@ interface Announcement {
     created_at: string
 }
 const userStore = useUserStore()
-const userName = computed(() => userStore.user?.email || '用户')
+const userName = computed(() => userStore.user?.full_name || '用户')
 const announcements = ref<Announcement[]>([])
 
 // 当前日期
@@ -458,10 +479,10 @@ const getYourTestCount = async () => {
 
 import { assignmentService } from '@/stores/assignmentService'
 const getYourAssignmentsCount = async () => {
-    const { data, total, error } = await assignmentService.getPersonalAssignments(1, 1000)
-    stats.value.yourAssignmentsCount = total || 0
-
-    if (error) {
+    try {
+        const { data, total } = await assignmentService.getPersonalAssignments(1, 1000)
+        stats.value.yourAssignmentsCount = total || 0
+    } catch (error) {
         console.error('获取你的作业失败:', error)
     }
 }
@@ -472,9 +493,9 @@ const getFeedbackCount = async () => {
     try {
         const { data } = await feedbackService.getPersonalFeedback()
         stats.value.myFeedbackCount = data?.length || 0
-        
+
         stats.value.myFeedbackTrend = data?.filter(feedback => {
-            return  feedback.replied_at == null 
+            return feedback.replied_at == null
         })?.length || 0
     } catch (error) {
         console.error('获取反馈失败:', error)
@@ -495,6 +516,7 @@ interface Task {
     creator: { user_id: string, full_name: string }
     diffDays: number
     isOverdue: boolean
+    isToday: boolean
 }
 // 待办任务
 const tasks = ref<Task[]>([])
@@ -507,13 +529,21 @@ const getTasks = async () => {
         //根据截至日期，计算距离当前时间的天数
         const dueDate = new Date(item.due_date)
         const now = new Date()
-        const isOverdue = dueDate < now
-        const diffTime = Math.abs(dueDate.getTime() - now.getTime())
+        
+        // 获取日期部分，忽略时间
+        const dueDateOnly = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate())
+        const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        
+        const isOverdue = dueDateOnly < nowDateOnly
+        const diffTime = Math.abs(dueDateOnly.getTime() - nowDateOnly.getTime())
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        const isToday = dueDateOnly.getTime() === nowDateOnly.getTime()
+        
         return {
             ...item,
             diffDays: diffDays,
-            isOverdue: isOverdue
+            isOverdue: isOverdue,
+            isToday: isToday
         }
     }).sort((a, b) => {
         return new Date(a.due_date).getTime() - new Date(b.due_date).getTime()

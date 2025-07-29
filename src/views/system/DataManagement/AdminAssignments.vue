@@ -29,7 +29,15 @@
             <el-card v-if="hasPermission" style="min-height: 400px;">
                 <template #header>
                     <div class="card-header">
-                        作业列表
+                        <div>
+                            <span>作业列表</span>
+                            <el-tooltip v-if="isSupperAdmin" content="您可以查看所有作业" placement="right">
+                                <el-tag type="success" size="small" style="margin-left: 8px;">全部</el-tag>
+                            </el-tooltip>
+                            <el-tooltip v-else content="您只能查看本组织的作业" placement="right">
+                                <el-tag type="info" size="small" style="margin-left: 8px;">本组织</el-tag>
+                            </el-tooltip>
+                        </div>
                         <div class="header-actions">
                             <el-button type="danger" :disabled="!selectedAssignments.length" @click="handleBatchDelete">
                                 批量删除
@@ -53,6 +61,21 @@
                     </el-table-column>
                     <el-table-column prop="creator_profile.full_name" label="创建人" />
                     <el-table-column prop="assignee_profile.full_name" label="指定人员" />
+                    <el-table-column label="附件" width="80">
+                        <template #default="{ row }">
+                            <el-button 
+                                v-if="row.attachment_url" 
+                                type="primary" 
+                                link 
+                                @click="viewAttachment(row)"
+                            >
+                                <el-icon color="#409EFF" size="18">
+                                    <paperclip />
+                                </el-icon>
+                            </el-button>
+                            <span v-else>-</span>
+                        </template>
+                    </el-table-column>
                     <el-table-column label="回复状态">
                         <template #default="{ row }">
                             <el-tag size="large" style="font-size: 14px;"
@@ -66,11 +89,11 @@
                             {{ formatDate(row.created_at) }}
                         </template>
                     </el-table-column>
-                    <el-table-column label="操作" width="200" fixed="right">
+                    <el-table-column label="操作" width="180" fixed="right">
                         <template #default="{ row }">
                             <el-button-group>
-                                <el-button type="primary" @click="showReplyDialog(row)">回复</el-button>
-                                <el-button type="info" @click="showDetailsDialog(row)">查看详情</el-button>
+                                <el-button type="primary" @click="showDetailsDialog(row)">查看详情</el-button>
+                                <el-button type="danger" @click="handleDelete(row)">删除</el-button>
                             </el-button-group>
                         </template>
                     </el-table-column>
@@ -99,9 +122,35 @@
                                 :value="member.user_id"
                             />
                         </el-select>
+                        <div class="form-tip">
+                            <el-text type="info" size="small" v-if="isSupperAdmin">可选择所有用户</el-text>
+                            <el-text type="info" size="small" v-else>只显示本组织成员</el-text>
+                        </div>
                     </el-form-item>
                     <el-form-item label="内容" prop="content">
                         <el-input v-model="newAssignment.content" type="textarea" :autosize="{ minRows: 10, maxRows: 15 }" />
+                    </el-form-item>
+                    <el-form-item label="附件">
+                        <el-upload
+                            class="upload-container"
+                            drag
+                            :auto-upload="true"
+                            :http-request="customUploadRequest"
+                            :on-remove="handleRemoveFile"
+                            :before-upload="beforeUpload"
+                            :limit="1"
+                            :file-list="fileList"
+                        >
+                            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+                            <div class="el-upload__text">
+                                将文件拖到此处，或<em>点击上传</em>
+                            </div>
+                            <template #tip>
+                                <div class="el-upload__tip">
+                                    支持 PDF、Word、Excel、图片等类型文件，大小不超过10MB
+                                </div>
+                            </template>
+                        </el-upload>
                     </el-form-item>
                 </el-form>
                 <template #footer>
@@ -115,6 +164,28 @@
                 <el-form :model="reply" :rules="replyRules" ref="replyForm" label-width="80px">
                     <el-form-item label="回复内容" prop="content">
                         <el-input v-model="reply.content" type="textarea" :autosize="{ minRows: 10, maxRows: 15 }" />
+                    </el-form-item>
+                    <el-form-item label="附件">
+                        <el-upload
+                            class="upload-container"
+                            drag
+                            :auto-upload="true"
+                            :http-request="customReplyUploadRequest"
+                            :on-remove="handleRemoveReplyFile"
+                            :before-upload="beforeUpload"
+                            :limit="1"
+                            :file-list="replyFileList"
+                        >
+                            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+                            <div class="el-upload__text">
+                                将文件拖到此处，或<em>点击上传</em>
+                            </div>
+                            <template #tip>
+                                <div class="el-upload__tip">
+                                    支持 PDF、Word、Excel、图片等类型文件，大小不超过10MB
+                                </div>
+                            </template>
+                        </el-upload>
                     </el-form-item>
                 </el-form>
                 <template #footer>
@@ -158,6 +229,16 @@
                                 <p>{{ selectedAssignment?.content }}</p>
                             </div>
                             
+                            <!-- 附件信息 -->
+                            <div v-if="selectedAssignment?.attachment_url" class="attachment-section">
+                                <div class="section-title">附件</div>
+                                <div class="attachment-box">
+                                    <el-icon color="#409EFF" size="16"><paperclip /></el-icon>
+                                    <span class="attachment-name">{{ selectedAssignment.attachment_name }}</span>
+                                    <el-button type="primary" size="small" @click="viewAttachmentDialog">查看附件</el-button>
+                                </div>
+                            </div>
+                            
                             <div class="replies" v-if="selectedAssignment?.replies?.length">
                                 <h4>回复列表</h4>
                                 <div 
@@ -171,6 +252,11 @@
                                 >
                                     <p><strong>{{ reply.profile?.full_name }}：</strong></p>
                                     <p>{{ reply.content }}</p>
+                                    <div v-if="reply.attachment_url" class="reply-attachment">
+                                        <el-icon color="#409EFF" size="14"><paperclip /></el-icon>
+                                        <span class="attachment-name">{{ reply.attachment_name }}</span>
+                                        <el-button type="primary" link size="small" @click="viewReplyAttachment(reply)">查看</el-button>
+                                    </div>
                                     <p class="reply-time">{{ reply.created_at ? new Date(reply.created_at).toLocaleString() : '' }}</p>
                                 </div>
                             </div>
@@ -182,6 +268,24 @@
                     </template>
                 </div>
             </el-dialog>
+
+            <!-- 附件预览对话框 -->
+            <el-dialog v-model="attachmentDialogVisible" title="附件预览" width="80%" destroy-on-close>
+                <div class="attachment-preview">
+                    <template v-if="isImageAttachment">
+                        <img :src="selectedAttachmentUrl" class="attachment-image" />
+                    </template>
+                    <template v-else-if="isPdfAttachment">
+                        <iframe :src="selectedAttachmentUrl" class="attachment-frame"></iframe>
+                    </template>
+                    <template v-else>
+                        <div class="attachment-download">
+                            <p>无法预览此类型的文件，请下载后查看</p>
+                            <el-button type="primary" @click="downloadAttachment">下载附件</el-button>
+                        </div>
+                    </template>
+                </div>
+            </el-dialog>
         </div>
     </div>
 </template>
@@ -189,8 +293,9 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from 'vue'
 import { Search } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FormInstance } from 'element-plus'
+import { Paperclip, UploadFilled } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
+import type { FormInstance, UploadFile, UploadRequestOptions } from 'element-plus'
 import { assignmentService } from '@/stores/assignmentService'
 import type { Assignment, AssignmentReply } from '@/stores/assignmentService'
 import { useUserStore } from '@/stores/user'
@@ -217,6 +322,12 @@ const hasPermission = computed(() => {
     return roleId === 0 || roleId === 1 || roleId ===11 // 管理员和运营管理员有权限
 })
 
+// 判断是否为超级管理员
+const isSupperAdmin = computed(() => {
+    const roleId = Number(userStore.roleId)
+    return roleId === 0
+})
+
 const loading = ref(false)
 const loadingDetails = ref(false)
 const activeStatus = ref('all')
@@ -228,8 +339,23 @@ const organizationMembers = ref<any[]>([])
 const createDialogVisible = ref(false)
 const replyDialogVisible = ref(false)
 const detailsDialogVisible = ref(false)
+const attachmentDialogVisible = ref(false)
 const selectedAssignment = ref<Assignment | null>(null)
 const selectedAssignments = ref<Assignment[]>([])
+const selectedAttachmentUrl = ref('')
+const selectedAttachmentType = ref('')
+const fileList = ref<UploadFile[]>([])
+const attachmentInfo = ref<{
+    url: string;
+    name: string;
+    type: string;
+} | null>(null)
+const replyFileList = ref<UploadFile[]>([])
+const replyAttachmentInfo = ref<{
+    url: string;
+    name: string;
+    type: string;
+} | null>(null)
 
 const shortcuts = [
     {
@@ -293,6 +419,177 @@ const reply = ref<AssignmentReply>({
 const createForm = ref<FormInstance>()
 const replyForm = ref<FormInstance>()
 
+// 判断附件类型
+const isImageAttachment = computed(() => {
+    if (!selectedAttachmentType.value) return false
+    return selectedAttachmentType.value.startsWith('image/')
+})
+
+const isPdfAttachment = computed(() => {
+    if (!selectedAttachmentType.value) return false
+    return selectedAttachmentType.value === 'application/pdf'
+})
+
+// 上传前检查
+const beforeUpload = (file: File) => {
+    // 检查文件大小 (10MB)
+    const isLt10M = file.size / 1024 / 1024 < 10
+    if (!isLt10M) {
+        ElMessage.error('文件大小不能超过 10MB!')
+        return false
+    }
+    return true
+}
+
+// 自定义上传请求处理
+const customUploadRequest = async (options: UploadRequestOptions) => {
+    const { file, onSuccess, onError } = options
+    
+    if (!file) {
+        onError?.(new Error('文件不存在') as any)
+        return
+    }
+    
+    const loadingInstance = ElLoading.service({
+        text: '正在上传文件...',
+        background: 'rgba(0, 0, 0, 0.7)'
+    })
+    
+    try {
+        // 生成唯一文件名
+        const fileObj = file as File
+        const fileExt = fileObj.name.split('.').pop()
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+        const filePath = `assignments/${fileName}`
+        
+        // 上传到supabase存储
+        const { data, error } = await supabase.storage
+            .from('attachments')
+            .upload(filePath, fileObj, {
+                cacheControl: '3600',
+                upsert: false
+            })
+            
+        if (error) throw error
+        
+        // 获取公共URL
+        const { data: { publicUrl } } = supabase.storage
+            .from('attachments')
+            .getPublicUrl(data.path)
+        
+        // 保存附件信息
+        attachmentInfo.value = {
+            url: publicUrl,
+            name: fileObj.name,
+            type: fileObj.type
+        }
+        
+        // 上传成功回调
+        onSuccess?.(attachmentInfo.value as any)
+        ElMessage.success('文件上传成功')
+    } catch (err) {
+        console.error('文件上传错误:', err)
+        onError?.(new Error(err instanceof Error ? err.message : '上传失败') as any)
+        ElMessage.error('文件上传失败，请重试')
+    } finally {
+        loadingInstance.close()
+    }
+}
+
+// 移除文件处理
+const handleRemoveFile = () => {
+    attachmentInfo.value = null
+}
+
+// 查看回复附件
+const viewReplyAttachment = (reply: any) => {
+    if (reply.attachment_url) {
+        selectedAttachmentUrl.value = reply.attachment_url
+        selectedAttachmentType.value = reply.attachment_type || ''
+        attachmentDialogVisible.value = true
+    }
+}
+
+// 回复附件上传请求处理
+const customReplyUploadRequest = async (options: UploadRequestOptions) => {
+    const { file, onSuccess, onError } = options
+    
+    if (!file) {
+        onError?.(new Error('文件不存在') as any)
+        return
+    }
+    
+    const loadingInstance = ElLoading.service({
+        text: '正在上传文件...',
+        background: 'rgba(0, 0, 0, 0.7)'
+    })
+    
+    try {
+        const fileObj = file as File
+        const fileExt = fileObj.name.split('.').pop()
+        const fileName = `reply_${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+        const filePath = `assignments/replies/${fileName}`
+        
+        const { data, error } = await supabase.storage
+            .from('attachments')
+            .upload(filePath, fileObj, {
+                cacheControl: '3600',
+                upsert: false
+            })
+            
+        if (error) throw error
+        
+        const { data: { publicUrl } } = supabase.storage
+            .from('attachments')
+            .getPublicUrl(data.path)
+        
+        replyAttachmentInfo.value = {
+            url: publicUrl,
+            name: fileObj.name,
+            type: fileObj.type
+        }
+        
+        onSuccess?.(replyAttachmentInfo.value as any)
+        ElMessage.success('文件上传成功')
+    } catch (err) {
+        console.error('文件上传错误:', err)
+        onError?.(new Error(err instanceof Error ? err.message : '上传失败') as any)
+        ElMessage.error('文件上传失败，请重试')
+    } finally {
+        loadingInstance.close()
+    }
+}
+
+// 移除回复文件处理
+const handleRemoveReplyFile = () => {
+    replyAttachmentInfo.value = null
+}
+
+// 从表格点击查看附件
+const viewAttachment = (assignment: Assignment) => {
+    if (assignment.attachment_url) {
+        selectedAttachmentUrl.value = assignment.attachment_url
+        selectedAttachmentType.value = assignment.attachment_type || ''
+        attachmentDialogVisible.value = true
+    }
+}
+
+// 从详情对话框查看附件
+const viewAttachmentDialog = () => {
+    if (selectedAssignment.value?.attachment_url) {
+        selectedAttachmentUrl.value = selectedAssignment.value.attachment_url
+        selectedAttachmentType.value = selectedAssignment.value.attachment_type || ''
+        attachmentDialogVisible.value = true
+    }
+}
+
+// 下载附件
+const downloadAttachment = () => {
+    if (selectedAttachmentUrl.value) {
+        window.open(selectedAttachmentUrl.value, '_blank')
+    }
+}
+
 const fetchAssignments = async () => {
     loading.value = true
     try {
@@ -350,6 +647,8 @@ const showCreateDialog = () => {
         content: '',
         assigned_to: undefined
     }
+    fileList.value = []
+    attachmentInfo.value = null
 }
 
 const handleCreate = async () => {
@@ -358,7 +657,15 @@ const handleCreate = async () => {
     await createForm.value.validate(async (valid) => {
         if (valid) {
             try {
-                await assignmentService.createAssignment(newAssignment.value)
+                // 包含附件信息的作业数据
+                const assignmentData: Assignment = {
+                    ...newAssignment.value,
+                    attachment_url: attachmentInfo.value?.url,
+                    attachment_name: attachmentInfo.value?.name,
+                    attachment_type: attachmentInfo.value?.type
+                }
+
+                await assignmentService.createAssignment(assignmentData)
                 ElMessage.success('布置作业成功')
                 createDialogVisible.value = false
                 fetchAssignments()
@@ -378,18 +685,22 @@ const showReplyDialog = (assignment: Assignment) => {
         content: '',
         full_name: ''
     }
+    replyFileList.value = []
+    replyAttachmentInfo.value = null
     replyDialogVisible.value = true
 }
 
 const showReplyDialogFromDetails = () => {
     if (!selectedAssignment.value) return
-    replyDialogVisible.value = true
     reply.value = {
         assignment_id: selectedAssignment.value.id || '',
         user_id: '',
         content: '',
         full_name: '' // 添加full_name
     }
+    replyFileList.value = []
+    replyAttachmentInfo.value = null
+    replyDialogVisible.value = true
 }
 
 const handleReply = async () => {
@@ -398,9 +709,21 @@ const handleReply = async () => {
     await replyForm.value.validate(async (valid) => {
         if (valid) {
             try {
-                await assignmentService.addReply(reply.value)
+                const replyData = {
+                    ...reply.value,
+                    attachment_url: replyAttachmentInfo.value?.url || undefined,
+                    attachment_name: replyAttachmentInfo.value?.name || undefined,
+                    attachment_type: replyAttachmentInfo.value?.type || undefined
+                }
+                
+                await assignmentService.addReply(replyData)
                 ElMessage.success('回复成功')
                 replyDialogVisible.value = false
+                
+                // 清理附件信息
+                replyFileList.value = []
+                replyAttachmentInfo.value = null
+                
                 fetchAssignments()
                 
                 // 如果详情对话框仍然打开，刷新详情数据
@@ -622,6 +945,57 @@ onMounted(async () => {
     border-radius: 4px;
 }
 
+.attachment-section {
+    margin: 15px 0;
+}
+
+.section-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #606266;
+}
+
+.attachment-box {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f5f7fa;
+    border-radius: 4px;
+    border: 1px dashed #dcdfe6;
+}
+
+.attachment-name {
+    flex: 1;
+    margin: 0 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.attachment-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.attachment-image {
+    max-width: 100%;
+    max-height: 70vh;
+}
+
+.attachment-frame {
+    width: 100%;
+    height: 70vh;
+    border: none;
+}
+
+.attachment-download {
+    text-align: center;
+    padding: 30px;
+}
+
 .replies {
     margin-top: 20px;
 }
@@ -681,5 +1055,59 @@ onMounted(async () => {
 .assignee-reply {
     background-color: #ecf5ff;
     border-left: 3px solid #409eff;
+}
+
+.upload-container {
+    width: 100%;
+}
+
+.el-upload__tip {
+    color: #909399;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+:deep(.el-upload-dragger) {
+    width: 100%;
+}
+
+:deep(.el-icon--upload) {
+    margin: 10px 0;
+    font-size: 28px;
+    color: #c0c4cc;
+}
+
+:deep(.el-upload__text) {
+    color: #606266;
+    font-size: 14px;
+    margin: 8px 0;
+}
+
+:deep(.el-upload__text em) {
+    color: #409EFF;
+    font-style: normal;
+}
+
+.form-tip {
+    margin-top: 4px;
+}
+
+.reply-attachment {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    padding: 6px 10px;
+    background-color: rgba(64, 158, 255, 0.1);
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.reply-attachment .attachment-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #606266;
 }
 </style>

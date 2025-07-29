@@ -34,7 +34,7 @@
                     </div>
                 </template>
 
-                <el-table v-loading="loading" :data="paginatedTaskList" row-key="id" stripe>
+                <el-table v-loading="loading" :data="paginatedTaskList" row-key="id" stripe height="400px">
                     <el-table-column prop="id" label="ID" width="80" />
                     <el-table-column prop="title" label="任务名称" width="200" />
                     <el-table-column prop="description" label="任务描述" show-overflow-tooltip />
@@ -113,7 +113,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="截止日期" prop="due_date">
-                        <el-date-picker v-model="taskForm.due_date" type="date" placeholder="选择截止日期" />
+                        <el-date-picker v-model="taskForm.due_date" type="date" placeholder="选择截止日期" value-format="YYYY-MM-DD" />
                     </el-form-item>
                     <el-form-item v-if="isAdmin" label="指派给" prop="assigned_to">
                         <el-select v-model="taskForm.assigned_to" placeholder="请选择用户(支持模糊搜索)" filterable>
@@ -151,7 +151,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="截止日期" prop="due_date">
-                        <el-date-picker v-model="assignForm.due_date" type="date" placeholder="选择截止日期" />
+                        <el-date-picker v-model="assignForm.due_date" type="date" placeholder="选择截止日期" value-format="YYYY-MM-DD" />
                     </el-form-item>
                     <el-form-item label="指派给" prop="assigned_to">
                         <el-select v-model="assignForm.assigned_to" placeholder="请选择用户(支持模糊搜索)" filterable multiple

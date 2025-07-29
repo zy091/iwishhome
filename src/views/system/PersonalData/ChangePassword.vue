@@ -1,7 +1,7 @@
 <!-- 修改密码 -->
 <template>
     <div class="change-password-container">
-        <el-form ref="formRef" :model="passwordForm" :rules="rules" label-width="120px" class="password-form">
+        <el-form ref="formRef" :model="passwordForm" :rules="rules" label-width="120px" class="password-form"  height="300px">
             <el-form-item label="当前密码" prop="currentPassword">
                 <el-input v-model="passwordForm.currentPassword" type="password" show-password />
             </el-form-item>

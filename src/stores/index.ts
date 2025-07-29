@@ -3,6 +3,8 @@ import { defineStore } from 'pinia'
 
 // 导出documentService
 export * from './documentService'
+// 导出caseSharingService（排除冲突的hasAdminPermission）
+export { caseSharingService, type CaseSharing, type CaseSharingSearchParams, type CreateCaseSharingParams } from './caseSharingService'
 
 export const useCounterStore = defineStore('counter', () => {
   const count = ref(0)
