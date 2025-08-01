@@ -2,11 +2,11 @@
     <div class="layout">
         <Breadbcrum :breadbcrum="breadbcrum" />
         <div class="layout-title">
-            <h1 class="title">分享案例</h1>
+            <h1 class="title">知识分享</h1>
             <div class="status-tabs">
                 <el-tabs class="demo-tabs" v-model="activeViewType" @tab-change="handleViewTypeChange">
-                    <el-tab-pane :name="'all'" label="全部案例" />
-                    <el-tab-pane :name="'my'" label="我的案例" />
+                    <el-tab-pane :name="'all'" label="全部分享" />
+                    <el-tab-pane :name="'my'" label="我的分享" />
                 </el-tabs>
             </div>
         </div>
@@ -14,9 +14,9 @@
         <!-- 搜索功能 -->
         <el-card shadow="always" style="margin-bottom: 20px;">
             <el-space alignment="start" :size="30">
-                <el-input v-model="searchQuery" style="width: 240px" placeholder="请输入案例标题" :suffix-icon="Search"
+                <el-input v-model="searchQuery" style="width: 240px" placeholder="请输入分享标题" :suffix-icon="Search"
                     size="large" clearable />
-                <el-select v-model="categoryFilter" placeholder="案例类型" clearable style="width: 180px" size="large">
+                <el-select v-model="categoryFilter" placeholder="分享类型" clearable style="width: 180px" size="large">
                     <el-option v-for="category in categoryOptions" :key="category.value" :label="category.label" :value="category.value" />
                 </el-select>
                 <el-date-picker v-model="dateRange" type="daterange" unlink-panels range-separator="至"
@@ -26,7 +26,7 @@
                     <el-option label="隐藏" value="false" />
                 </el-select>
                 <el-button type="primary" size="large" @click="searchCases">搜索</el-button>
-                <el-button type="success" size="large" @click="showCreateDialog">分享案例</el-button>
+                <el-button type="success" size="large" @click="showCreateDialog">添加分享</el-button>
             </el-space>
         </el-card>
 
@@ -34,7 +34,7 @@
             <el-card style="min-height: 400px;">
                 <template #header>
                     <div class="card-header">
-                        案例列表
+                        分享列表
                         <div class="header-actions" v-if="hasAdminPerm">
                             <el-button type="danger" :disabled="!selectedCases.length" @click="handleBatchDelete">
                                 批量删除
@@ -103,7 +103,7 @@
                     </el-table-column>
                     <el-empty>
                         <template #description>
-                            暂无案例数据
+                            暂无分享数据
                         </template>
                     </el-empty>
                 </el-table>
@@ -111,7 +111,7 @@
             <Pagination :pagination="pagination" @update:pagination="handlePaginationUpdate" />
 
             <!-- 查看详情对话框 -->
-            <el-dialog title="案例详情" v-model="detailDialogVisible" width="60%" :close-on-click-modal="false"
+            <el-dialog title="分享详情" v-model="detailDialogVisible" width="60%" :close-on-click-modal="false"
                 top="5vh" class="case-detail-dialog">
                 <div class="dialog-content">
                     <div class="case-details">
@@ -186,21 +186,21 @@
                 </div>
             </el-dialog>
 
-            <!-- 创建案例对话框 -->
-            <el-dialog :title="isEditing ? '编辑案例' : '分享案例'" v-model="createDialogVisible" width="50%" :close-on-click-modal="false">
+            <!-- 创建分享对话框 -->
+            <el-dialog :title="isEditing ? '编辑分享' : '知识分享'" v-model="createDialogVisible" width="50%" :close-on-click-modal="false">
                 <el-form :model="newCase" :rules="caseRules" ref="caseForm" label-width="80px" style="max-width: 800px">
                     <el-form-item label="标题" prop="title">
-                        <el-input v-model="newCase.title" placeholder="请输入案例标题"></el-input>
+                        <el-input v-model="newCase.title" placeholder="请输入分享标题"></el-input>
                     </el-form-item>
                     <el-form-item label="类型" prop="category">
-                        <el-select v-model="newCase.category" placeholder="选择案例类型" style="width: 100%">
+                        <el-select v-model="newCase.category" placeholder="选择分享类型" style="width: 100%">
                             <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label"
                                 :value="item.value" />
                         </el-select>
                     </el-form-item>
                     <el-form-item label="内容" prop="content">
                         <el-input type="textarea" v-model="newCase.content" :rows="10"
-                            placeholder="请输入案例内容"></el-input>
+                            placeholder="请输入分享内容"></el-input>
                     </el-form-item>
                     <el-form-item label="附件">
                         <el-upload
@@ -258,7 +258,7 @@ import { ElForm } from 'element-plus'
 
 const breadbcrum = reactive([
     {
-        name: '分享案例',
+        name: '分享分享',
         path: '/system/case-sharing'
     }
 ])
@@ -300,14 +300,14 @@ const newCase = reactive({
 
 const caseRules = {
     title: [
-        { required: true, message: '请输入案例标题', trigger: 'blur' },
+        { required: true, message: '请输入分享标题', trigger: 'blur' },
         { min: 2, max: 100, message: '标题长度应在2到100个字符之间', trigger: 'blur' }
     ],
     category: [
-        { required: true, message: '请选择案例类型', trigger: 'change' }
+        { required: true, message: '请选择分享类型', trigger: 'change' }
     ],
     content: [
-        { required: false, message: '请输入案例内容', trigger: 'blur' },
+        { required: false, message: '请输入分享内容', trigger: 'blur' },
         { min: 2, max: 10000, message: '内容长度应在8到10000个字符之间', trigger: 'blur' }
     ]
 }
@@ -391,7 +391,7 @@ const getCategoryLabel = (category: string) => {
         case 'advertising': return '广告'
         case 'material': return '素材'
         case 'daily_operation': return '日常运营'
-        case 'customer_case': return '客户案例'
+        case 'customer_case': return '客户分享'
         case 'technical': return '技术分享'
         case 'other': return '其他'
         default: return category || '未知'
@@ -416,7 +416,7 @@ const handlePaginationUpdate = (newPagination: PaginationType) => {
     searchCases()
 }
 
-// 搜索案例
+// 搜索分享
 const searchCases = async () => {
     loading.value = true
     const startDate = dateRange.value != null && dateRange.value[0] != null ? dateRange.value[0].toDateString() : ''
@@ -437,8 +437,8 @@ const searchCases = async () => {
         cases.value = result.data
         pagination.total = result.total
     } catch (error) {
-        ElMessage.error('搜索案例失败')
-        console.error('搜索案例失败:', error)
+        ElMessage.error('搜索分享失败')
+        console.error('搜索分享失败:', error)
     } finally {
         loading.value = false
     }
@@ -600,7 +600,7 @@ const uploadFileToStorage = async (file: File): Promise<string> => {
     return urlData.publicUrl
 }
 
-// 提交案例（创建或更新）
+// 提交分享（创建或更新）
 const submitCase = async () => {
     if (!caseForm.value) return
     
@@ -625,7 +625,7 @@ const submitCase = async () => {
             }
             
             if (isEditing.value) {
-                // 更新案例
+                // 更新分享
                 await caseSharingService.updateCase(newCase.id, {
                     title: newCase.title,
                     content: newCase.content,
@@ -636,9 +636,9 @@ const submitCase = async () => {
                     attachment_type: newCase.attachment_type,
                     link_url: newCase.link_url
                 })
-                ElMessage.success('案例已更新')
+                ElMessage.success('分享已更新')
             } else {
-                // 创建案例
+                // 创建分享
                 await caseSharingService.createCase({
                     title: newCase.title,
                     content: newCase.content,
@@ -649,7 +649,7 @@ const submitCase = async () => {
                     attachment_type: newCase.attachment_type,
                     link_url: newCase.link_url
                 })
-                ElMessage.success('案例已创建')
+                ElMessage.success('分享已创建')
             }
             
             createDialogVisible.value = false
@@ -658,19 +658,19 @@ const submitCase = async () => {
             fileList.value = []
             selectedFile.value = null
         } catch (error) {
-            ElMessage.error(isEditing.value ? '更新案例失败' : '创建案例失败')
-            console.error(isEditing.value ? '更新案例失败:' : '创建案例失败:', error)
+            ElMessage.error(isEditing.value ? '更新分享失败' : '创建分享失败')
+            console.error(isEditing.value ? '更新分享失败:' : '创建分享失败:', error)
         } finally {
             submitting.value = false
         }
     })
 }
 
-// 删除案例
+// 删除分享
 const handleDelete = async (caseItem: CaseSharing) => {
     try {
         await ElMessageBox.confirm(
-            `确定要删除 "${caseItem.title}" 这个案例吗？`,
+            `确定要删除 "${caseItem.title}" 这个分享吗？`,
             '提示',
             { type: 'warning' }
         )
@@ -692,7 +692,7 @@ const handleBatchDelete = async () => {
     
     try {
         await ElMessageBox.confirm(
-            `确定要删除选中的 ${selectedCases.value.length} 个案例吗？此操作不可恢复。`,
+            `确定要删除选中的 ${selectedCases.value.length} 个分享吗？此操作不可恢复。`,
             '警告',
             {
                 confirmButtonText: '确定',
@@ -709,12 +709,12 @@ const handleBatchDelete = async () => {
         // 等待所有删除操作完成
         await Promise.all(deletePromises)
         
-        ElMessage.success(`成功删除 ${selectedCases.value.length} 个案例`)
+        ElMessage.success(`成功删除 ${selectedCases.value.length} 个分享`)
         selectedCases.value = []
         searchCases()
     } catch (error) {
         if (error !== 'cancel') {
-            console.error('批量删除案例失败:', error)
+            console.error('批量删除分享失败:', error)
             ElMessage.error('批量删除失败')
         }
     }
