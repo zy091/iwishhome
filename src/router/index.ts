@@ -270,6 +270,24 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
           }
+        },
+        {
+          path: 'study-notes',
+          name: 'study-note',
+          component: () => import('@/views/system/Optimization/StudyNotes.vue'),
+          redirect: '/system/study-notes/list',
+          children: [
+            {
+              path: 'list',
+              name: 'study-notes-list',
+              component: () => import('@/views/system/Optimization/StudyNotesList.vue'),
+            },
+            {
+              path: 'create',
+              name: 'study-notes-create',
+              component: () => import('@/views/system/Optimization/StudyNotesCreate.vue'),
+            }
+          ]
         }
       ],
     },

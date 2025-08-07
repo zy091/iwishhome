@@ -208,7 +208,7 @@ export const assignmentService = {
                     organization_path
                 `)
                 .neq('user_id', userStore.user.user_id) // 排除当前用户
-
+            
             console.log('超级管理员查询结果:', data);
             
             if (error) {
@@ -219,8 +219,8 @@ export const assignmentService = {
         } else {
             // 非超级管理员：只能看到本组织成员
             console.log('非超级管理员，查询本组织成员:', profile.organization_id);
-            
-            const { data, error } = await supabase
+        
+        const { data, error } = await supabase
                 .from('user_profiles')
                 .select(`
                     user_id,
@@ -232,14 +232,14 @@ export const assignmentService = {
                 `)
                 .eq('organization_id', profile.organization_id)
                 .neq('user_id', userStore.user.user_id) // 排除当前用户
-
+                
             console.log('非超级管理员查询结果:', data);
             
             if (error) {
                 console.error('非超级管理员查询错误:', error);
                 throw error;
             }
-            return data;
+        return data;
         }
     },
 
@@ -270,10 +270,10 @@ export const assignmentService = {
                 organization_parent_id: profile?.organization_parent_id || null
             })
             .select(`
-                *,
-                creator_profile:user_profiles!created_by(full_name, email),
-                assignee_profile:user_profiles!assigned_to(full_name, email)
-            `)
+            *,
+            creator_profile:user_profiles!created_by(full_name, email),
+            assignee_profile:user_profiles!assigned_to(full_name, email)
+        `)
             .single()
 
         if (error) throw error
@@ -334,48 +334,48 @@ export const assignmentService = {
         
         try {
             // 直接查询指定给当前用户的作业，不受组织限制
-            let query = supabase
-                .from('assignments')
-                .select(`
-                    *,
+        let query = supabase
+            .from('assignments')
+            .select(`
+                *,
                     creator_profile:user_profiles!created_by(full_name, email, role_id),
-                    assignee_profile:user_profiles!assigned_to(full_name, email),
-                    replies:assignment_replies(*, profile:user_profiles(full_name, email))
-                `, { count: 'exact' })
+                assignee_profile:user_profiles!assigned_to(full_name, email),
+                replies:assignment_replies(*, profile:user_profiles(full_name, email))
+            `, { count: 'exact' })
                 .eq('assigned_to', userId) // 只要assigned_to是当前用户，就能看到，不论创建者来自哪个组织
             
             console.log('查询条件: assigned_to =', userId)
-            
-            // 添加标题搜索
-            if (filters?.query) {
-                query = query.ilike('title', `%${filters.query}%`)
+        
+        // 添加标题搜索
+        if (filters?.query) {
+            query = query.ilike('title', `%${filters.query}%`)
                 console.log('添加标题搜索:', filters.query)
-            }
-            
-            // 处理日期范围
-            if (filters?.startDate && filters?.endDate) {
-                const { startUTC, endUTC } = generateDateRange(filters.startDate, filters.endDate);
-                query = query
-                    .gte('created_at', startUTC)
-                    .lte('created_at', endUTC);
+        }
+        
+        // 处理日期范围
+        if (filters?.startDate && filters?.endDate) {
+            const { startUTC, endUTC } = generateDateRange(filters.startDate, filters.endDate);
+            query = query
+                .gte('created_at', startUTC)
+                .lte('created_at', endUTC);
                 console.log('添加日期范围:', startUTC, '到', endUTC)
-            }
-            
-            // 添加回复状态过滤
-            if (filters?.status === 'replied') {
+        }
+        
+        // 添加回复状态过滤
+        if (filters?.status === 'replied') {
                 // 查询已完成并已回复的作业
-                query = query.not('replies', 'is', null)
+            query = query.not('replies', 'is', null)
                 console.log('过滤状态: 已回复')
-            } else if (filters?.status === 'pending') {
+        } else if (filters?.status === 'pending') {
                 // 查询待回复的作业
-                query = query.not('replies', 'is', null)
+            query = query.not('replies', 'is', null)
                 console.log('过滤状态: 待回复')
-            }
+        }
 
-            // 排序和分页
-            const { data, error, count } = await query
-                .order('created_at', { ascending: false })
-                .range((page - 1) * pageSize, page * pageSize - 1)
+        // 排序和分页
+        const { data, error, count } = await query
+            .order('created_at', { ascending: false })
+            .range((page - 1) * pageSize, page * pageSize - 1)
 
             if (error) {
                 console.error('查询个人作业失败:', error)

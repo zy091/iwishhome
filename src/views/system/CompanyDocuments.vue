@@ -139,7 +139,7 @@
                                 <span class="attachment-name">{{ selectedDocument.attachment_name }}</span>
                                 <el-button type="primary" size="small" @click="viewAttachmentDialog">查看附件</el-button>
                             </div>
-                        </div>
+                                </div>
                     </div>
                 </div>
                 <template #footer>
@@ -429,7 +429,7 @@ const viewAttachmentDialog = () => {
         selectedAttachmentUrl.value = selectedDocument.value.attachment_url
         selectedAttachmentType.value = getFileTypeFromName(selectedDocument.value.attachment_name)
         attachmentDialogVisible.value = true
-    }
+                }
 }
 
 // 根据文件名获取文件类型

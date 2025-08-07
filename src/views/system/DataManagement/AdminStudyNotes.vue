@@ -476,6 +476,7 @@ const submitReply = async () => {
             {
                 admin_reply: adminReply.value,
                 admin_id: userData.user.id,
+                admin_name: userStore.user?.full_name,
                 replied_at: new Date().toISOString()
             }
         )
@@ -485,6 +486,8 @@ const submitReply = async () => {
         if (selectedNote.value) {
             selectedNote.value.admin_reply = adminReply.value
             selectedNote.value.admin_id = userData.user.id
+            selectedNote.value.admin_name = userStore.user?.full_name
+
             selectedNote.value.replied_at = new Date().toISOString()
         }
 

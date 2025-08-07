@@ -233,7 +233,7 @@ export const studyNoteService = {
         if (error) throw error;
 
         // 转换数据格式以匹配现有结构
-        let notesWithProfiles = (data || []).map(note => ({
+        const notesWithProfiles = (data || []).map(note => ({
             ...note,
             profile: {
                 user_id: note.user_id,
@@ -241,28 +241,6 @@ export const studyNoteService = {
                 email: note.email
             }
         }));
-
-        // 为有回复的笔记获取回复人名字
-        const notesWithReplies = notesWithProfiles.filter(note => note.admin_id);
-        if (notesWithReplies.length > 0) {
-            const adminIds = [...new Set(notesWithReplies.map(note => note.admin_id))];
-            
-            // 获取回复人的名字
-            const { data: adminProfiles, error: adminError } = await supabase
-                .from('user_profiles')
-                .select('user_id, full_name')
-                .in('user_id', adminIds);
-
-            if (!adminError && adminProfiles) {
-                const adminNameMap = new Map(adminProfiles.map(profile => [profile.user_id, profile.full_name]));
-                
-                // 更新笔记数据，添加回复人名字
-                notesWithProfiles = notesWithProfiles.map(note => ({
-                    ...note,
-                    admin_name: note.admin_id ? adminNameMap.get(note.admin_id) || '未知用户' : undefined
-                }));
-            }
-        }
 
         return {
             data: notesWithProfiles,
@@ -273,7 +251,7 @@ export const studyNoteService = {
     },
 
     // 更新笔记（包含管理员回复）
-    async updateNoteWithReply(id: string, replyData: { admin_reply: string; admin_id: string; replied_at: string }): Promise<StudyNote> {
+    async updateNoteWithReply(id: string, replyData: { admin_reply: string; admin_id: string; admin_name?: string; replied_at: string }): Promise<StudyNote> {
         try {
 
             const { data, error } = await supabase
@@ -281,6 +259,7 @@ export const studyNoteService = {
                 .update({
                     admin_reply: replyData.admin_reply,
                     admin_id: replyData.admin_id,
+                    admin_name: replyData.admin_name,
                     replied_at: replyData.replied_at,
                     updated_at: new Date().toISOString()
                 })

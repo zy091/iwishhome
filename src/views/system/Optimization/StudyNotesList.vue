@@ -1,11 +1,14 @@
 <template>
-    <div class="study-notes">
+    <div class="study-notes-list">
         <div class="study-body">
             <div class="study-header">
-                <div>共计{{ notes.length }}篇笔记</div>
-                <el-button type="primary" @click="showCreateDialog">新建笔记</el-button>
+                <div class="header-left">
+                    <div class="header-title">学习心得列表</div>
+                    <div class="header-stats">共计 {{ notes.length }} 篇心得</div>
+                </div>
+                <el-button type="primary" @click="refreshList">刷新</el-button>
             </div>
-            <el-table v-loading="loading" :data="notes"  height="300px">
+            <el-table v-loading="loading" :data="notes" v-if="notes.length > 0">
                 <el-table-column prop="title" label="标题" />
                 <el-table-column label="状态" width="100">
                     <template #default="{ row }">
@@ -16,12 +19,7 @@
                 </el-table-column>
                 <el-table-column label="附件" width="80">
                     <template #default="{ row }">
-                        <el-button 
-                            v-if="row.attachment_url" 
-                            type="primary" 
-                            link 
-                            @click="viewAttachment(row)"
-                        >
+                        <el-button v-if="row.attachment_url" type="primary" link @click="viewAttachment(row)">
                             <el-icon color="#409EFF" size="18">
                                 <paperclip />
                             </el-icon>
@@ -41,14 +39,29 @@
                 </el-table-column>
                 <el-table-column label="操作" width="160">
                     <template #default="{ row }">
-                        <el-button type="primary"  @click="showViewDialog(row)">查看</el-button>
-                        <el-button type="warning"  @click="showEditDialog(row)" :disabled="!!row.admin_reply">编辑</el-button>
+                        <el-button-group>
+                            <el-button type="primary" @click="showViewDialog(row)">查看</el-button>
+                            <el-button type="warning" @click="showEditDialog(row)"
+                                :disabled="!!row.admin_reply">编辑</el-button>
+                        </el-button-group>
                     </template>
                 </el-table-column>
             </el-table>
+
+            <!-- 空状态显示 -->
+            <div v-else-if="!loading" class="empty-state">
+                <div class="empty-icon">
+                    <el-icon size="60" color="#c0c4cc">
+                        <Document />
+                    </el-icon>
+                </div>
+                <div class="empty-text">暂无学习心得</div>
+            </div>
         </div>
+
         <!-- 创建/编辑/查看对话框 -->
-        <el-dialog :title="getDialogTitle()" v-model="dialogVisible" width="40%" style="min-width: 400px;">
+        <el-dialog :title="getDialogTitle()" v-model="dialogVisible" width="60%" :close-on-click-modal="false"
+            top="10vh" class="note-detail-dialog">
             <!-- 编辑模式 -->
             <el-form :model="form" ref="formRef" :rules="rules" v-if="!isViewing">
                 <el-form-item label="标题" prop="title">
@@ -58,16 +71,8 @@
                     <el-input v-model="form.content" type="textarea" :rows="6" />
                 </el-form-item>
                 <el-form-item label="附件" v-if="!isEditing">
-                    <el-upload
-                        class="upload-container"
-                        drag
-                        :auto-upload="true"
-                        :http-request="customUploadRequest"
-                        :on-remove="handleRemoveFile"
-                        :before-upload="beforeUpload"
-                        :limit="1"
-                        :file-list="fileList"
-                    >
+                    <el-upload class="upload-container" drag :auto-upload="true" :http-request="customUploadRequest"
+                        :on-remove="handleRemoveFile" :before-upload="beforeUpload" :limit="1" :file-list="fileList">
                         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
                         <div class="el-upload__text">
                             将文件拖到此处，或<em>点击上传</em>
@@ -90,50 +95,64 @@
                     </div>
                 </el-form-item>
             </el-form>
-            
+
             <!-- 查看模式 -->
-            <div v-else class="note-view">
-                <h3 class="note-title">{{ currentNote.title }}</h3>
-                <div class="note-meta">
-                    <p>提交于: {{ new Date(currentNote.created_at).toLocaleString() }}</p>
-                    <p v-if="currentNote.updated_at && currentNote.updated_at !== currentNote.created_at">
-                        修改于: {{ new Date(currentNote.updated_at).toLocaleString() }}
-                    </p>
-                </div>
-                
-                <div class="note-content-section">
-                    <div class="section-title">我的内容:</div>
-                    <div class="note-content">{{ currentNote.content }}</div>
-                </div>
-                
-                <!-- 附件信息 -->
-                <div class="note-attachment-section" v-if="currentNote.attachment_url">
-                    <div class="section-title">附件:</div>
-                    <div class="attachment-box">
-                        <el-icon color="#409EFF" size="16"><paperclip /></el-icon>
-                        <span class="attachment-name">{{ currentNote.attachment_name }}</span>
-                        <el-button type="primary" size="small" @click="viewAttachmentDialog">查看附件</el-button>
-                    </div>
-                </div>
-                
-                <!-- 管理员回复 -->
-                <div class="note-reply-section" v-if="currentNote.admin_reply">
-                    <div class="section-title">管理员回复:</div>
-                    <div class="admin-reply">
-                        <div class="reply-header">
-                            <span class="reply-author">{{ currentNote.admin_name || '未知' }}:</span>
+            <div v-else class="dialog-content">
+                <div class="note-details">
+                    <!-- 标题区 -->
+                    <div class="note-header">
+                        <h2 class="note-title">{{ currentNote.title || '无标题' }}</h2>
+                        <div class="note-meta">
+                            <span class="meta-item">
+                                <i class="el-icon-time"></i>
+                                <span>提交于: {{ new Date(currentNote.created_at).toLocaleString() }}</span>
+                            </span>
+                            <span class="meta-item"
+                                v-if="currentNote.updated_at && currentNote.updated_at !== currentNote.created_at">
+                                <i class="el-icon-edit"></i>
+                                <span>修改于: {{ new Date(currentNote.updated_at).toLocaleString() }}</span>
+                            </span>
                         </div>
-                        <p class="reply-content">{{ currentNote.admin_reply }}</p>
-                        <p class="reply-time" v-if="currentNote.replied_at">
-                            回复于: {{ new Date(currentNote.replied_at).toLocaleString() }}
-                        </p>
+                    </div>
+
+                    <!-- 内容区 -->
+                    <div class="note-section">
+                        <div class="section-title">我的内容</div>
+                        <div class="note-content">{{ currentNote.content || '无内容' }}</div>
+                    </div>
+
+                    <!-- 附件区 -->
+                    <div v-if="currentNote.attachment_url" class="note-section">
+                        <div class="section-title">附件</div>
+                        <div class="attachment-box">
+                            <span class="attachment-name">{{ currentNote.attachment_name }}</span>
+                            <el-button type="primary" size="small" @click="viewAttachmentDialog">
+                                {{ isImageAttachment ? '预览图片' : isPdfAttachment ? '预览PDF' : '查看附件' }}
+                            </el-button>
+                        </div>
+                    </div>
+
+                    <!-- 管理员回复区 -->
+                    <div v-if="currentNote.admin_reply" class="note-section">
+                        <div class="section-title">管理员回复</div>
+                        <div class="previous-reply">
+                            <div class="reply-header">
+                                <span class="reply-author">{{ currentNote.admin_name || '未知' }}:</span>
+                            </div>
+                            <div class="admin-reply-content">{{ currentNote.admin_reply }}</div>
+                            <div class="reply-timestamp" v-if="currentNote.replied_at">
+                                回复于： {{ new Date(currentNote.replied_at).toLocaleString() }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            
+
             <template #footer>
-                <el-button @click="dialogVisible = false">关闭</el-button>
-                <el-button v-if="!isViewing" type="primary" @click="handleSubmit">确定</el-button>
+                <span class="dialog-footer">
+                    <el-button @click="dialogVisible = false">关闭</el-button>
+                    <el-button v-if="!isViewing" type="primary" @click="handleSubmit">确定</el-button>
+                </span>
             </template>
         </el-dialog>
 
@@ -159,6 +178,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, ElLoading, ElForm } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import type { UploadFile, UploadProps, UploadRequestOptions } from 'element-plus'
@@ -166,8 +186,9 @@ import { UploadFilled } from '@element-plus/icons-vue'
 import { studyNoteService } from '@/stores/studyNoteService'
 import type { StudyNote } from '@/stores/studyNote'
 import { supabase } from '@/lib/supabaseClient'
-import { Paperclip } from '@element-plus/icons-vue'
+import { Paperclip, Document } from '@element-plus/icons-vue'
 
+const router = useRouter()
 const loading = ref(false)
 const notes = ref<StudyNote[]>([])
 const dialogVisible = ref(false)
@@ -210,9 +231,9 @@ const isPdfAttachment = computed(() => {
 
 // 获取对话框标题
 const getDialogTitle = () => {
-    if (isViewing.value) return '查看笔记'
-    if (isEditing.value) return '编辑笔记'
-    return '新建笔记'
+    if (isViewing.value) return '查看心得'
+    if (isEditing.value) return '编辑心得'
+    return '新建心得'
 }
 
 // 获取笔记列表
@@ -221,20 +242,10 @@ const fetchNotes = async () => {
     try {
         notes.value = await studyNoteService.getNotes()
     } catch (error) {
-        ElMessage.error('获取笔记列表失败')
+        ElMessage.error('获取心得列表失败')
     } finally {
         loading.value = false
     }
-}
-
-// 显示创建对话框
-const showCreateDialog = () => {
-    isEditing.value = false
-    isViewing.value = false
-    form.value = { title: '', content: '' }
-    fileList.value = []
-    attachmentInfo.value = null
-    dialogVisible.value = true
 }
 
 // 显示查看对话框
@@ -249,10 +260,10 @@ const showViewDialog = (note: StudyNote) => {
 // 显示编辑对话框
 const showEditDialog = (note: StudyNote) => {
     if (note.admin_reply) {
-        ElMessage.warning('已回复的笔记不能修改')
+        ElMessage.warning('已回复的心得不能修改')
         return
     }
-    
+
     isEditing.value = true
     isViewing.value = false
     currentId.value = note.id
@@ -273,7 +284,7 @@ const viewAttachment = (note: StudyNote) => {
         selectedAttachmentType.value = note.attachment_type || ''
         attachmentDialogVisible.value = true
     } else {
-        ElMessage.warning('该笔记没有附件')
+        ElMessage.warning('该心得没有附件')
     }
 }
 
@@ -309,24 +320,24 @@ const beforeUpload = (file: File) => {
 // 自定义上传请求处理
 const customUploadRequest = async (options: UploadRequestOptions) => {
     const { file, onSuccess, onError } = options
-    
+
     if (!file) {
         onError?.(new Error('文件不存在') as any)
         return
     }
-    
+
     const loadingInstance = ElLoading.service({
         text: '正在上传文件...',
         background: 'rgba(0, 0, 0, 0.7)'
     })
-    
+
     try {
         // 生成唯一文件名
         const fileObj = file as File
         const fileExt = fileObj.name.split('.').pop()
         const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
         const filePath = `study_notes/${fileName}`
-        
+
         // 上传到supabase存储
         const { data, error } = await supabase.storage
             .from('attachments')
@@ -334,21 +345,21 @@ const customUploadRequest = async (options: UploadRequestOptions) => {
                 cacheControl: '3600',
                 upsert: false
             })
-            
+
         if (error) throw error
-        
+
         // 获取公共URL
         const { data: { publicUrl } } = supabase.storage
             .from('attachments')
             .getPublicUrl(data.path)
-        
+
         // 保存附件信息
         attachmentInfo.value = {
             url: publicUrl,
             name: fileObj.name,
             type: fileObj.type
         }
-        
+
         // 上传成功回调
         onSuccess?.(attachmentInfo.value as any)
         ElMessage.success('文件上传成功')
@@ -359,12 +370,6 @@ const customUploadRequest = async (options: UploadRequestOptions) => {
     } finally {
         loadingInstance.close()
     }
-}
-
-// 上传成功处理 - 保留这个函数用于兼容性，但实际在customUploadRequest中处理
-const handleUploadSuccess = (response: any, file: UploadFile) => {
-    uploadLoading.value = false
-    ElMessage.success('文件上传成功')
 }
 
 // 移除文件处理
@@ -404,21 +409,8 @@ const handleSubmit = async () => {
     })
 }
 
-// 删除笔记
-const handleDelete = async (note: StudyNote) => {
-    try {
-        await ElMessageBox.confirm('确定要删除这条笔记吗？', '提示', {
-            type: 'warning'
-        })
-
-        await studyNoteService.deleteNote(note.id)
-        ElMessage.success('删除成功')
-        fetchNotes()
-    } catch (error) {
-        if (error !== 'cancel') {
-            ElMessage.error('删除失败')
-        }
-    }
+const refreshList = () => {
+    fetchNotes()
 }
 
 onMounted(() => {
@@ -427,111 +419,41 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* .study-notes {
-    padding:10px 20px;
-} */
+.study-body {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px 0;
+}
 
-.card-header {
+.study-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.card-header h2 {
-    margin: 0;
-}
-
-.study-header{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.note-view {
-    padding: 10px 0;
-}
-
-.note-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.note-meta {
-    color: #909399;
-    font-size: 14px;
     margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e4e7ed;
 }
 
-.note-meta p {
-    margin: 5px 0;
+.header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.section-title {
-    font-weight: bold;
-    margin-bottom: 8px;
+.header-title {
     font-size: 16px;
-}
-
-.note-content-section, .note-reply-section, .note-attachment-section {
-    margin-bottom: 20px;
-}
-
-.note-content {
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-    min-height: 80px;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-.admin-reply {
-    padding: 15px;
-    background-color: #ecf8ff;
-    border-radius: 4px;
-    border-left: 4px solid #409EFF;
-}
-
-.reply-header {
-    margin-bottom: 8px;
-}
-
-.reply-author {
+    font-weight: 600;
     color: #303133;
-    font-size: 14px;
-    font-weight: 500;
 }
 
-.reply-content {
-    margin-bottom: 10px;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-.reply-time {
-    text-align: right;
-    color: #909399;
+.header-stats {
     font-size: 12px;
-    margin-bottom: 0;
+    color: #909399;
 }
 
-.attachment-box {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    background-color: #f5f7fa;
-    border-radius: 4px;
-}
 
-.attachment-name {
-    flex: 1;
-    margin-right: 10px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
 
 .upload-container {
     width: 100%;
@@ -585,5 +507,192 @@ onMounted(() => {
 .attachment-download {
     text-align: center;
     padding: 30px;
+}
+
+/* 空状态样式 */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #909399;
+}
+
+.empty-icon {
+    margin-bottom: 20px;
+}
+
+.empty-text {
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #606266;
+}
+
+.empty-action {
+    margin-top: 20px;
+}
+
+/* 表格样式 */
+:deep(.el-table) {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+:deep(.el-table__header) {
+    background-color: #f5f7fa;
+}
+
+:deep(.el-table th) {
+    background-color: #f5f7fa;
+    color: #606266;
+    font-weight: 600;
+}
+
+/* 对话框样式 - 参考AdminStudyNotes */
+.dialog-content {
+    padding: 20px;
+}
+
+.note-details {
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+.note-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 15px;
+}
+
+.note-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #409EFF;
+    margin-bottom: 10px;
+}
+
+.note-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    color: #909399;
+    font-size: 14px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.note-section {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.section-title {
+    font-weight: bold;
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: #606266;
+    position: relative;
+    padding-left: 12px;
+}
+
+.section-title::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 16px;
+    background-color: #409EFF;
+    border-radius: 2px;
+}
+
+.note-content {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    min-height: 100px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.attachment-box {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background-color: #f5f7fa;
+    border-radius: 4px;
+    border: 1px dashed #dcdfe6;
+}
+
+.attachment-name {
+    flex: 1;
+    margin-right: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.previous-reply {
+    padding: 15px;
+    background-color: #ecf8ff;
+    border-radius: 4px;
+    border-left: 4px solid #409EFF;
+}
+
+.reply-header {
+    margin-bottom: 8px;
+}
+
+.reply-author {
+    color: #303133;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.admin-reply-content {
+    margin-bottom: 8px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.reply-timestamp {
+    text-align: right;
+    color: #909399;
+    font-size: 12px;
+    margin-bottom: 0;
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.note-detail-dialog :deep(.el-dialog__body) {
+    padding: 20px 25px;
+}
+
+.note-detail-dialog :deep(.el-dialog__header) {
+    padding: 15px 25px;
+    margin-right: 0;
+    background-color: #f5f7fa;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.note-detail-dialog :deep(.el-dialog__title) {
+    font-size: 18px;
+    font-weight: bold;
+    color: #303133;
+}
+
+.note-detail-dialog :deep(.el-dialog__footer) {
+    padding: 15px 25px;
+    border-top: 1px solid #eaeaea;
 }
 </style>

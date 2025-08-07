@@ -200,7 +200,7 @@
                             {{ getPreviewButtonText() }}
                         </el-button>
                     </div>
-                </div>
+                    </div>
             </div>
             <template #footer>
                 <el-button @click="dialogVisible = false">关闭</el-button>
@@ -231,7 +231,7 @@
                 <template v-else-if="isVideoMaterial">
                     <div class="video-preview">
                         <video :src="materialContent" controls class="material-video"></video>
-                    </div>
+                </div>
                 </template>
                 <template v-else-if="isTextMaterial">
                     <div class="text-preview">
