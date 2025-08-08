@@ -2,7 +2,7 @@
     <div class="layout">
         <Breadbcrum :breadbcrum="breadbcrum" />
         <div class="layout-title">
-            <h1 class="title">反馈中心</h1>
+            <h1 class="title">FAQ中心</h1>
             <div class="status-tabs" >
                 <el-tabs class="demo-tabs" v-model="activeStatus" @tab-change="handleStatusChange">
                     <el-tab-pane :name="'all'" label="全部反馈" />
@@ -65,6 +65,14 @@
                             </el-tag>
                         </template>
                     </el-table-column>
+                    <el-table-column prop="reply_count" label="回复数" width="80">
+                        <template #default="{ row }">
+                            <el-tag v-if="row.reply_count > 0" type="info" size="small">
+                                {{ row.reply_count }}
+                            </el-tag>
+                            <span v-else style="color: #909399;">0</span>
+                        </template>
+                    </el-table-column>
                     <el-table-column v-if="hasAdminPerm" prop="is_show" label="展示状态" width="100">
                         <template #default="{ row }">
                             <el-tag :type="row.is_show ? 'success' : 'danger'" size="large">
@@ -81,7 +89,7 @@
                         <template #default="{ row }">
                             <el-button-group>
                                 <el-button type="primary" @click="showDetailDialog(row)">查看</el-button>
-                                <el-button type="danger" @click="handleDelete(row)" v-if="hasAdminPerm || (row.user_id === currentUserId && activeStatus === 'my_feedback')"  :disabled="!hasAdminPerm && row.user_id == currentUserId && row.replied_at">删除</el-button>
+                                <el-button type="danger" @click="handleDelete(row)" v-if="hasAdminPerm || (row.user_id === currentUserId && activeStatus === 'my_feedback')"  :disabled="!hasAdminPerm && row.user_id == currentUserId && row.reply_count > 0">删除</el-button>
                             </el-button-group>
                         </template>
                     </el-table-column>
@@ -129,20 +137,22 @@
                         </div>
 
                         <!-- 回复历史区 -->
-                        <div v-if="selectedFeedback?.admin_reply" class="feedback-section">
-                            <div class="section-title">历史回复</div>
-                            <div class="previous-reply">
-                                <div class="admin-reply-content">{{ selectedFeedback.admin_reply }}</div>
-                                <p class="reply-time" v-if="selectedFeedback.replied_at">
-                                    回复于: {{ new Date(selectedFeedback.replied_at).toLocaleString() }}
-                                    <span v-if="selectedFeedback.admin_name"> ({{ selectedFeedback.admin_name }})</span>
-                                </p>
+                        <div v-if="feedbackReplies.length > 0" class="feedback-section">
+                            <div class="section-title">回复历史 ({{ feedbackReplies.length }}条)</div>
+                            <div class="replies-list">
+                                <div v-for="reply in feedbackReplies" :key="reply.id" class="reply-item">
+                                    <div class="reply-header">
+                                        <span class="reply-author">{{ reply.full_name }}</span>
+                                        <span class="reply-time">{{ new Date(reply.created_at).toLocaleString() }}</span>
+                                    </div>
+                                    <div class="reply-content">{{ reply.content }}</div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- 回复表单区 -->
                         <div class="feedback-section" v-if="hasAdminPerm">
-                            <div class="section-title">{{ selectedFeedback?.admin_reply ? '更新' : '添加回复' }}</div>
+                            <div class="section-title">添加回复</div>
                             <el-input type="textarea" v-model="adminReply" :rows="4" placeholder="请输入您的回复内容..."
                                 class="reply-input"></el-input>
                             <div class="status-selector" style="margin-top: 15px;">
@@ -163,14 +173,14 @@
                     <span class="dialog-footer">
                         <el-button @click="detailDialogVisible = false">关闭</el-button>
                         <el-button type="primary" @click="submitReply" :loading="submitting" v-if="hasAdminPerm">
-                            {{ selectedFeedback?.admin_reply ? '更新' : '提交回复' }}
+                            提交回复
                         </el-button>
                     </span>
                 </template>
             </el-dialog>
 
             <!-- 创建反馈对话框 -->
-            <el-dialog title="创建反馈" v-model="createDialogVisible" width="50%" :close-on-click-modal="false">
+            <el-dialog title="创建反馈" v-model="createDialogVisible" width="40%" :close-on-click-modal="false">
                 <el-form :model="newFeedback" :rules="feedbackRules" ref="feedbackForm" label-width="80px">
                     <el-form-item label="标题" prop="title">
                         <el-input v-model="newFeedback.title" placeholder="请输入反馈标题"></el-input>
@@ -202,7 +212,7 @@ import { ref, onMounted, computed, reactive } from 'vue'
 import { Search, User, Message, Calendar, Collection } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { feedbackService, hasAdminPermission } from '@/stores/feedbackService'
-import type { FeedbackWithUser } from '@/stores/feedbackService'
+import type { FeedbackWithUser, FeedbackReplyWithUser } from '@/stores/feedbackService'
 import { useUserStore } from '@/stores/user'
 import Breadbcrum from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
@@ -210,7 +220,7 @@ import type { PaginationType } from '@/types/pagination'
 
 const breadbcrum = reactive([
     {
-        name: '反馈中心',
+        name: 'FAQ中心',
         path: '/system/feedback-center'
     }
 ])
@@ -238,6 +248,8 @@ const selectedPlatform = ref('')
 const selectedFeedbacks = ref<FeedbackWithUser[]>([])
 const feedbackForm = ref()
 const showStatus = ref('')
+const feedbackReplies = ref<FeedbackReplyWithUser[]>([])
+const loadingReplies = ref(false)
 const newFeedback = reactive({
     title: '',
     content: '',
@@ -255,16 +267,20 @@ const feedbackRules = {
     ],
     content: [
         { required: true, message: '请输入反馈内容', trigger: 'blur' },
-        { min: 8, max: 2000, message: '内容长度应在8到2000个字符之间', trigger: 'blur' }
+        { min: 4, max: 2000, message: '内容长度应在4到2000个字符之间', trigger: 'blur' }
     ]
 }
 
 const platformOptions = [
-    { label: '系统反馈', value: 'system' },
     { label: 'Google', value: 'google' },
-    { label: 'Facebook', value: 'facebook' },
-    { label: 'Instagram', value: 'instagram' },
-    { label: 'TikTok', value: 'tiktok' },
+    { label: 'Meta', value: 'meta' },
+    { label: 'Criteo', value: 'criteo' },
+    { label: 'Bing', value: 'bing' },
+    { label: 'GMC', value: 'gmc' },
+    { label: 'GA4', value: 'ga4' },
+    { label: '插件应用', value: 'plugin' },
+    { label: 'Shopify后台', value: 'shopify' },
+    { label: '系统反馈', value: 'system' },
     { label: '其他', value: 'other' }
 ]
 
@@ -307,11 +323,16 @@ const shortcuts = [
 // 平台类型标签样式
 const getPlatformType = (platform: string) => {
     switch (platform) {
-        case 'system': return 'primary'
         case 'google': return 'success'
-        case 'facebook': return 'info'
-        case 'instagram': return 'warning'
-        case 'tiktok': return 'danger'
+        case 'meta': return 'info'
+        case 'criteo': return 'warning'
+        case 'bing': return 'primary'
+        case 'gmc': return 'danger'
+        case 'ga4': return 'success'
+        case 'plugin': return 'warning'
+        case 'shopify': return 'info'
+        case 'system': return 'primary'
+        case 'other': return 'info'
         default: return 'info'
     }
 }
@@ -319,11 +340,15 @@ const getPlatformType = (platform: string) => {
 // 平台标签文本
 const getPlatformLabel = (platform: string) => {
     switch (platform) {
-        case 'system': return '系统反馈'
         case 'google': return 'Google'
-        case 'facebook': return 'Facebook'
-        case 'instagram': return 'Instagram'
-        case 'tiktok': return 'TikTok'
+        case 'meta': return 'Meta'
+        case 'criteo': return 'Criteo'
+        case 'bing': return 'Bing'
+        case 'gmc': return 'GMC'
+        case 'ga4': return 'GA4'
+        case 'plugin': return '插件应用'
+        case 'shopify': return 'Shopify后台'
+        case 'system': return '系统反馈'
         case 'other': return '其他'
         default: return platform || '未知'
     }
@@ -399,12 +424,23 @@ const searchFeedback = async () => {
 }
 
 // 显示详情对话框
-const showDetailDialog = (feedback: FeedbackWithUser) => {
+const showDetailDialog = async (feedback: FeedbackWithUser) => {
     detailDialogVisible.value = true
     selectedFeedback.value = feedback
     adminReply.value = ''
     replyStatus.value = feedback.status || 'resolved'
-    isShow.value = feedback.is_show 
+    isShow.value = feedback.is_show
+    
+    // 加载回复列表
+    loadingReplies.value = true
+    try {
+        feedbackReplies.value = await feedbackService.getFeedbackReplies(feedback.id)
+    } catch (error) {
+        console.error('获取回复失败:', error)
+        ElMessage.error('获取回复失败')
+    } finally {
+        loadingReplies.value = false
+    }
 }
 
 // 显示创建对话框
@@ -453,39 +489,29 @@ const createFeedback = async () => {
 const submitReply = async () => {
     if (!selectedFeedback.value || !hasAdminPerm.value) return
     
+    if (!adminReply.value.trim()) {
+        ElMessage.warning('请输入回复内容')
+        return
+    }
+    
     submitting.value = true
     try {
-        const updateData: {
-            admin_reply?: string;
-            status: string;
-            is_show: boolean;
-        } = {
+        await feedbackService.submitReply(selectedFeedback.value.id, {
+            content: adminReply.value.trim(),
             status: replyStatus.value,
             is_show: isShow.value
-        }
+        })
         
-        // Only include admin_reply if it's not empty
-        if (adminReply.value.trim()) {
-            updateData.admin_reply = adminReply.value
-        }
+        ElMessage.success('回复提交成功')
         
-        await feedbackService.submitReply(selectedFeedback.value.id, updateData)
+        // 重新加载回复列表
+        feedbackReplies.value = await feedbackService.getFeedbackReplies(selectedFeedback.value.id)
         
-        ElMessage.success('更新成功')
-        // 更新本地数据
-        if (selectedFeedback.value) {
-            if (adminReply.value.trim()) {
-                selectedFeedback.value.admin_reply = adminReply.value
-                selectedFeedback.value.admin_id = currentUserId.value
-                selectedFeedback.value.replied_at = new Date().toISOString()
-            }
-            selectedFeedback.value.status = replyStatus.value
-            selectedFeedback.value.is_show = isShow.value
-        }
+        // 清空回复输入框
+        adminReply.value = ''
         
-        // 重新加载数据
+        // 重新加载反馈列表以更新状态
         searchFeedback()
-        detailDialogVisible.value = false
     } catch (error) {
         ElMessage.error('提交失败')
         console.error('提交失败:', error)
@@ -507,8 +533,8 @@ const handleDelete = async (feedback: FeedbackWithUser) => {
             await feedbackService.deleteFeedback(feedback.id)
             // 管理员进行真删除
         } else {
-            if(feedback.replied_at){
-                ElMessage.error('反馈已处理，不能删除')
+            if(feedback.reply_count > 0){
+                ElMessage.error('反馈已有回复，不能删除')
             }else{
                 // 普通用户进行伪删除
                 await feedbackService.hideFeedback(feedback.id)
@@ -689,6 +715,38 @@ onMounted(() => {
     color: #909399;
     font-size: 12px;
     margin-bottom: 0;
+}
+
+.replies-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.reply-item {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    border-left: 4px solid #409EFF;
+}
+
+.reply-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.reply-author {
+    font-weight: bold;
+    color: #409EFF;
+    font-size: 14px;
+}
+
+.reply-content {
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
 }
 
 .reply-input {

@@ -90,7 +90,9 @@ const breadbcrum = reactive([
 
 /* 标题样式 */
 .title {
-    font-size: 24px;
+    /* font-size: 24px;
+    
+    */
     font-weight: 600;
     color: #303133;
     margin: 0;

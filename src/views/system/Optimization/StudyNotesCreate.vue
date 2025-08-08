@@ -1,10 +1,10 @@
 <template>
-    <div class="study-notes-create">
-        <div class="create-header">
-            <h2>添加学习心得</h2>
-        </div>
-        
-        <el-form :model="form" ref="formRef" :rules="rules" label-width="100px" class="create-form">
+    <el-card style="min-height: 400px;margin-top: 30px;">
+        <template #header>
+            <div class="subtitle">添加学习心得</div>
+        </template>
+        <el-form :model="form" ref="formRef" :rules="rules" label-width="80px"
+            style="width: 100%;max-width: 800px;margin-top:20px;">
             <el-form-item label="标题" prop="title">
                 <el-input v-model="form.title" placeholder="请输入心得标题" />
                 <div class="form-tip">请简要描述您的学习心得主题</div>
@@ -45,10 +45,9 @@
             
             <el-form-item>
                 <el-button type="primary" @click="handleSubmit" :loading="submitting">提交</el-button>
-                <el-button @click="goBack">返回</el-button>
             </el-form-item>
         </el-form>
-    </div>
+    </el-card>
 </template>
 
 <script setup lang="ts">
@@ -178,62 +177,10 @@ const handleSubmit = async () => {
     })
 }
 
-// 返回列表页
-const goBack = () => {
-    router.push('/system/study-notes/list')
-}
+
 </script>
 
 <style scoped>
-.study-notes-create {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.create-header {
-    margin-bottom: 30px;
-}
-
-.create-header h2 {
-    color: #303133;
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.create-form {
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-}
-
-/* 参考日常作业的表单样式 */
-:deep(.el-form-item__label) {
-    font-weight: 500;
-    color: #606266;
-}
-
-:deep(.el-input__wrapper) {
-    border-radius: 4px;
-}
-
-:deep(.el-textarea__inner) {
-    border-radius: 4px;
-}
-
-:deep(.el-button) {
-    border-radius: 4px;
-}
-
-.form-tip {
-    font-size: 12px;
-    color: #909399;
-    margin-top: 4px;
-    line-height: 1.4;
-}
-
 .upload-container {
     width: 100%;
 }
@@ -263,5 +210,12 @@ const goBack = () => {
 :deep(.el-upload__text em) {
     color: #409EFF;
     font-style: normal;
+}
+
+.form-tip {
+    font-size: 12px;
+    color: #909399;
+    margin-top: 4px;
+    line-height: 1.4;
 }
 </style> 

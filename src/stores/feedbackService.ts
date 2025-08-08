@@ -10,9 +10,6 @@ export interface Feedback {
     content: string
     platform: string
     status: string
-    admin_reply: string | null
-    admin_id: string | null
-    replied_at: string | null
     created_at: string
     updated_at: string
     is_show: boolean
@@ -21,8 +18,24 @@ export interface Feedback {
 export interface FeedbackWithUser extends Feedback {
     full_name: string
     email: string
-    admin_name: string | null
-    admin_email: string | null
+    latest_reply_content: string | null
+    latest_reply_time: string | null
+    latest_reply_user_name: string | null
+    reply_count: number
+}
+
+export interface FeedbackReply {
+    id: string
+    feedback_id: string
+    user_id: string
+    content: string
+    created_at: string
+    updated_at: string
+}
+
+export interface FeedbackReplyWithUser extends FeedbackReply {
+    full_name: string
+    email: string
 }
 
 export interface CreateFeedback {
@@ -278,12 +291,28 @@ export const feedbackService = {
         }
     },
     
-    // Submit admin reply
-    async submitReply(id: string, replyData: { 
-        admin_reply?: string
+    // Get feedback replies
+    async getFeedbackReplies(feedbackId: string): Promise<FeedbackReplyWithUser[]> {
+        const { data, error } = await supabase
+            .from('feedback_replies_with_users')
+            .select('*')
+            .eq('feedback_id', feedbackId)
+            .order('created_at', { ascending: true })
+        
+        if (error) {
+            console.error('获取回复失败:', error)
+            throw new Error('获取回复失败')
+        }
+        
+        return data as FeedbackReplyWithUser[]
+    },
+    
+    // Submit reply
+    async submitReply(feedbackId: string, replyData: { 
+        content: string
         status?: string
         is_show?: boolean
-    }): Promise<Feedback> {
+    }): Promise<FeedbackReply> {
         const userStore = useUserStore()
         const currentUser = userStore.getUser()
         
@@ -295,7 +324,7 @@ export const feedbackService = {
         const { data: checkData, error: checkError } = await supabase
             .from('feedback')
             .select('id')
-            .eq('id', id)
+            .eq('id', feedbackId)
             .single()
         
         if (checkError || !checkData) {
@@ -303,33 +332,40 @@ export const feedbackService = {
             throw new Error('反馈不存在')
         }
         
-        // Prepare update data
-        const updateData: any = {
-            admin_id: currentUser.user_id,
-            status: replyData.status || 'resolved',
-            is_show: replyData.is_show
-        }
-        
-        // Only update admin_reply and replied_at if admin_reply is provided
-        if (replyData.admin_reply) {
-            updateData.admin_reply = replyData.admin_reply
-            updateData.replied_at = new Date().toISOString()
-        }
-        
-        // Submit reply
-        const { data, error } = await supabase
-            .from('feedback')
-            .update(updateData)
-            .eq('id', id)
+        // Create reply
+        const { data: replyData_result, error: replyError } = await supabase
+            .from('feedback_replies')
+            .insert([{
+                feedback_id: feedbackId,
+                user_id: currentUser.user_id,
+                content: replyData.content
+            }])
             .select()
             .single()
         
-        if (error) {
-            console.error('提交更新失败:', error)
-            throw new Error('提交更新失败')
+        if (replyError) {
+            console.error('创建回复失败:', replyError)
+            throw new Error('创建回复失败')
         }
         
-        return data
+        // Update feedback status and visibility if provided
+        if (replyData.status || replyData.is_show !== undefined) {
+            const updateData: any = {}
+            if (replyData.status) updateData.status = replyData.status
+            if (replyData.is_show !== undefined) updateData.is_show = replyData.is_show
+            
+            const { error: updateError } = await supabase
+                .from('feedback')
+                .update(updateData)
+                .eq('id', feedbackId)
+            
+            if (updateError) {
+                console.error('更新反馈状态失败:', updateError)
+                throw new Error('更新反馈状态失败')
+            }
+        }
+        
+        return replyData_result
     },
     
     // Check if feedback exists

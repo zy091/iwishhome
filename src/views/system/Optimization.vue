@@ -6,13 +6,6 @@
         </div>
 
         <div class="training-content test-grid">
-            <RouterLink :to="{ name: 'responsibilities', query: { platform: platform } }">
-                <el-card style="width: 480px" shadow="hover">
-                    <el-image style="width: 50px; height: 50px" :src="logo" fit="fill" />
-                    <h2>岗位职责
-                    </h2>
-                </el-card>
-            </RouterLink>
             <RouterLink :to="{ name: 'training-and-learning', query: { platform: platform } }">
                 <el-card style="width: 480px" shadow="hover">
                     <el-image style="width: 50px; height: 50px" :src="logo" fit="fill" />
@@ -20,17 +13,17 @@
                     </h2>
                 </el-card>
             </RouterLink>
-            <RouterLink :to="{ name: 'website-case', query: { platform: platform } }">
-                <el-card style="width: 480px" shadow="hover">
-                    <el-image style="width: 50px; height: 50px" :src="logo" fit="fill" />
-                    <h2>网站案例
-                    </h2>
-                </el-card>
-            </RouterLink>
             <RouterLink :to="{ name: 'personal-assignments', query: { platform: platform } }">
                 <el-card style="width: 480px" shadow="hover">
                     <el-image style="width: 50px; height: 50px" :src="logo" fit="fill" />
                     <h2>日常作业
+                    </h2>
+                </el-card>
+            </RouterLink>
+            <RouterLink :to="{ name: 'study-notes', query: { platform: platform } }">
+                <el-card style="width: 480px" shadow="hover">
+                    <el-image style="width: 50px; height: 50px" :src="logo" fit="fill" />
+                    <h2>学习心得
                     </h2>
                 </el-card>
             </RouterLink>

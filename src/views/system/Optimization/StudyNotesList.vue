@@ -1,6 +1,6 @@
 <template>
     <div class="study-notes-list">
-        <div class="study-body">
+        <div class="study-body" style="min-height: 400px;">
             <div class="study-header">
                 <div class="header-left">
                     <div class="header-title">学习心得列表</div>
@@ -8,7 +8,7 @@
                 </div>
                 <el-button type="primary" @click="refreshList">刷新</el-button>
             </div>
-            <el-table v-loading="loading" :data="notes" v-if="notes.length > 0">
+            <el-table v-loading="loading" :data="notes" v-if="notes.length > 0" >
                 <el-table-column prop="title" label="标题" />
                 <el-table-column label="状态" width="100">
                     <template #default="{ row }">
@@ -58,6 +58,9 @@
                 <div class="empty-text">暂无学习心得</div>
             </div>
         </div>
+
+        <!-- 分页器 -->
+        <Pagination :pagination="pagination" @update:pagination="handlePaginationUpdate" />
 
         <!-- 创建/编辑/查看对话框 -->
         <el-dialog :title="getDialogTitle()" v-model="dialogVisible" width="60%" :close-on-click-modal="false"
@@ -177,7 +180,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, ElLoading, ElForm } from 'element-plus'
 import type { FormInstance } from 'element-plus'
@@ -187,10 +190,19 @@ import { studyNoteService } from '@/stores/studyNoteService'
 import type { StudyNote } from '@/stores/studyNote'
 import { supabase } from '@/lib/supabaseClient'
 import { Paperclip, Document } from '@element-plus/icons-vue'
+import Pagination from '@/components/system/Pagination.vue'
+import type { PaginationType } from '@/types/pagination'
 
 const router = useRouter()
 const loading = ref(false)
 const notes = ref<StudyNote[]>([])
+
+// 分页相关
+const pagination = reactive<PaginationType>({
+    page: 1,
+    pageSize: 10,
+    total: 0
+})
 const dialogVisible = ref(false)
 const isEditing = ref(false)
 const isViewing = ref(false)
@@ -236,11 +248,21 @@ const getDialogTitle = () => {
     return '新建心得'
 }
 
+// 获取所有笔记（用于前端分页）
+const allNotes = ref<StudyNote[]>([])
+
 // 获取笔记列表
 const fetchNotes = async () => {
     loading.value = true
     try {
-        notes.value = await studyNoteService.getNotes()
+        // 获取所有笔记
+        allNotes.value = await studyNoteService.getNotes()
+        pagination.total = allNotes.value.length
+        
+        // 计算分页数据
+        const startIndex = (pagination.page - 1) * pagination.pageSize
+        const endIndex = startIndex + pagination.pageSize
+        notes.value = allNotes.value.slice(startIndex, endIndex)
     } catch (error) {
         ElMessage.error('获取心得列表失败')
     } finally {
@@ -410,6 +432,13 @@ const handleSubmit = async () => {
 }
 
 const refreshList = () => {
+    fetchNotes()
+}
+
+// 处理分页更新
+const handlePaginationUpdate = (newPagination: PaginationType) => {
+    pagination.page = newPagination.page
+    pagination.pageSize = newPagination.pageSize
     fetchNotes()
 }
 

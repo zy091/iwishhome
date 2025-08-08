@@ -89,16 +89,18 @@
             <Pagination :pagination="pagination" @update:pagination="handlePaginationUpdate" />
 
             <!-- 添加/编辑任务对话框 -->
-            <el-dialog :title="dialogTitle" v-model="dialogVisible" width="600px">
-                <el-form :model="taskForm" :rules="rules" ref="taskFormRef" label-width="100px">
+            <el-dialog :title="dialogTitle" v-model="dialogVisible" width="40%" :close-on-click-modal="false">
+                <el-form :model="taskForm" :rules="rules" ref="taskFormRef" label-width="80px">
                     <el-form-item label="任务名称" prop="title">
-                        <el-input v-model="taskForm.title" />
+                        <el-input v-model="taskForm.title" placeholder="请输入任务名称" />
+                        <div class="form-tip">请简要描述任务的主要内容</div>
                     </el-form-item>
                     <el-form-item label="任务描述" prop="description">
-                        <el-input v-model="taskForm.description" type="textarea" :rows="4" />
+                        <el-input v-model="taskForm.description" type="textarea" :rows="6" placeholder="请详细描述任务的具体要求、步骤和注意事项" />
+                        <div class="form-tip">详细描述任务的具体要求、执行步骤和相关注意事项</div>
                     </el-form-item>
                     <el-form-item label="优先级" prop="priority">
-                        <el-select v-model="taskForm.priority" placeholder="请选择任务优先级">
+                        <el-select v-model="taskForm.priority" placeholder="请选择任务优先级" style="width: 100%">
                             <el-option label="低" value="low" />
                             <el-option label="中" value="medium" />
                             <el-option label="高" value="high" />
@@ -106,17 +108,17 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="状态" prop="status">
-                        <el-select v-model="taskForm.status" placeholder="请选择任务状态">
+                        <el-select v-model="taskForm.status" placeholder="请选择任务状态" style="width: 100%">
                             <el-option label="待完成" value="pending" />
                             <el-option label="进行中" value="in_progress" />
                             <el-option label="已完成" value="completed" />
                         </el-select>
                     </el-form-item>
                     <el-form-item label="截止日期" prop="due_date">
-                        <el-date-picker v-model="taskForm.due_date" type="date" placeholder="选择截止日期" value-format="YYYY-MM-DD" />
+                        <el-date-picker v-model="taskForm.due_date" type="date" placeholder="选择截止日期" value-format="YYYY-MM-DD" style="width: 100%" />
                     </el-form-item>
                     <el-form-item v-if="isAdmin" label="指派给" prop="assigned_to">
-                        <el-select v-model="taskForm.assigned_to" placeholder="请选择用户(支持模糊搜索)" filterable>
+                        <el-select v-model="taskForm.assigned_to" placeholder="请选择用户(支持模糊搜索)" filterable style="width: 100%">
                             <el-option filterable v-for="user in userList" :key="user.user_id" :label="user.full_name"
                                 :value="user.user_id" />
                         </el-select>
@@ -128,22 +130,24 @@
                 <template #footer>
                     <span class="dialog-footer">
                         <el-button @click="dialogVisible = false">取消</el-button>
-                        <el-button type="primary" @click="handleSubmit">确定</el-button>
+                        <el-button type="primary" @click="handleSubmit" :loading="submitting">确定</el-button>
                     </span>
                 </template>
             </el-dialog>
 
             <!-- 批量指派任务对话框 -->
-            <el-dialog title="批量指派任务" v-model="showAssignDialog" width="600px">
-                <el-form :model="assignForm" :rules="assignRules" ref="assignFormRef" label-width="100px">
+            <el-dialog title="批量指派任务" v-model="showAssignDialog" width="40%" :close-on-click-modal="false">
+                <el-form :model="assignForm" :rules="assignRules" ref="assignFormRef" label-width="80px">
                     <el-form-item label="任务名称" prop="title">
-                        <el-input v-model="assignForm.title" />
+                        <el-input v-model="assignForm.title" placeholder="请输入任务名称" />
+                        <div class="form-tip">请简要描述任务的主要内容</div>
                     </el-form-item>
                     <el-form-item label="任务描述" prop="description">
-                        <el-input v-model="assignForm.description" type="textarea" :rows="4" />
+                        <el-input v-model="assignForm.description" type="textarea" :rows="6" placeholder="请详细描述任务的具体要求、步骤和注意事项" />
+                        <div class="form-tip">详细描述任务的具体要求、执行步骤和相关注意事项</div>
                     </el-form-item>
                     <el-form-item label="优先级" prop="priority">
-                        <el-select v-model="assignForm.priority" placeholder="请选择任务优先级">
+                        <el-select v-model="assignForm.priority" placeholder="请选择任务优先级" style="width: 100%">
                             <el-option label="低" value="low" />
                             <el-option label="中" value="medium" />
                             <el-option label="高" value="high" />
@@ -151,7 +155,7 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="截止日期" prop="due_date">
-                        <el-date-picker v-model="assignForm.due_date" type="date" placeholder="选择截止日期" value-format="YYYY-MM-DD" />
+                        <el-date-picker v-model="assignForm.due_date" type="date" placeholder="选择截止日期" value-format="YYYY-MM-DD" style="width: 100%" />
                     </el-form-item>
                     <el-form-item label="指派给" prop="assigned_to">
                         <el-select v-model="assignForm.assigned_to" placeholder="请选择用户(支持模糊搜索)" filterable multiple
@@ -159,12 +163,13 @@
                             <el-option filterable v-for="user in userList" :key="user.user_id" :label="user.full_name"
                                 :value="user.user_id" />
                         </el-select>
+                        <div class="form-tip">可以选择多个用户进行批量指派</div>
                     </el-form-item>
                 </el-form>
                 <template #footer>
                     <span class="dialog-footer">
                         <el-button @click="showAssignDialog = false">取消</el-button>
-                        <el-button type="primary" @click="handleBatchAssign">确定</el-button>
+                        <el-button type="primary" @click="handleBatchAssign" :loading="submitting">确定</el-button>
                     </span>
                 </template>
             </el-dialog>
@@ -225,6 +230,7 @@ const creatorName = computed(() => {
 })
 
 const loading = ref(false)
+const submitting = ref(false)
 const taskList = ref<Task[]>([])
 const searchQuery = ref('')
 const statusFilter = ref('')
@@ -451,6 +457,7 @@ const handleSubmit = async () => {
     if (!taskFormRef.value) return
     await taskFormRef.value.validate(async (valid: boolean) => {
         if (valid) {
+            submitting.value = true
             try {
                 // 确保非管理员只能创建自己的任务
                 if (!isAdmin.value) {
@@ -500,6 +507,8 @@ const handleSubmit = async () => {
             } catch (error) {
                 console.error(taskForm.value.id ? '更新失败:' : '创建失败:', error)
                 ElMessage.error(taskForm.value.id ? '更新失败' : '创建失败')
+            } finally {
+                submitting.value = false
             }
         }
     })
@@ -510,6 +519,7 @@ const handleBatchAssign = async () => {
     if (!assignFormRef.value) return
     await assignFormRef.value.validate(async (valid: boolean) => {
         if (valid) {
+            submitting.value = true
             try {
                 const tasks = assignForm.value.assigned_to.map(userid => ({
                     title: assignForm.value.title,
@@ -544,6 +554,8 @@ const handleBatchAssign = async () => {
             } catch (error) {
                 console.error('批量指派失败:', error)
                 ElMessage.error('批量指派失败')
+            } finally {
+                submitting.value = false
             }
         }
     })
@@ -622,9 +634,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.layout {
+/* .layout {
     padding: 20px;
-}
+} */
 
 .layout-title {
     margin-bottom: 20px;
@@ -664,5 +676,12 @@ onMounted(async () => {
 
 .el-table :deep(.el-table__row:hover) {
     background-color: #f5f7fa;
+}
+
+.form-tip {
+    font-size: 12px;
+    color: #909399;
+    margin-top: 4px;
+    line-height: 1.4;
 }
 </style>
