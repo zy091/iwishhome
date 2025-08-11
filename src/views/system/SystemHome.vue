@@ -495,7 +495,7 @@ const getFeedbackCount = async () => {
         stats.value.myFeedbackCount = data?.length || 0
 
         stats.value.myFeedbackTrend = data?.filter(feedback => {
-            return feedback.replied_at == null
+            return feedback.reply_count === 0
         })?.length || 0
     } catch (error) {
         console.error('获取反馈失败:', error)

@@ -238,7 +238,7 @@ const isAdmin = computed(() => {
 
 // 判断是否为超级管理员
 const isSupperAdmin = computed(() => {
-    return roleId.value === 0 
+    return roleId.value === 0 || roleId.value === 1
 })
 
 const creatorName = computed(() => {
