@@ -1,7 +1,7 @@
 <!-- Login.vue -->
 <template>
     <div class="login-container">
-        <h1 class="long-title">IWISH后台管理系统</h1>
+        <h1 class="long-title">IWISH企业学习系统</h1>
         <!-- 登录表单 -->
         <el-form label-position="left" label-width="auto" :model="formLabelAlign" style="max-width: 400px">
             <div class="title-container">登录</div>
