@@ -319,7 +319,7 @@ const userStore = useUserStore()
 const hasPermission = computed(() => {
     // 根据角色ID判断权限
     const roleId = Number(userStore.roleId)
-    return roleId === 0 || roleId === 1 || roleId ===11 // 管理员和运营管理员有权限
+    return roleId === 0 || roleId === 1 || roleId ===11 || roleId === 15 // 管理员和运营管理员有权限
 })
 
 // 判断是否为超级管理员

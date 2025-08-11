@@ -49,7 +49,6 @@
 
                 <el-table v-loading="loading" :data="feedbacks" @selection-change="handleSelectionChange">
                     <el-table-column type="selection" width="55" v-if="hasAdminPerm" />
-                    <el-table-column v-if="hasAdminPerm" prop="full_name" label="提交人" width="120" />
                     <el-table-column prop="title" label="标题" min-width="200" />
                     <el-table-column prop="platform" label="平台" width="130">
                         <template #default="{ row }">
@@ -58,6 +57,7 @@
                             </el-tag>
                         </template>
                     </el-table-column>
+                    <el-table-column v-if="hasAdminPerm" prop="full_name" label="提交人" width="120" />
                     <el-table-column prop="status" label="状态" width="100">
                         <template #default="{ row }">
                             <el-tag style="font-size: 14px;" :type="getStatusType(row.status)" size="large">

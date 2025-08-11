@@ -27,14 +27,26 @@
             <el-card shadow="always">
                 <template #header>
                     <div class="card-header">
-                        任务列表
+                        <div>
+                            <span>任务列表</span>
+                            <el-tooltip v-if="isSupperAdmin" content="您可以查看所有任务" placement="right">
+                                <el-tag type="success" size="small" style="margin-left: 8px;">全部</el-tag>
+                            </el-tooltip>
+                            <el-tooltip v-else content="您只能查看本组织的任务" placement="right">
+                                <el-tag type="info" size="small" style="margin-left: 8px;">本组织</el-tag>
+                            </el-tooltip>
+                        </div>
                         <div class="header-actions">
+                            <el-button type="danger" :disabled="!selectedTasks.length" @click="handleBatchDelete">
+                                批量删除
+                            </el-button>
                             <div style="font-size: 14px; color: #909399;">共计{{ pagination.total }}条数据</div>
                         </div>
                     </div>
                 </template>
 
-                <el-table v-loading="loading" :data="paginatedTaskList" row-key="id" stripe height="400px">
+                <el-table v-loading="loading" :data="paginatedTaskList" row-key="id" stripe height="400px" @selection-change="handleSelectionChange">
+                    <el-table-column type="selection" width="55" />
                     <el-table-column prop="id" label="ID" width="80" />
                     <el-table-column prop="title" label="任务名称" width="200" />
                     <el-table-column prop="description" label="任务描述" show-overflow-tooltip />
@@ -196,6 +208,7 @@ interface Task {
     due_date: string
     assigned_to?: string | null
     user_id?: string
+    organization_id?: string
     created_at?: string
     updated_at?: string
     assignee?: { user_id: string, full_name: string }
@@ -216,8 +229,16 @@ const breadbcrum = [
 
 const userStore = useUserStore()
 const userId = userStore.user?.user_id
+const roleId = computed(() => Number(userStore.user?.role_id))
+
+// 判断是否有管理权限
 const isAdmin = computed(() => {
-    return userStore.user?.role_id === 0 || userStore.user?.role_id === 1 || userStore.user?.role_id === 11
+    return roleId.value === 0 || roleId.value === 1 || roleId.value === 11 || roleId.value === 15
+})
+
+// 判断是否为超级管理员
+const isSupperAdmin = computed(() => {
+    return roleId.value === 0 
 })
 
 const creatorName = computed(() => {
@@ -241,6 +262,7 @@ const taskFormRef = ref<any>(null)
 const showAssignDialog = ref(false)
 const assignFormRef = ref<any>(null)
 const userList = ref<User[]>([])
+const selectedTasks = ref<Task[]>([])
 
 const pagination = ref<PaginationType>({
     page: 1,
@@ -254,7 +276,8 @@ const taskForm = ref<Task>({
     priority: 'medium',
     status: 'pending',
     due_date: '',
-    assigned_to: null
+    assigned_to: null,
+    organization_id: undefined
 })
 
 const assignForm = ref({
@@ -311,6 +334,17 @@ const fetchTaskList = async () => {
         // 如果不是管理员，只查看自己的任务
         if (!isAdmin.value) {
             query = query.eq('assigned_to', userId)
+        } else if (!isSupperAdmin.value) {
+            // 非超级管理员只能查看本组织的任务
+            const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('organization_id')
+                .eq('user_id', userId)
+                .single()
+            
+            if (profile?.organization_id) {
+                query = query.eq('organization_id', profile.organization_id)
+            }
         }
 
         const { data, error } = await query
@@ -333,10 +367,26 @@ const fetchUserList = async () => {
     if (!isAdmin.value) return
 
     try {
-        const { data, error } = await supabase
+        let query = supabase
             .from('user_profiles')
-            .select('user_id, full_name')
+            .select('user_id, full_name, organization_id')
+            .neq('user_id', userId) // 排除当前用户
             .order('full_name')
+
+        if (!isSupperAdmin.value) {
+            // 非超级管理员只能看到本组织成员
+            const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('organization_id')
+                .eq('user_id', userId)
+                .single()
+            
+            if (profile?.organization_id) {
+                query = query.eq('organization_id', profile.organization_id)
+            }
+        }
+
+        const { data, error } = await query
 
         if (error) throw error
         userList.value = data || []
@@ -349,6 +399,11 @@ const fetchUserList = async () => {
 const handlePaginationUpdate = (newPagination: PaginationType) => {
     pagination.value.page = newPagination.page
     pagination.value.pageSize = newPagination.pageSize
+}
+
+// 处理表格选择变化
+const handleSelectionChange = (selection: Task[]) => {
+    selectedTasks.value = selection
 }
 
 const handleSearch = () => {
@@ -391,15 +446,30 @@ const handleAdd = () => {
         priority: 'medium',
         status: 'pending',
         due_date: '',
-        assigned_to: isAdmin.value ? null : userId
+        assigned_to: isAdmin.value ? null : userId,
+        organization_id: undefined
     }
     dialogVisible.value = true
 }
 
 // 编辑任务
-const handleEdit = (row: Task) => {
+const handleEdit = async (row: Task) => {
     dialogTitle.value = '编辑任务'
     taskForm.value = { ...row }
+    
+    // 确保非超级管理员编辑时设置正确的组织ID
+    if (!isSupperAdmin.value && !row.organization_id) {
+        const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('organization_id')
+            .eq('user_id', userId)
+            .single()
+        
+        if (profile?.organization_id) {
+            taskForm.value.organization_id = profile.organization_id
+        }
+    }
+    
     dialogVisible.value = true
 }
 
@@ -408,9 +478,27 @@ const handleUpdateStatus = async (row: Task) => {
     const newStatus = row.status === 'pending' ? 'in_progress' : 'completed'
 
     try {
+        const updateData: any = { 
+            status: newStatus, 
+            updated_at: new Date().toISOString() 
+        }
+
+        // 非超级管理员更新时需要确保组织ID
+        if (!isSupperAdmin.value && !row.organization_id) {
+            const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('organization_id')
+                .eq('user_id', userId)
+                .single()
+            
+            if (profile?.organization_id) {
+                updateData.organization_id = profile.organization_id
+            }
+        }
+
         const { error } = await supabase
             .from('tasks')
-            .update({ status: newStatus, updated_at: new Date().toISOString() })
+            .update(updateData)
             .eq('id', row.id)
 
         if (error) throw error
@@ -452,6 +540,43 @@ const handleDelete = async (row: Task) => {
     }
 }
 
+// 批量删除任务
+const handleBatchDelete = async () => {
+    if (selectedTasks.value.length === 0) return
+    
+    try {
+        await ElMessageBox.confirm(
+            `确定要删除选中的 ${selectedTasks.value.length} 条任务吗？此操作不可恢复。`,
+            '警告',
+            {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning',
+            }
+        )
+        
+        // 创建批量删除的承诺数组
+        const deletePromises = selectedTasks.value.map(task =>
+            supabase
+                .from('tasks')
+                .delete()
+                .eq('id', task.id)
+        )
+        
+        // 等待所有删除操作完成
+        await Promise.all(deletePromises)
+        
+        ElMessage.success(`成功删除 ${selectedTasks.value.length} 条任务`)
+        selectedTasks.value = []
+        fetchTaskList()
+    } catch (error: any) {
+        if (error !== 'cancel') {
+            console.error('批量删除任务失败:', error)
+            ElMessage.error('批量删除失败')
+        }
+    }
+}
+
 // 提交表单
 const handleSubmit = async () => {
     if (!taskFormRef.value) return
@@ -470,6 +595,19 @@ const handleSubmit = async () => {
                 } else {
                     // 设置user_id与assigned_to一致
                     taskForm.value.user_id = userId
+                }
+
+                // 设置组织ID
+                if (!isSupperAdmin.value) {
+                    const { data: profile } = await supabase
+                        .from('user_profiles')
+                        .select('organization_id')
+                        .eq('user_id', userId)
+                        .single()
+                    
+                    if (profile?.organization_id) {
+                        taskForm.value.organization_id = profile.organization_id
+                    }
                 }
 
                 // 创建提交用的表单数据，移除user_profiles
@@ -521,6 +659,18 @@ const handleBatchAssign = async () => {
         if (valid) {
             submitting.value = true
             try {
+                // 获取组织ID
+                let organizationId: string | undefined
+                if (!isSupperAdmin.value) {
+                    const { data: profile } = await supabase
+                        .from('user_profiles')
+                        .select('organization_id')
+                        .eq('user_id', userId)
+                        .single()
+                    
+                    organizationId = profile?.organization_id
+                }
+
                 const tasks = assignForm.value.assigned_to.map(userid => ({
                     title: assignForm.value.title,
                     description: assignForm.value.description,
@@ -529,6 +679,7 @@ const handleBatchAssign = async () => {
                     due_date: assignForm.value.due_date,
                     assigned_to: userid,
                     user_id: userId,
+                    organization_id: organizationId,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 }))

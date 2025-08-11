@@ -11,7 +11,7 @@
                 <el-input v-model="searchQuery" style="width: 240px" placeholder="请输入角色名称" :suffix-icon="Search"
                     size="large" clearable />
                 <el-button type="primary" size="large" @click="handleSearch">搜索</el-button>
-                <el-button type="success" size="large" @click="handleAdd">添加角色</el-button>
+                <el-button type="success" size="large" @click="handleAdd" v-if="isAdmin">添加角色</el-button>
             </el-space>
         </el-card>
 
@@ -21,6 +21,9 @@
                     <div class="card-header">
                         角色列表
                         <div class="header-actions">
+                            <div style="font-size: 12px; color: #909399; margin-right: 10px;">
+                                注意：删除角色会影响使用该角色的用户权限
+                            </div>
                             <div style="font-size: 14px; color: #909399;">共计{{ pagination.total }}条数据</div>
                         </div>
                     </div>
@@ -43,10 +46,10 @@
                     <el-table-column label="操作" width="200">
                         <template #default="{ row }">
                             <el-button-group>
-                                <el-button type="primary" @click="handleEdit(row)">
+                                <el-button type="primary" @click="handleEdit(row)" v-if="isAdmin">
                                     编辑
                                 </el-button>
-                                <el-button type="danger" @click="handleDelete(row)" v-if="Number(row.role_id) !== 0">
+                                <el-button type="danger" @click="handleDelete(row)" v-if="isAdmin && Number(row.role_id) !== 0">
                                     删除
                                 </el-button>
                             </el-button-group>
@@ -91,6 +94,7 @@ import Breadbcrum from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
 import { getRoleList, createRole, updateRole, deleteRole } from '@/api/role'
+import { useUserStore } from '@/stores/user'
 
 interface Role {
     id?: string | number
@@ -108,6 +112,11 @@ const breadbcrum = [
         path: '/system/role-setting'
     }
 ]
+
+const userStore = useUserStore()
+const isAdmin = computed(() => {
+    return userStore.user?.role_id === 0 || userStore.user?.role_id === 1 || userStore.user?.role_id === 11
+})
 
 const loading = ref(false)
 const roleList = ref<Role[]>([])
@@ -180,6 +189,12 @@ const handleSearch = () => {
 
 // 添加角色
 const handleAdd = () => {
+    // 检查权限
+    if (!isAdmin.value) {
+        ElMessage.error('您没有权限执行此操作')
+        return
+    }
+    
     dialogTitle.value = '添加角色'
     roleForm.value = {
         role_id: '',
@@ -192,6 +207,12 @@ const handleAdd = () => {
 
 // 编辑角色
 const handleEdit = (row: Role) => {
+    // 检查权限
+    if (!isAdmin.value) {
+        ElMessage.error('您没有权限执行此操作')
+        return
+    }
+    
     dialogTitle.value = '编辑角色'
     roleForm.value = { ...row }
     dialogVisible.value = true
@@ -199,27 +220,44 @@ const handleEdit = (row: Role) => {
 
 // 删除角色
 const handleDelete = async (row: Role) => {
+    // 检查权限
+    if (!isAdmin.value) {
+        ElMessage.error('您没有权限执行此操作')
+        return
+    }
+    
     if (Number(row.role_id) === 0) {
         ElMessage.warning('系统内置角色不允许删除！')
         return
     }
+    
     try {
         await ElMessageBox.confirm(
-            '确定要删除该角色吗？此操作不可恢复。',
+            `确定要删除角色"${row.name}"吗？\n\n注意：删除后，使用该角色的用户将失去角色权限。\n此操作不可恢复。`,
             '警告',
             {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning',
+                dangerouslyUseHTMLString: true
             }
         )
+        
         await deleteRole(Number(row.role_id))
         ElMessage.success('删除成功')
         fetchRoleList()
-    } catch (error) {
+    } catch (error: any) {
         if (error !== 'cancel') {
             console.error('删除角色失败:', error)
-            ElMessage.error('删除失败')
+            
+            // 更详细的错误处理
+            if (error.code === '42501') {
+                ElMessage.error('权限不足，无法执行此操作')
+            } else if (error.code === '23503') {
+                ElMessage.error('该角色正在被使用，无法删除')
+            } else {
+                ElMessage.error('删除失败')
+            }
         }
     }
 }
@@ -227,6 +265,13 @@ const handleDelete = async (row: Role) => {
 // 提交表单
 const handleSubmit = async () => {
     if (!roleFormRef.value) return
+    
+    // 检查权限
+    if (!isAdmin.value) {
+        ElMessage.error('您没有权限执行此操作')
+        return
+    }
+    
     await roleFormRef.value.validate(async (valid: boolean) => {
         if (valid) {
             try {
@@ -239,9 +284,17 @@ const handleSubmit = async () => {
                 }
                 dialogVisible.value = false
                 fetchRoleList()
-            } catch (error) {
+            } catch (error: any) {
                 console.error(roleForm.value.role_id ? '更新失败:' : '创建失败:', error)
-                ElMessage.error(roleForm.value.role_id ? '更新失败' : '创建失败')
+                
+                // 更详细的错误处理
+                if (error.code === '42501') {
+                    ElMessage.error('权限不足，无法执行此操作')
+                } else if (error.code === '23505') {
+                    ElMessage.error('角色ID已存在')
+                } else {
+                    ElMessage.error(roleForm.value.role_id ? '更新失败' : '创建失败')
+                }
             }
         }
     })

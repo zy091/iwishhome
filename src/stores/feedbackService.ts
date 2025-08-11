@@ -297,7 +297,7 @@ export const feedbackService = {
             .from('feedback_replies_with_users')
             .select('*')
             .eq('feedback_id', feedbackId)
-            .order('created_at', { ascending: true })
+            .order('created_at', { ascending: false })
         
         if (error) {
             console.error('获取回复失败:', error)

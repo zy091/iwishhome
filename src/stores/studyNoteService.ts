@@ -8,7 +8,8 @@ import type { CreateStudyNote, StudyNote, UpdateStudyNote, StudyNoteWithProfile,
 export enum UserRole {
     ADMIN = 0,
     OPERATIONS_MANAGER = 1,
-    PRODUCT_MANAGER = 11
+    PRODUCT_MANAGER = 11,
+    TEACHER = 15
 }
 
 // 添加检查权限的函数
@@ -16,7 +17,8 @@ export const hasViewAllNotesPermission = (roleId: number | null): boolean => {
     return roleId !== null && [
         UserRole.ADMIN,
         UserRole.OPERATIONS_MANAGER,
-        UserRole.PRODUCT_MANAGER
+        UserRole.PRODUCT_MANAGER,
+        UserRole.TEACHER
     ].includes(roleId);
 }
 
