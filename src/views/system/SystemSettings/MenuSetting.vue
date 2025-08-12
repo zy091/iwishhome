@@ -130,7 +130,7 @@ interface Menu {
     icon: string
     parent_id: number | null
     order_index: number
-    role_ids: number[]
+    role_ids: number[] | null
 }
 
 interface Role {
@@ -165,7 +165,7 @@ const menuForm = ref<Menu>({
     icon: '',
     parent_id: null,
     order_index: 0,
-    role_ids: []
+    role_ids: null
 })
 
 const rules = {

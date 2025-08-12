@@ -48,6 +48,15 @@ const router = createRouter({
           name: 'customer',
           component: () => import('../views/system/Customer.vue'),
         },
+        {
+          path: 'nas-files', // NAS文件管理
+          name: 'nas-files',
+          component: () => import('../views/system/NasFileManagement.vue'),
+          meta: {
+            requiresAuth: true,
+            requiresManagment: true
+          }
+        },
 
         {
           path: 'optimize', //

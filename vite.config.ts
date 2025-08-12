@@ -36,7 +36,25 @@ export default defineConfig({
     allowedHosts: [
       'iwishweb.sa1.tunnelfrp.com', // 允许的域名
       '.sa1.tunnelfrp.com' // 允许所有子域名
-    ]
+    ],
+    proxy: {
+      '/api/nas': {
+        target: 'http://192.168.1.27:5005',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/nas/, ''),
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('Sending Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req, res) => {
+            console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+          });
+        },
+      }
+    }
   },
   plugins: [
     vue(),

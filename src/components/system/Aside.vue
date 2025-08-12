@@ -41,7 +41,8 @@ import {
     ChromeFilled,
     SetUp,
     Folder,
-    Notebook
+    Notebook,
+    DocumentAdd
 } from '@element-plus/icons-vue'
 import type { ElSubMenu } from 'element-plus'
 const router = useRouter()

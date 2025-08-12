@@ -695,9 +695,9 @@ onMounted(async () => {
     align-items: center;
 }
 
-.layout {
+/* .layout {
     padding: 20px;
-}
+} */
 
 .layout-title {
     margin-bottom: 20px;
