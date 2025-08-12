@@ -7,7 +7,8 @@ class UGREENStorageService {
 
     constructor() {
         // 使用Vite代理避免CORS问题
-        this.webdavUrl = '/api/nas';
+        // this.webdavUrl = '/api/nas';
+        this.webdavUrl = 'http://192.168.1.27:5005';
         this.username = 'zy_iwish';
         this.password = '199999zY';
         this.basePath = '/public/';
