@@ -6,9 +6,14 @@ class UGREENStorageService {
     private basePath: string;
 
     constructor() {
-        // 使用Vite代理避免CORS问题
-        // this.webdavUrl = '/api/nas';
-        this.webdavUrl = 'http://192.168.1.27:5005';
+        // 根据环境选择不同的WebDAV URL
+        if (import.meta.env.PROD) {
+            // 开发环境：直接访问内网IP
+            this.webdavUrl = 'http://192.168.1.27:5005';
+        } else {
+            // 生产环境：使用反向代理路径
+            this.webdavUrl = '/api/nas';
+        }
         this.username = 'zy_iwish';
         this.password = '199999zY';
         this.basePath = '/public/';

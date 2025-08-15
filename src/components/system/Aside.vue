@@ -29,6 +29,7 @@
 <script lang="ts" setup>
 import { ref, watchEffect, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import {
     Document,
     Menu as IconMenu,
@@ -92,6 +93,59 @@ const findParentElement = (element: HTMLElement): HTMLElement | null => {
 
 const handleMenuSelect = (index: string) => {
     activeIndex.value = index
+    
+    // 检查是否为demand路由
+    if (index === '/system/demand') {
+        handleDemandRedirect()
+    }
+}
+
+// Base64URL 编码
+function toBase64Url(json: any) {
+    const s = typeof json === 'string' ? json : JSON.stringify(json)
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+// 处理demand路由跳转
+const handleDemandRedirect = () => {
+    try {
+        // 从当前登录用户构造载荷
+        const userPayload = {
+            id: userStore.user?.user_id || '',
+            email: userStore.user?.email || '',
+            name: userStore.user?.full_name || userStore.user?.email?.split('@')[0] || '用户',
+            role: getUserRole(userStore.user?.role_id),
+            avatar: userStore.user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userStore.user?.user_id || 'user'}`
+        }
+        
+        // 编码并在新标签页中打开
+        const encoded = toBase64Url(userPayload)
+        window.open(`http://localhost:5173/auth/bridge?external_user=${encoded}`, '_blank')
+        
+    } catch (error) {
+        console.error('处理demand跳转失败:', error)
+        // 如果跳转失败，可以显示错误提示或回退到正常路由
+        ElMessage.error('跳转失败，请稍后重试')
+    }
+}
+
+// 根据角色ID获取角色名称
+const getUserRole = (roleId: number | undefined): string => {
+    if (!roleId) return 'submitter'
+    
+    switch (roleId) {
+        case 0:
+        case 1:
+            return 'admin'
+        case 2:
+        case 3:
+            return 'manager'
+        case 4:
+        case 5:
+            return 'developer'
+        default:
+            return 'submitter'
+    }
 }
 
 </script>

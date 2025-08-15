@@ -18,7 +18,7 @@
             <template v-if="hasPermission">
                 <!-- 统计卡片 -->
                 <el-row :gutter="20" class="stat-cards">
-                    <el-col :span="6">
+                    <el-col :span="4">
                         <el-card shadow="hover" class="stat-card">
                             <el-link :underline="false" href="/system/users">
                                 <div class="stat-icon">
@@ -37,7 +37,7 @@
                             </div>
                         </el-card>
                     </el-col>
-                    <el-col :span="6">
+                    <el-col :span="4">
                         <el-card shadow="hover" class="stat-card">
                             <el-link :underline="false" href="/system/admin-study-notes">
                                 <div class="stat-icon">
@@ -55,7 +55,25 @@
                             </div>
                         </el-card>
                     </el-col>
-                    <el-col :span="6">
+                    <el-col :span="4">
+                        <el-card shadow="hover" class="stat-card">
+                            <el-link :underline="false" href="/system/case-sharing">
+                                <div class="stat-icon">
+                                    <el-icon>
+                                        <Notebook />
+                                    </el-icon>
+                                </div>
+                            </el-link>
+                            <div class="stat-info">
+                                <div class="stat-title">知识分享</div>
+                                <div class="stat-value">{{ stats.caseSharingCount || 0 }}</div>
+                                <div class="stat-trend" v-show="stats.caseSharingPending > 0">
+                                    待审核： {{ stats.caseSharingPending }}
+                                </div>
+                            </div>
+                        </el-card>
+                    </el-col>
+                    <el-col :span="4">
                         <el-card shadow="hover" class="stat-card">
                             <el-link :underline="false" href="/system/admin-test-result">
                                 <div class="stat-icon">
@@ -73,7 +91,7 @@
                             </div>
                         </el-card>
                     </el-col>
-                    <el-col :span="6">
+                    <el-col :span="4">
                         <el-card shadow="hover" class="stat-card">
                             <el-link :underline="false" href="/system/admin-assignments">
                                 <div class="stat-icon">
@@ -91,6 +109,25 @@
                             </div>
                         </el-card>
                     </el-col>
+                    <el-col :span="4">
+                        <el-card shadow="hover" class="stat-card">
+                            <el-link :underline="false" href="/system/feedback-center">
+                                <div class="stat-icon">
+                                    <el-icon>
+                                        <ChatLineRound />
+                                    </el-icon>
+                                </div>
+                            </el-link>
+                            <div class="stat-info">
+                                <div class="stat-title">FAQ</div>
+                                <div class="stat-value">{{ stats.feedbackCount || 0 }}</div>
+                                <div class="stat-trend" v-show="stats.feedbackPending > 0">
+                                    待处理： {{ stats.feedbackPending }}
+                                </div>
+                            </div>
+                        </el-card>
+                    </el-col>
+                    
                 </el-row>
             </template>
             <!-- 统计卡片 -->
@@ -377,9 +414,11 @@ const stats = ref({
     yourAssignmentsPending: 0,
     feedbackCount: 0,
     feedbackTrend: 0,
+    feedbackPending: 0,
     myFeedbackCount: 0,
-    myFeedbackTrend: 0
-
+    myFeedbackTrend: 0,
+    caseSharingCount: 0,
+    caseSharingPending: 0
 })
 
 const getActiveUsers = async () => {
@@ -491,14 +530,72 @@ import { feedbackService } from '@/stores/feedbackService'
 // Get feedback stats
 const getFeedbackCount = async () => {
     try {
-        const { data } = await feedbackService.getPersonalFeedback()
-        stats.value.myFeedbackCount = data?.length || 0
+        // 获取个人反馈
+        const { data: personalData } = await feedbackService.getPersonalFeedback()
+        stats.value.myFeedbackCount = personalData?.length || 0
 
-        stats.value.myFeedbackTrend = data?.filter(feedback => {
+        stats.value.myFeedbackTrend = personalData?.filter(feedback => {
             return feedback.reply_count === 0
         })?.length || 0
+
+        // 获取所有反馈（管理员权限）
+        if (hasPermission.value) {
+            const { data: allFeedback, error } = await supabase
+                .from('feedback_with_users')
+                .select('*')
+            
+            if (!error) {
+                stats.value.feedbackCount = allFeedback?.length || 0
+                // 过滤待回复的反馈
+                const pendingFeedback = allFeedback?.filter(feedback => {
+                    return feedback.reply_count === 0
+                })
+                stats.value.feedbackPending = pendingFeedback?.length || 0
+            }
+        } else {
+            // 普通用户只显示自己的反馈总数
+            stats.value.feedbackCount = personalData?.length || 0
+            stats.value.feedbackPending = stats.value.myFeedbackTrend
+        }
     } catch (error) {
         console.error('获取反馈失败:', error)
+    }
+}
+
+// Get case sharing stats
+const getCaseSharingCount = async () => {
+    try {
+        if (hasPermission.value) {
+            // 管理员可以查看所有知识分享
+            const { data: allCaseSharing, error } = await supabase
+                .from('case_sharing')
+                .select('*')
+            
+            if (!error) {
+                stats.value.caseSharingCount = allCaseSharing?.length || 0
+                // 过滤待审核的知识分享（假设有status字段，status为pending表示待审核）
+                const pendingCaseSharing = allCaseSharing?.filter(item => {
+                    return item.status === 'pending' || item.status === null
+                })
+                stats.value.caseSharingPending = pendingCaseSharing?.length || 0
+            }
+        } else {
+            // 普通用户只显示自己的知识分享
+            const { data: personalCaseSharing, error } = await supabase
+                .from('case_sharing')
+                .select('*')
+                .eq('user_id', userStore.user?.user_id)
+            
+            if (!error) {
+                stats.value.caseSharingCount = personalCaseSharing?.length || 0
+                const pendingCaseSharing = personalCaseSharing?.filter(item => {
+                    return item.status === 'pending' || item.status === null
+                })
+                stats.value.caseSharingPending = pendingCaseSharing?.length || 0
+            }
+        }
+    } catch (error) {
+        console.error('获取知识分享失败:', error)
     }
 }
 
@@ -671,7 +768,8 @@ onMounted(() => {
         getYourAssignmentsCount(),
         getAnnouncements(),
         getTasks(),
-        getFeedbackCount()
+        getFeedbackCount(),
+        getCaseSharingCount()
     ]).catch(error => {
         console.error('加载数据失败:', error)
     })
