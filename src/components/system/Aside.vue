@@ -1,7 +1,8 @@
 <template>
     <el-menu class="el-menu-vertical-demo" active-text-color="#fff" background-color="#05479a" text-color="#fff"
         style="position: fixed;z-index: 999; height: calc(100vh - 84px);left: 0; width:240px;" :router="true"
-        :unique-opened="true" :default-active="activeIndex" :default-openeds="openedMenus" @select="handleMenuSelect" :loading="loading">
+        :unique-opened="true" :default-active="activeIndex" :default-openeds="openedMenus" @select="handleMenuSelect"
+        :loading="loading">
 
         <template v-for="item in menus" :key="item.id">
             <el-sub-menu v-if="item.children && item.children.length > 0" :index="`/system${item.path}`">
@@ -13,7 +14,7 @@
                 </template>
                 <el-menu-item v-for="children in item.children" :key="children.id" :index="`/system${children.path}`">{{
                     children.name
-                    }}</el-menu-item>
+                }}</el-menu-item>
             </el-sub-menu>
             <el-menu-item v-else :index="`/system${item.path}`">
                 <el-icon>
@@ -93,7 +94,7 @@ const findParentElement = (element: HTMLElement): HTMLElement | null => {
 
 const handleMenuSelect = (index: string) => {
     activeIndex.value = index
-    
+
     // 检查是否为demand路由
     if (index === '/system/demand') {
         handleDemandRedirect()
@@ -101,9 +102,16 @@ const handleMenuSelect = (index: string) => {
 }
 
 // Base64URL 编码
+// function toBase64Url(json: any) {
+//     const s = typeof json === 'string' ? json : JSON.stringify(json)
+//     return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+// }
 function toBase64Url(json: any) {
-    const s = typeof json === 'string' ? json : JSON.stringify(json)
-    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    const s = typeof json === 'string' ? json : JSON.stringify(json);
+    // 使用 encodeURIComponent 处理 UTF-8 字符
+    const encoded = btoa(unescape(encodeURIComponent(s)));
+    // 转换为 Base64URL 格式
+    return encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 // 处理demand路由跳转
@@ -114,12 +122,13 @@ const handleDemandRedirect = () => {
             id: userStore.user?.user_id || '',
             email: userStore.user?.email || '',
             name: userStore.user?.full_name || userStore.user?.email?.split('@')[0] || '用户',
+            role: getUserRole(userStore.user?.role_id)
         }
-        
+
         // 编码并在新标签页中打开
         const encoded = toBase64Url(userPayload)
         window.open(`https://iwishneed.netlify.app/auth/bridge?external_user=${encoded}`, '_blank')
-        
+
     } catch (error) {
         console.error('处理demand跳转失败:', error)
         // 如果跳转失败，可以显示错误提示或回退到正常路由
@@ -130,7 +139,7 @@ const handleDemandRedirect = () => {
 // 根据角色ID获取角色名称
 const getUserRole = (roleId: number | undefined): string => {
     if (!roleId) return 'submitter'
-    
+
     switch (roleId) {
         case 0:
         case 1:
