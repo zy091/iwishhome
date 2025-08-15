@@ -120,7 +120,7 @@ const handleDemandRedirect = () => {
         
         // 编码并在新标签页中打开
         const encoded = toBase64Url(userPayload)
-        window.open(`http://localhost:5173/auth/bridge?external_user=${encoded}`, '_blank')
+        window.open(`https://iwishneed.netlify.app/auth/bridge?external_user=${encoded}`, '_blank')
         
     } catch (error) {
         console.error('处理demand跳转失败:', error)
