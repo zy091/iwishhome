@@ -114,8 +114,6 @@ const handleDemandRedirect = () => {
             id: userStore.user?.user_id || '',
             email: userStore.user?.email || '',
             name: userStore.user?.full_name || userStore.user?.email?.split('@')[0] || '用户',
-            role: getUserRole(userStore.user?.role_id),
-            avatar: userStore.user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userStore.user?.user_id || 'user'}`
         }
         
         // 编码并在新标签页中打开
