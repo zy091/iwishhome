@@ -16,6 +16,12 @@
                     children.name
                 }}</el-menu-item>
             </el-sub-menu>
+            <el-menu-item v-else-if="item.path === '/demand'" @click="handleDemandRedirect">
+                <el-icon>
+                    <component :is="item.icon" />
+                </el-icon>
+                <span>{{ item.name }}</span>
+            </el-menu-item>
             <el-menu-item v-else :index="`/system${item.path}`">
                 <el-icon>
                     <component :is="item.icon" />
@@ -44,7 +50,8 @@ import {
     SetUp,
     Folder,
     Notebook,
-    DocumentAdd
+    DocumentAdd,
+    Management
 } from '@element-plus/icons-vue'
 import type { ElSubMenu } from 'element-plus'
 const router = useRouter()

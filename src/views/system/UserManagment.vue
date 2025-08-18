@@ -77,9 +77,13 @@
             <Pagination :pagination="pagination" @update:pagination="handlePaginationUpdate" />
 
             <!-- 用户详情对话框 -->
-            <el-dialog v-model="detailsDialogVisible" title="用户详情" width="600px">
-                <div v-loading="loadingDetails">
-                    <template v-if="currentUser">
+            <el-dialog v-model="detailsDialogVisible" title="用户详情" width="600px" :teleported="false" append-to-body>
+                <div>
+                    <div v-if="loadingDetails" class="loading-container">
+                        <el-icon class="is-loading"><Loading /></el-icon>
+                        <span>加载中...</span>
+                    </div>
+                    <template v-else-if="currentUser">
                         <el-form :model="currentUser" label-width="120px">
                             <el-form-item label="用户名">
                                 <el-input v-model="currentUser.full_name" :disabled="!isEditing" />
@@ -126,9 +130,12 @@
             </el-dialog>
 
             <!-- 创建用户对话框 -->
-            <el-dialog v-loading="loadingCreatUser" v-model="createDialogVisible" title="创建用户" width="600px">
-
-                <el-form :model="newUser" :rules="userRules" ref="createForm" label-width="120px">
+            <el-dialog v-model="createDialogVisible" title="创建用户" width="600px" :teleported="false" append-to-body>
+                <div v-if="loadingCreatUser" class="loading-container">
+                    <el-icon class="is-loading"><Loading /></el-icon>
+                    <span>创建中...</span>
+                </div>
+                <el-form v-else :model="newUser" :rules="userRules" ref="createForm" label-width="120px">
                     <el-form-item label="用户名" prop="full_name">
                         <el-input v-model="newUser.full_name" />
                     </el-form-item>
@@ -166,7 +173,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, reactive, watch } from 'vue';
-import { Search } from '@element-plus/icons-vue'
+import { Search, Loading } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { supabase } from '@/lib/supabaseClient'
 import Breadbcrum from '@/components/system/Breadcrumb.vue'
@@ -729,5 +736,23 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #909399;
+}
+
+.loading-container .el-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.loading-container span {
+    font-size: 14px;
 }
 </style>
