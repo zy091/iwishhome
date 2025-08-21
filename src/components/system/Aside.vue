@@ -120,7 +120,6 @@ onMounted(async () => {
 })
 
 // Base64URL 编码
-
 function toBase64Url(json: any) {
     const s = typeof json === 'string' ? json : JSON.stringify(json);
     // 使用 encodeURIComponent 处理 UTF-8 字符
@@ -128,7 +127,6 @@ function toBase64Url(json: any) {
     // 转换为 Base64URL 格式
     return encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
-
 
 // 处理demand路由跳转
 const handleDemandRedirect = () => {
@@ -138,16 +136,17 @@ const handleDemandRedirect = () => {
             id: userStore.user?.user_id || '',
             email: userStore.user?.email || '',
             name: userStore.user?.full_name || userStore.user?.email?.split('@')[0] || '用户',
-            role: getUserRole(userStore.user?.role_id)
+            role: getUserRole(userStore.user?.role_id),
+            origin: window.location.origin,
+            exp: Math.floor(Date.now() / 1000) + 900 // 15分钟过期
         }
 
-        // 编码并在新标签页中打开
+        // 编码并在新标签页中打开 - 使用 URL Fragment (#) 而非查询参数 (?)
         const encoded = toBase64Url(userPayload)
-        window.open(`https://iwishneed.netlify.app/auth/bridge?external_user=${encoded}&main_access_token=${accessToken.value}`, '_blank')
+        window.open(`https://iwishneed.netlify.app/auth/bridge#external_user=${encoded}&main_access_token=${accessToken.value}`, '_blank')
 
     } catch (error) {
         console.error('处理demand跳转失败:', error)
-        // 如果跳转失败，可以显示错误提示或回退到正常路由
         ElMessage.error('跳转失败，请稍后重试')
     }
 }
