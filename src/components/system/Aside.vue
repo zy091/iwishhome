@@ -137,6 +137,7 @@ const handleDemandRedirect = () => {
             email: userStore.user?.email || '',
             name: userStore.user?.full_name || userStore.user?.email?.split('@')[0] || '用户',
             role: getUserRole(userStore.user?.role_id),
+            rolename: userStore.user?.role?.name,
             origin: window.location.origin,
             exp: Math.floor(Date.now() / 1000) + 900 // 15分钟过期
         }
