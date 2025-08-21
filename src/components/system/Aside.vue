@@ -37,6 +37,7 @@
 import { ref, watchEffect, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { supabase } from '@/lib/supabaseClient'
 import {
     Document,
     Menu as IconMenu,
@@ -66,12 +67,7 @@ const menus = computed(() => {
 
 })
 
-onMounted(async () => {
-    loading.value = true
-    await userStore.fetchMenus()
-    loading.value = false
-    console.log(menus.value, 'aside menus')
-})
+
 
 // 直接使用 store 中的 menus
 
@@ -108,11 +104,23 @@ const handleMenuSelect = (index: string) => {
     }
 }
 
+
+// 主项目跳转代码
+const accessToken = ref('')
+
+onMounted(async () => {
+    loading.value = true
+    await userStore.fetchMenus()
+    
+    // 获取 session 和 access token
+    const { data: { session } } = await supabase.auth.getSession()
+    accessToken.value = session?.access_token || ''
+    
+    loading.value = false
+})
+
 // Base64URL 编码
-// function toBase64Url(json: any) {
-//     const s = typeof json === 'string' ? json : JSON.stringify(json)
-//     return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-// }
+
 function toBase64Url(json: any) {
     const s = typeof json === 'string' ? json : JSON.stringify(json);
     // 使用 encodeURIComponent 处理 UTF-8 字符
@@ -120,6 +128,7 @@ function toBase64Url(json: any) {
     // 转换为 Base64URL 格式
     return encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
+
 
 // 处理demand路由跳转
 const handleDemandRedirect = () => {
@@ -134,7 +143,7 @@ const handleDemandRedirect = () => {
 
         // 编码并在新标签页中打开
         const encoded = toBase64Url(userPayload)
-        window.open(`https://iwishneed.netlify.app/auth/bridge?external_user=${encoded}`, '_blank')
+        window.open(`https://iwishneed.netlify.app/auth/bridge?external_user=${encoded}&main_access_token=${accessToken.value}`, '_blank')
 
     } catch (error) {
         console.error('处理demand跳转失败:', error)
