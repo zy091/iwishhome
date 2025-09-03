@@ -10,6 +10,9 @@ export interface CaseSharing {
     attachment_name?: string;
     attachment_type?: string;
     link_url?: string;
+    custom_month?: string;
+    custom_sharer?: string;
+    custom_department?: string;
     created_at: string;
     updated_at: string;
     created_by: string;
@@ -26,6 +29,8 @@ export interface CaseSharingSearchParams {
     category?: string;
     showStatus?: string;
     viewType?: 'all' | 'my'; // 全部案例或我的案例
+    sharer?: string;
+    department?: string;
 }
 
 export interface CreateCaseSharingParams {
@@ -37,6 +42,9 @@ export interface CreateCaseSharingParams {
     attachment_name?: string;
     attachment_type?: string;
     link_url?: string;
+    custom_month?: string;
+    custom_sharer?: string;
+    custom_department?: string;
 }
 
 export const hasAdminPermission = (roleId: number): boolean => {
@@ -52,7 +60,8 @@ export const caseSharingService = {
 
         // 添加查询条件
         if (params.query) {
-            query = query.ilike('title', `%${params.query}%`);
+            // 使用 OR 条件同时搜索标题、分享人和部门
+            query = query.or(`title.ilike.%${params.query}%,custom_sharer.ilike.%${params.query}%,custom_department.ilike.%${params.query}%`);
         }
 
         if (params.category && params.category !== 'all') {

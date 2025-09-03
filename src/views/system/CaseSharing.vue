@@ -14,7 +14,7 @@
         <!-- 搜索功能 -->
         <el-card shadow="always" style="margin-bottom: 20px;">
             <el-space alignment="start" :size="30">
-                <el-input v-model="searchQuery" style="width: 240px" placeholder="请输入分享标题" :suffix-icon="Search"
+                <el-input v-model="searchQuery" style="width: 400px" placeholder="搜索标题、分享人、部门（支持模糊搜索）" :suffix-icon="Search"
                     size="large" clearable />
                 <el-select v-model="categoryFilter" placeholder="分享类型" clearable style="width: 180px" size="large">
                     <el-option v-for="category in categoryOptions" :key="category.value" :label="category.label" :value="category.value" />
@@ -44,17 +44,53 @@
                     </div>
                 </template>
 
-                <el-table v-loading="loading" :data="cases" @selection-change="handleSelectionChange">
-                    <el-table-column type="selection" width="55" v-if="hasAdminPerm" />
+                <el-table 
+                    v-loading="loading" 
+                    :data="cases" 
+                    @selection-change="handleSelectionChange"
+                    :scrollbar-always-on="true"
+                    style="width: 100%"
+                >
+                    <el-table-column type="selection" width="55" v-if="hasAdminPerm" fixed="left" />
+                    <el-table-column label="分享月份" width="120" >
+                        <template #default="{ row }">
+                            <div class="month-info">
+                                <div v-if="row.custom_month" class="month-item">
+                                    <el-icon color="#E6A23C" size="14"><Calendar /></el-icon>
+                                    <span class="month-text ">{{ row.custom_month }}</span>
+                                </div>
+                                <div v-else class="month-empty">
+                                    <span class="empty-text">-</span>
+                                </div>
+                            </div>
+                        </template>
+                    </el-table-column>
                     <el-table-column prop="title" label="标题" min-width="200" />
-                    <el-table-column prop="category" label="类型" width="130">
+                    <el-table-column label="分享人/部门" min-width="150">
+                        <template #default="{ row }">
+                            <div class="sharer-dept-info">
+                                <div v-if="row.custom_sharer" class="sharer-item">
+                                    <el-icon color="#67C23A" size="14"><User /></el-icon>
+                                    <span class="sharer-text">{{ row.custom_sharer }}</span>
+                                </div>
+                                <div v-if="row.custom_department" class="dept-item">
+                                    <el-icon color="#F56C6C" size="14"><OfficeBuilding /></el-icon>
+                                    <span class="dept-text">{{ row.custom_department }}</span>
+                                </div>
+                                <div v-if="!row.custom_sharer && !row.custom_department" class="sharer-dept-empty">
+                                    <span class="empty-text">-</span>
+                                </div>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="category" label="类型" width="100">
                         <template #default="{ row }">
                             <el-tag :type="getCategoryType(row.category)" size="large">
                                 {{ getCategoryLabel(row.category) }}
                             </el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column label="附件/链接" width="120">
+                    <el-table-column label="附件/链接" width="100">
                         <template #default="{ row }">
                             <el-button 
                                 v-if="row.attachment_url" 
@@ -79,19 +115,19 @@
                             <span v-else>-</span>
                         </template>
                     </el-table-column>
-                    <el-table-column v-if="hasAdminPerm" prop="is_show" label="展示状态" width="100">
+                    <el-table-column v-if="hasAdminPerm" prop="is_show" label="展示状态" width="80">
                         <template #default="{ row }">
                             <el-tag :type="row.is_show ? 'success' : 'danger'" size="large">
                                 {{ row.is_show ? '显示' : '隐藏' }}
                             </el-tag>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="created_at" label="创建时间" width="180">
+                    <el-table-column prop="created_at" label="创建时间" width="150">
                         <template #default="{ row }">
                             {{ new Date(row.created_at).toLocaleString() }}
                         </template>
                     </el-table-column>
-                    <el-table-column prop="created_by_name" label="创建人" width="120" v-if="hasAdminPerm" />
+                    <el-table-column prop="created_by_name" label="创建人" width="80" v-if="hasAdminPerm" />
                     <el-table-column label="操作" width="230" fixed="right">
                         <template #default="{ row }">
                             <el-button-group>
@@ -157,6 +193,28 @@
                                 <el-icon color="#67C23A" size="16"><link /></el-icon>
                                 <span class="link-url">{{ selectedCase.link_url }}</span>
                                 <el-button type="success" size="small" @click="openLink(selectedCase.link_url)">打开链接</el-button>
+                            </div>
+                        </div>
+
+                        <!-- 自定义信息区 -->
+                        <div v-if="selectedCase?.custom_month || selectedCase?.custom_sharer || selectedCase?.custom_department" class="case-section">
+                            <div class="section-title">分享信息</div>
+                            <div class="custom-info">
+                                <div v-if="selectedCase?.custom_month" class="custom-item">
+                                    <el-icon color="#E6A23C" size="16"><Calendar /></el-icon>
+                                    <span class="custom-label">月份：</span>
+                                    <span class="custom-value">{{ selectedCase.custom_month }}</span>
+                                </div>
+                                <div v-if="selectedCase?.custom_sharer" class="custom-item">
+                                    <el-icon color="#67C23A" size="16"><User /></el-icon>
+                                    <span class="custom-label">分享人：</span>
+                                    <span class="custom-value">{{ selectedCase.custom_sharer }}</span>
+                                </div>
+                                <div v-if="selectedCase?.custom_department" class="custom-item">
+                                    <el-icon color="#F56C6C" size="16"><OfficeBuilding /></el-icon>
+                                    <span class="custom-label">部门：</span>
+                                    <span class="custom-value">{{ selectedCase.custom_department }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -226,6 +284,22 @@
                     <el-form-item label="链接">
                         <el-input v-model="newCase.link_url" placeholder="请输入相关链接（可选）"></el-input>
                     </el-form-item>
+                    <el-form-item label="分享月份">
+                        <el-date-picker
+                            v-model="newCase.custom_month"
+                            type="month"
+                            placeholder="选择月份（可选）"
+                            format="YYYY年MM月"
+                            value-format="YYYY年MM月"
+                            style="width: 100%"
+                        />
+                    </el-form-item>
+                    <el-form-item label="分享人">
+                        <el-input v-model="newCase.custom_sharer" placeholder="请输入自定义分享人（可选）"></el-input>
+                    </el-form-item>
+                    <el-form-item label="分享部门">
+                        <el-input v-model="newCase.custom_department" placeholder="请输入分享部门（可选）"></el-input>
+                    </el-form-item>
                     <el-form-item label="状态" v-if="hasAdminPerm">
                         <el-switch v-model="newCase.is_show" active-text="显示" inactive-text="隐藏" />
                     </el-form-item>
@@ -245,7 +319,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, reactive, onBeforeUnmount } from 'vue'
-import { Search, User, Calendar, Collection, Download, UploadFilled, Paperclip, Link } from '@element-plus/icons-vue'
+import { Search, User, Calendar, Collection, Download, UploadFilled, Paperclip, Link, OfficeBuilding } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { caseSharingService, hasAdminPermission } from '@/stores/caseSharingService'
 import type { CaseSharing } from '@/stores/caseSharingService'
@@ -295,7 +369,10 @@ const newCase = reactive({
     attachment_url: '',
     attachment_name: '',
     attachment_type: '',
-    link_url: ''
+    link_url: '',
+    custom_month: '',
+    custom_sharer: '',
+    custom_department: ''
 })
 
 const caseRules = {
@@ -514,7 +591,10 @@ const showCreateDialog = () => {
         attachment_url: '',
         attachment_name: '',
         attachment_type: '',
-        link_url: ''
+        link_url: '',
+        custom_month: '',
+        custom_sharer: '',
+        custom_department: ''
     })
     fileList.value = []
     selectedFile.value = null
@@ -533,7 +613,10 @@ const showEditDialog = (caseItem: CaseSharing) => {
         attachment_url: caseItem.attachment_url,
         attachment_name: caseItem.attachment_name,
         attachment_type: caseItem.attachment_type,
-        link_url: caseItem.link_url
+        link_url: caseItem.link_url,
+        custom_month: caseItem.custom_month,
+        custom_sharer: caseItem.custom_sharer,
+        custom_department: caseItem.custom_department
     })
     fileList.value = []
     selectedFile.value = null
@@ -634,7 +717,10 @@ const submitCase = async () => {
                     attachment_url: newCase.attachment_url,
                     attachment_name: newCase.attachment_name,
                     attachment_type: newCase.attachment_type,
-                    link_url: newCase.link_url
+                    link_url: newCase.link_url,
+                    custom_month: newCase.custom_month,
+                    custom_sharer: newCase.custom_sharer,
+                    custom_department: newCase.custom_department
                 })
                 ElMessage.success('分享已更新')
             } else {
@@ -647,7 +733,10 @@ const submitCase = async () => {
                     attachment_url: newCase.attachment_url,
                     attachment_name: newCase.attachment_name,
                     attachment_type: newCase.attachment_type,
-                    link_url: newCase.link_url
+                    link_url: newCase.link_url,
+                    custom_month: newCase.custom_month,
+                    custom_sharer: newCase.custom_sharer,
+                    custom_department: newCase.custom_department
                 })
                 ElMessage.success('分享已创建')
             }
@@ -849,6 +938,33 @@ onMounted(() => {
     color: #67C23A;
 }
 
+.custom-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.custom-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+}
+
+.custom-label {
+    font-weight: 500;
+    color: #606266;
+    margin: 0 8px;
+    min-width: 60px;
+}
+
+.custom-value {
+    color: #303133;
+    font-weight: 500;
+}
+
 .attachment-preview {
     display: flex;
     justify-content: center;
@@ -941,5 +1057,107 @@ onMounted(() => {
 .el-upload__text {
     margin: 10px 0;
 }
-</style>
+
+/* 分享月份列样式 */
+.month-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0;
+}
+
+.month-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.month-text {
+    /* color: #E6A23C; */
+    font-weight: 500;
+    font-size: 14px;
+     
+}
+
+.month-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+}
+
+/* 分享人/部门列样式 */
+.sharer-dept-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.sharer-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.sharer-text {
+    /* color: #67C23A; */
+    font-weight: 500;
+}
+
+.dept-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.dept-text {
+    /* color: #F56C6C; */
+    font-weight: 500;
+}
+
+.sharer-dept-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+}
+
+.empty-text {
+    color: #C0C4CC;
+    font-size: 13px;
+}
+
+/* 表格滚动优化样式 */
+:deep(.el-table) {
+    overflow-x: auto;
+}
+
+:deep(.el-table__body-wrapper) {
+    overflow-x: auto;
+}
+
+:deep(.el-table__fixed-right) {
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.el-table__fixed-left) {
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 确保固定列在滚动时有正确的层级 */
+:deep(.el-table__fixed-right-patch) {
+    background-color: #fafafa;
+}
+
+:deep(.el-table__fixed-left-patch) {
+    background-color: #fafafa;
+}
+ </style>
 
