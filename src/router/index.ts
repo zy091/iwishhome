@@ -69,11 +69,6 @@ const router = createRouter({
           component: () => import('../views/system/Optimization/Responsibilities.vue'),
         },
         {
-          path: 'website-case', // 网站案例
-          name: 'website-case',
-          component: () => import('../views/system/Optimization/WebsiteCase.vue'),
-        },
-        {
           path: 'training-and-learning', // 培训学习
           name: 'training-and-learning',
           component: () => import('../views/system/Optimization/TrainingAndLearning.vue'),
@@ -108,11 +103,6 @@ const router = createRouter({
               path: 'learn-experience', // 学习心得
               name: 'learn-experience',
               component: () => import('../views/system/Optimization/Training/StudyNote.vue'),
-            },
-            {
-              path: 'study-materials', // 学习资料
-              name: 'study-materials',
-              component: () => import('../views/system/Optimization/Training/StudyMaterials.vue'),
             },
             {
               path: 'study-material-folder', // 学习资料文件夹

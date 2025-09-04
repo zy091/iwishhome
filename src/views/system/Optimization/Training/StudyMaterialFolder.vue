@@ -101,23 +101,46 @@
                     <p><strong>创建时间:</strong> <span>{{ selectedMaterial?.created_at ?
                         formatDate(selectedMaterial.created_at) :
                             '' }}</span></p>
-                    <div class="material-actions"
-                        v-if="materialContent && (selectedMaterial?.type === 'link' || selectedMaterial?.type === 'video' || selectedMaterial?.type === 'pdf')">
-                        <el-button type="primary" @click="openMaterial(selectedMaterial)">
-                            打开链接
-                        </el-button>
-                    </div>
-                    <!-- 图片直接展示 -->
-                    <el-image v-else-if="selectedMaterial?.type === 'image'" :src="materialContent" fit="contain"
-                        style="max-width: 100%;" />
-
-                    <!-- 普通文本直接用div -->
-                    <div v-else-if="selectedMaterial?.type === 'txt'" v-html="materialContent" class="text-content">
-                    </div>
-
-                    <!-- 其他文件类型则保留当前的编辑器方式 -->
-                    <div v-else class="editor-container">
-                        <div ref="editor"></div>
+                    
+                    <!-- 文件预览区域 -->
+                    <div class="material-preview" v-if="materialContent">
+                        <div class="preview-actions">
+                            <el-button type="primary" @click="viewMaterial">
+                                {{ getPreviewButtonText() }}
+                            </el-button>
+                            <el-button v-if="canPreview" @click="openFullscreen">
+                                全屏预览
+                            </el-button>
+                        </div>
+                        
+                        <!-- 内嵌预览内容 -->
+                        <div class="preview-content" v-if="showPreview">
+                            <template v-if="selectedMaterial?.type === 'image'">
+                                <img :src="materialContent" class="preview-image" @click="openFullscreen" />
+                            </template>
+                            <template v-else-if="selectedMaterial?.type === 'pdf'">
+                                <iframe :src="getPdfPreviewUrl(materialContent)" class="preview-frame"></iframe>
+                            </template>
+                            <template v-else-if="selectedMaterial?.type === 'word'">
+                                <iframe :src="wordPreviewUrl" class="word-preview-frame"></iframe>
+                            </template>
+                            <template v-else-if="selectedMaterial?.type === 'link' || selectedMaterial?.type === 'video'">
+                                <div class="link-preview">
+                                    <p>链接地址: {{ materialContent }}</p>
+                                    <el-button type="primary" @click="openMaterial(selectedMaterial)">
+                                        在新窗口中打开
+                                    </el-button>
+                                </div>
+                            </template>
+                            <template v-else-if="selectedMaterial?.type === 'txt'">
+                                <div class="text-content" v-html="materialContent"></div>
+                            </template>
+                            <template v-else>
+                                <div class="editor-container">
+                                    <div ref="editor"></div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -125,11 +148,26 @@
                 <el-button @click="dialogVisible = false">关闭</el-button>
             </template>
         </el-dialog>
+
+        <!-- 全屏预览对话框 -->
+        <el-dialog v-model="fullscreenVisible" title="全屏预览" width="100%" top="0" :show-close="true" destroy-on-close class="fullscreen-dialog">
+            <div class="fullscreen-preview">
+                <template v-if="selectedMaterial?.type === 'image'">
+                    <img :src="materialContent" class="fullscreen-image" />
+                </template>
+                <template v-else-if="selectedMaterial?.type === 'pdf'">
+                    <iframe :src="getPdfPreviewUrl(materialContent)" class="fullscreen-frame"></iframe>
+                </template>
+                <template v-else-if="selectedMaterial?.type === 'word'">
+                    <iframe :src="wordPreviewUrl" class="fullscreen-frame"></iframe>
+                </template>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, onBeforeUnmount } from 'vue'
+import { ref, onMounted, reactive, onBeforeUnmount, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search, ArrowLeft, House } from '@element-plus/icons-vue'
 import { supabase } from '@/lib/supabaseClient'
@@ -168,6 +206,12 @@ const materialContent = ref('')
 const editor = ref<HTMLElement | null>(null)
 let joditInstance: any = null
 
+// 新增预览相关变量
+const showPreview = ref(false)
+const fullscreenVisible = ref(false)
+const wordPreviewUrl = ref('')
+const wordFileUrl = ref('') // 存储Word文件的公共URL
+
 // 获取文件夹图标
 const getFolderIcon = () => {
     return new URL(`/src/assets/icons/file.png`, import.meta.url).href
@@ -182,6 +226,42 @@ const getFileIcon = (type: string) => {
 // 格式化日期
 const formatDate = (date: string) => {
     return new Date(date).toLocaleString()
+}
+
+// 判断是否可以预览
+const canPreview = computed(() => {
+    if (!selectedMaterial.value?.type) return false
+    const type = selectedMaterial.value.type
+    return ['image', 'pdf', 'word',  'video', 'txt'].includes(type)
+})
+
+// 获取预览按钮文本
+const getPreviewButtonText = () => {
+    if (!selectedMaterial.value?.type) return '预览'
+    const type = selectedMaterial.value.type
+    switch (type) {
+        case 'image':
+            return '预览图片'
+        case 'pdf':
+            return '预览PDF'
+        case 'word':
+            return '预览Word'
+        case 'link':
+        case 'video':
+            return '打开链接'
+        case 'txt':
+            return '查看文本'
+        default:
+            return '预览'
+    }
+}
+
+// 获取PDF预览URL（禁用打印和下载）
+const getPdfPreviewUrl = (url: string) => {
+    if (!url) return ''
+    // 添加参数禁用打印和下载功能
+    const separator = url.includes('?') ? '&' : '?'
+    return `${url}${separator}#toolbar=0&navpanes=0&scrollbar=1&view=FitH&disableprint=1&disablesave=1`
 }
 
 // 处理项目点击
@@ -262,6 +342,14 @@ const fetchMaterialWithContents = async (materialId: string) => {
                         .download(path)
 
                     if (fileError) throw fileError
+
+                    // 获取Word文件的公共URL用于预览
+                    const { data: { publicUrl } } = await supabase
+                        .storage
+                        .from('materials')
+                        .getPublicUrl(path)
+                    
+                    wordFileUrl.value = publicUrl
 
                     const arrayBuffer = await fileData.arrayBuffer()
                     const result = await mammoth.convertToHtml({ arrayBuffer })
@@ -424,12 +512,55 @@ const openMaterial = (material: any) => {
     }
 }
 
+// 查看资料
+const viewMaterial = () => {
+    if (!selectedMaterial.value) return
+    
+    const type = selectedMaterial.value.type
+    
+    if (type === 'word') {
+        // 为Word文档准备预览URL，使用文件的公共URL
+        if (wordFileUrl.value) {
+            wordPreviewUrl.value = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(wordFileUrl.value)}`
+        } else {
+            ElMessage.error('Word文件URL获取失败')
+            return
+        }
+    }
+    
+    showPreview.value = true
+}
+
+// 打开全屏预览
+const openFullscreen = () => {
+    if (!selectedMaterial.value) return
+    
+    const type = selectedMaterial.value.type
+    
+    if (type === 'word') {
+        // 为Word文档准备预览URL，使用文件的公共URL
+        if (wordFileUrl.value) {
+            wordPreviewUrl.value = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(wordFileUrl.value)}`
+        } else {
+            ElMessage.error('Word文件URL获取失败')
+            return
+        }
+    }
+    
+    fullscreenVisible.value = true
+}
+
 // 对话框关闭时清理编辑器
 const handleDialogClose = () => {
     if (joditInstance) {
         joditInstance.destruct()
         joditInstance = null
     }
+    // 重置预览状态
+    showPreview.value = false
+    fullscreenVisible.value = false
+    wordPreviewUrl.value = ''
+    wordFileUrl.value = ''
 }
 
 // 返回上一级
@@ -717,5 +848,100 @@ function getIconUrl(name: string) {
     border: 2px solid #ccc;
     margin-top: 20px;
     border-radius: 5px;
+}
+
+/* 新增预览相关样式 */
+.material-preview {
+    margin-top: 20px;
+}
+
+.preview-actions {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.preview-content {
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.preview-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.preview-image:hover {
+    transform: scale(1.02);
+}
+
+.preview-frame {
+    width: 100%;
+    height: 400px;
+    border: none;
+}
+
+.word-preview-frame {
+    width: 100%;
+    height: 400px;
+    border: none;
+}
+
+.link-preview {
+    padding: 20px;
+    text-align: center;
+    background-color: #f5f7fa;
+    border-radius: 4px;
+}
+
+.link-preview p {
+    margin-bottom: 15px;
+    word-break: break-all;
+    color: #606266;
+}
+
+/* 全屏预览样式 */
+.fullscreen-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+.fullscreen-image {
+    max-width: 100%;
+    max-height: 100vh;
+    cursor: pointer;
+}
+
+.fullscreen-frame {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+}
+
+/* 全屏对话框样式 */
+:deep(.fullscreen-dialog .el-dialog) {
+    margin: 0 !important;
+    height: 100vh;
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
+:deep(.fullscreen-dialog .el-dialog__body) {
+    padding: 0;
+    height: calc(100vh - 60px);
+}
+
+:deep(.fullscreen-dialog .el-dialog__header) {
+    padding: 10px 20px;
+    background-color: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
 }
 </style>
