@@ -1,0 +1,1 @@
+import{b as t}from"./index-Y63Xf8yq.js";import{y as o,A as r,z as s}from"./vendor-CcmhhHhJ.js";import"./elementPlus-BUR7wieg.js";import"./supabase-CHaJ5Hcu.js";const n={};function a(c,e){return s(),o("div",null,e[0]||(e[0]=[r("h1",null,"Website Layout",-1)]))}const p=t(n,[["render",a]]);export{p as default};

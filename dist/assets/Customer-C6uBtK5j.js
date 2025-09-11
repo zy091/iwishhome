@@ -1,1 +1,0 @@
-import{_ as r}from"./index-DURmTYuj.js";import{y as o,A as t,z as n}from"./vendor-COQJj1AX.js";import"./elementPlus-4XfGssYs.js";import"./supabase-DD2UsJtA.js";const s={};function a(c,e){return n(),o("div",null,e[0]||(e[0]=[t("h1",null,"客户管理",-1)]))}const p=r(s,[["render",a]]);export{p as default};

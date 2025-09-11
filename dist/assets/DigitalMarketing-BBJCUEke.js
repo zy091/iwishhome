@@ -1,0 +1,1 @@
+import{b as e}from"./index-Y63Xf8yq.js";import{y as r,A as o,z as n}from"./vendor-CcmhhHhJ.js";import"./elementPlus-BUR7wieg.js";import"./supabase-CHaJ5Hcu.js";const a={};function i(s,t){return n(),r("div",null,t[0]||(t[0]=[o("h1",null,"Digital Marketing",-1)]))}const p=e(a,[["render",i]]);export{p as default};
