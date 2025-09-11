@@ -238,6 +238,44 @@
                         <div v-html="materialContent" class="text-content"></div>
                     </div>
                 </template>
+                <template v-else-if="isMd">
+                    <div class="markdown-preview">
+                        <div class="markdown-toolbar">
+                            <el-button-group>
+                                <el-button :type="markdownViewMode === 'preview' ? 'primary' : ''" @click="markdownViewMode = 'preview'">
+                                    预览
+                                </el-button>
+                                <el-button :type="markdownViewMode === 'edit' ? 'primary' : ''" @click="markdownViewMode = 'edit'">
+                                    编辑
+                                </el-button>
+                                <el-button :type="markdownViewMode === 'split' ? 'primary' : ''" @click="markdownViewMode = 'split'">
+                                    分屏
+                                </el-button>
+                            </el-button-group>
+                            <el-button type="success" @click="saveMarkdown" :loading="savingMarkdown">
+                                保存
+                            </el-button>
+                        </div>
+                        
+                        <div class="markdown-container" :class="markdownViewMode">
+                            <!-- 编辑器区域 -->
+                            <div v-if="markdownViewMode === 'edit' || markdownViewMode === 'split'" class="markdown-editor">
+                                <el-input
+                                    v-model="markdownContent"
+                                    type="textarea"
+                                    :rows="20"
+                                    placeholder="请输入Markdown内容..."
+                                    class="markdown-textarea"
+                                />
+                            </div>
+                            
+                            <!-- 预览区域 -->
+                            <div v-if="markdownViewMode === 'preview' || markdownViewMode === 'split'" class="markdown-preview-content">
+                                <div v-html="renderedMarkdown" class="markdown-html"></div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
                 <template v-else>
                     <div class="material-download">
                         <p>无法预览此类型的文件，请下载后查看</p>
@@ -321,6 +359,8 @@ import UploadMaterials from './UploadMaterials.vue'
 import { Jodit } from 'jodit'
 import mammoth from 'mammoth'
 import * as XLSX from 'xlsx'
+import { marked } from 'marked'
+import hljs from 'highlight.js'
 
 const breadbcrum = reactive([
     {
@@ -350,6 +390,11 @@ const addMaterialDialogVisible = ref(false)
 const previewDialogVisible = ref(false)  // 文件预览对话框
 const fullscreenVisible = ref(false)  // 全屏预览对话框
 const wordPreviewUrl = ref('')  // Word预览URL
+
+// Markdown相关变量
+const markdownViewMode = ref<'preview' | 'edit' | 'split'>('preview')
+const markdownContent = ref('')
+const savingMarkdown = ref(false)
 
 // 文件夹管理状态
 const folderLoading = ref(false)
@@ -395,9 +440,34 @@ const isVideoMaterial = computed(() => {
 const isTextMaterial = computed(() => {
     return selectedMaterial.value?.type === 'txt'
 })
+const isMd = computed(() => {
+    return selectedMaterial.value?.type === 'md'
+})
 
 const isExcelMaterial = computed(() => {
     return selectedMaterial.value?.type === 'excel'
+})
+
+// 配置marked
+marked.setOptions({
+    highlight: function(code: string, lang: string) {
+        if (lang && hljs.getLanguage(lang)) {
+            try {
+                return hljs.highlight(code, { language: lang }).value
+            } catch (err) {
+                console.error('代码高亮错误:', err)
+            }
+        }
+        return hljs.highlightAuto(code).value
+    },
+    breaks: true,
+    gfm: true
+} as any)
+
+// 渲染markdown内容
+const renderedMarkdown = computed(() => {
+    if (!markdownContent.value) return ''
+    return marked(markdownContent.value)
 })
 
 // 获取预览按钮文字
@@ -409,6 +479,7 @@ const getPreviewButtonText = () => {
     if (isLinkMaterial.value) return '打开链接'
     if (isVideoMaterial.value) return '预览视频'
     if (isTextMaterial.value) return '预览文本'
+    if (isMd.value) return '预览Markdown'
     return '查看文件'
 }
 
@@ -428,7 +499,8 @@ const fileTypes = [
     { value: 'txt', label: '文本' },
     { value: 'word', label: 'Word' },
     { value: 'excel', label: 'Excel' },
-    { value: 'zip', label: '压缩包' }
+    { value: 'zip', label: '压缩包' },
+    { value: 'md', label: 'Markdown' }
 ]
 
 // 平台选项
@@ -582,6 +654,21 @@ const showViewDialog = async (material: any) => {
                     if (joditInstance) {
                         joditInstance.value = materialContent.value
                     }
+                } else if (material.type === 'md') {
+                    // Markdown文件处理
+                    const { data: fileData, error: fileError } = await supabase
+                        .storage
+                        .from('materials')
+                        .download(path)
+                        
+                    if (fileError) throw fileError
+                    
+                    const text = await fileData.text()
+                    materialContent.value = text
+                    markdownContent.value = text
+                    
+                    // 重置markdown视图模式
+                    markdownViewMode.value = 'preview'
                 } else if (material.type === 'image') {
                     // 图片类型
                     const { data: { publicUrl } } = await supabase
@@ -697,6 +784,60 @@ const openLink = () => {
 const downloadMaterial = () => {
     if (materialContent.value) {
         window.open(materialContent.value, '_blank')
+    }
+}
+
+// 保存Markdown文件
+const saveMarkdown = async () => {
+    if (!selectedMaterial.value || !markdownContent.value) {
+        ElMessage.warning('没有可保存的内容')
+        return
+    }
+    
+    savingMarkdown.value = true
+    
+    try {
+        // 创建新的文件内容
+        const file = new File([markdownContent.value], selectedMaterial.value.title + '.md', {
+            type: 'text/markdown'
+        })
+        
+        // 上传到storage
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`
+        
+        const { data: fileData, error: uploadError } = await supabase.storage
+            .from('materials')
+            .upload(`documents/${fileName}`, file, {
+                upsert: true
+            })
+            
+        if (uploadError) throw uploadError
+        
+        const { data: urlData } = supabase.storage
+            .from('materials')
+            .getPublicUrl(fileData.path)
+        
+        // 更新material_contents表
+        const { error: updateError } = await supabase
+            .from('material_contents')
+            .update({
+                content: urlData.publicUrl
+            })
+            .eq('material_id', selectedMaterial.value.id)
+            
+        if (updateError) throw updateError
+        
+        // 更新本地内容
+        materialContent.value = urlData.publicUrl
+        
+        ElMessage.success('Markdown文件保存成功！')
+        
+    } catch (error: any) {
+        console.error('保存Markdown失败:', error)
+        ElMessage.error(`保存失败: ${error.message}`)
+    } finally {
+        savingMarkdown.value = false
     }
 }
 
@@ -2136,5 +2277,267 @@ onBeforeUnmount(() => {
     padding: 10px 20px;
     background-color: #f5f7fa;
     border-bottom: 1px solid #e4e7ed;
-} 
+}
+
+/* Markdown预览和编辑样式 */
+.markdown-preview {
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.markdown-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e4e7ed;
+    margin-bottom: 15px;
+}
+
+.markdown-container {
+    flex: 1;
+    display: flex;
+    gap: 15px;
+    height: calc(100% - 60px);
+}
+
+.markdown-container.preview {
+    justify-content: center;
+}
+
+.markdown-container.edit {
+    justify-content: flex-start;
+}
+
+.markdown-container.split {
+    justify-content: space-between;
+}
+
+.markdown-editor {
+    flex: 1;
+    min-width: 0;
+}
+
+.markdown-preview-content {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.markdown-textarea {
+    height: 100%;
+}
+
+.markdown-textarea :deep(.el-textarea__inner) {
+    height: 100% !important;
+    resize: none;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.markdown-html {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+.markdown-html h1,
+.markdown-html h2,
+.markdown-html h3,
+.markdown-html h4,
+.markdown-html h5,
+.markdown-html h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #24292e;
+}
+
+.markdown-html h1 {
+    font-size: 2em;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 10px;
+}
+
+.markdown-html h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 10px;
+}
+
+.markdown-html h3 {
+    font-size: 1.25em;
+}
+
+.markdown-html p {
+    margin-bottom: 16px;
+}
+
+.markdown-html code {
+    padding: 2px 4px;
+    font-size: 85%;
+    background-color: rgba(27, 31, 35, 0.05);
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.markdown-html pre {
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+.markdown-html pre code {
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+}
+
+.markdown-html blockquote {
+    padding: 0 1em;
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+    margin: 0 0 16px 0;
+}
+
+.markdown-html table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.markdown-html table th,
+.markdown-html table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+}
+
+.markdown-html table th {
+    font-weight: 600;
+    background-color: #f6f8fa;
+}
+
+.markdown-html ul,
+.markdown-html ol {
+    padding-left: 2em;
+    margin-bottom: 16px;
+}
+
+.markdown-html li {
+    margin-bottom: 4px;
+}
+
+.markdown-html a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+.markdown-html a:hover {
+    text-decoration: underline;
+}
+
+.markdown-html img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+}
+
+/* 代码高亮样式 */
+.markdown-html .hljs {
+    background: #f6f8fa !important;
+    color: #24292e !important;
+}
+
+.markdown-html .hljs-comment,
+.markdown-html .hljs-quote {
+    color: #6a737d;
+    font-style: italic;
+}
+
+.markdown-html .hljs-keyword,
+.markdown-html .hljs-selector-tag,
+.markdown-html .hljs-subst {
+    color: #d73a49;
+    font-weight: 600;
+}
+
+.markdown-html .hljs-number,
+.markdown-html .hljs-literal,
+.markdown-html .hljs-variable,
+.markdown-html .hljs-template-variable,
+.markdown-html .hljs-tag .hljs-attr {
+    color: #005cc5;
+}
+
+.markdown-html .hljs-string,
+.markdown-html .hljs-doctag {
+    color: #032f62;
+}
+
+.markdown-html .hljs-title,
+.markdown-html .hljs-section,
+.markdown-html .hljs-selector-id {
+    color: #6f42c1;
+    font-weight: 600;
+}
+
+.markdown-html .hljs-type,
+.markdown-html .hljs-class .hljs-title {
+    color: #d73a49;
+    font-weight: 600;
+}
+
+.markdown-html .hljs-tag,
+.markdown-html .hljs-name,
+.markdown-html .hljs-attribute {
+    color: #22863a;
+    font-weight: normal;
+}
+
+.markdown-html .hljs-regexp,
+.markdown-html .hljs-link {
+    color: #032f62;
+}
+
+.markdown-html .hljs-symbol,
+.markdown-html .hljs-bullet {
+    color: #e36209;
+}
+
+.markdown-html .hljs-built_in,
+.markdown-html .hljs-builtin-name {
+    color: #005cc5;
+}
+
+.markdown-html .hljs-meta {
+    color: #6a737d;
+}
+
+.markdown-html .hljs-deletion {
+    background: #ffeef0;
+}
+
+.markdown-html .hljs-addition {
+    background: #f0fff4;
+}
+
+.markdown-html .hljs-emphasis {
+    font-style: italic;
+}
+
+.markdown-html .hljs-strong {
+    font-weight: 600;
+}
 </style>

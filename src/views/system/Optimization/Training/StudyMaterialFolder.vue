@@ -171,7 +171,7 @@ import { ref, onMounted, reactive, onBeforeUnmount, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search, ArrowLeft, House } from '@element-plus/icons-vue'
 import { supabase } from '@/lib/supabaseClient'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Jodit } from 'jodit'
 import mammoth from 'mammoth'
 import * as XLSX from 'xlsx'
@@ -185,6 +185,7 @@ const viewMode = ref('grid')
 const loading = ref(false)
 const searchKeyword = ref('')
 const route = useRoute()
+const router = useRouter()
 const platformName = ref(route.query.platform || 'google')
 const platform = ref<string | null>(null)
 const platformId = ref<string | null>(null)
@@ -272,8 +273,33 @@ const handleItemClick = async (item: any) => {
         currentLevel.value = item.id
         await loadCurrentLevelItems()
     } else if (item.type) {
-        // 如果是文件，打开内容
-        fetchMaterialWithContents(item.id)
+        // 如果是Word文件，跳转到专门的Word查看器
+        if (item.type === 'word' || item.type === 'doc' || item.type === 'docx') {
+            // 获取文件的URL
+            const { data: contentData, error: contentError } = await supabase
+                .from('material_contents')
+                .select('public_url')
+                .eq('material_id', item.id)
+                .single()
+            
+            if (contentError) {
+                ElMessage.error('获取文件URL失败')
+                return
+            }
+            
+            // 跳转到Word查看器
+            router.push({
+                name: 'word-viewer',
+                params: { id: item.id },
+                query: { 
+                    url: contentData.public_url,
+                    name: item.title || item.name
+                }
+            })
+        } else {
+            // 其他文件类型，使用原有的预览方式
+            fetchMaterialWithContents(item.id)
+        }
     }
 }
 

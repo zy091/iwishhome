@@ -130,6 +130,10 @@ const fileType = ref([
         value: 'zip',
         label: '压缩包'
     },
+    {
+        value: 'md',
+        label: 'Markdown'
+    },
 ])
 
 const filePlatform = ref([
@@ -281,22 +285,53 @@ const handleFileChange = (file: UploadUserFile) => {
         'application/msword',       // doc
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
         'application/vnd.ms-excel',  // excel
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // xlsx
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+        'text/markdown', // markdown
+        'text/x-markdown', // markdown alternative
+        'application/x-markdown', // markdown alternative
     ]
-    const isTypeValid = file.raw && validTypes.includes(file.raw.type)
+    
+    // 支持的文件扩展名
+    const validExtensions = [
+        '.png', '.jpg', '.jpeg', '.webp', // 图片
+        '.mp4', // 视频
+        '.pdf', // PDF
+        '.ppt', '.pptx', // PPT
+        '.txt', '.csv', '.html', '.xml', '.json', '.md', // 文本文件
+        '.doc', '.docx', // Word
+        '.xls', '.xlsx', // Excel
+        '.zip', '.rar', '.7z', // 压缩包
+    ]
+    
+    // 检查MIME类型
+    const isMimeTypeValid = file.raw && validTypes.includes(file.raw.type)
+    
+    // 检查文件扩展名
+    const fileName = file.name || ''
+    const fileExtension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'))
+    const isExtensionValid = validExtensions.includes(fileExtension)
+    
+    // 只要MIME类型或扩展名其中一个匹配就认为有效
+    const isTypeValid = isMimeTypeValid || isExtensionValid
+    
     const isSizeValid = file.raw && (file.raw.size / 1024 / 1024 < 100) // 修改大小限制为100MB
 
     if (!isTypeValid) {
-        ElMessage.error('文件类型不支持！')
+        ElMessage.error(`文件类型不支持！支持的格式：${validExtensions.join(', ')}`)
         return false
     }
     if (!isSizeValid) {
-        ElMessage.error('文件大小超过 10MB 限制！')
+        ElMessage.error('文件大小超过 100MB 限制！')
         return false
     }
 
     selectedFile.value = file.raw as File; // 保存文件对象
-    console.log(selectedFile.value)
+    console.log('文件信息:', {
+        name: file.name,
+        type: file.raw?.type,
+        extension: fileExtension,
+        size: file.raw?.size
+    })
 }
 
 // 执行上传
@@ -362,6 +397,7 @@ const uploadFileAndLinkToDB = async (file: File | null, materialData: { title: s
 
             const { data: urlData } = supabase.storage
                 .from('materials')
+                
                 .getPublicUrl(fileData.path);
 
             fileUrl = urlData.publicUrl;

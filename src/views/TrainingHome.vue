@@ -16,19 +16,19 @@
     </el-header>
     <!-- Hero Section -->
     <div class="hero">
-      <div class="logo"><img src="../assets/home-image/logo white.png" width="auto" height="80px" alt=""></div>
+      <!-- <div class="logo"><img src="../assets/home-image/logo white.png" width="auto" height="80px" alt=""></div>
       <div class="hero-content">
         <h1 class="hero-title" style="    margin: 0;">专注品牌独立站</h1>
         <h2 class="hero-subtitle">出海运营服务</h2>
         <p class="hero-description">专注帮助出海品牌实现品效合一的高效增长</p>
-      </div>
+      </div> -->
     </div>
 
     <!-- Services Section -->
     <div class="services">
       <h2 class="section-title">
-        <div class="en">IWISHHOME</div>
-        <div class="cn">艾维之家</div>
+        <div class="en">TRAINING SYSTEM</div>
+        <div class="cn">培训体系</div>
       </h2>
 
       <el-row :gutter="30">
@@ -40,21 +40,13 @@
             <div class="service-text">
               <h3 style="margin-bottom: 20px;">{{ service.title }}</h3>
               <p style="margin-bottom: 20px;max-width: 350px;">{{ service.description }}</p>
-              <el-link :href="service.link" style="color: #fff;">查看详情</el-link>
+              <el-link :href="service.link"  >查看详情</el-link>
             </div>
           </el-card>
         </el-col>
       </el-row>
     </div>
 
-    <!-- Contact Section -->
-    <div class="contact">
-      <div class="contact-content">
-        <h2>深入了解艾维<br>专注品牌独立站出海运营服务</h2>
-        <el-button style="background-color: #fff;border: none;padding: 20px;border-radius: 0;color: #00367C;"
-          type="primary">联系我们 →</el-button>
-      </div>
-    </div>
     <!-- Footer -->
     <Footer />
   </div>
@@ -62,8 +54,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+//引入Footer文件
 import Footer from '@/components/Footer.vue'
-
 // 导入图片
 import trainingImg from '@/assets/home-image/training.png'
 import fileImg from '@/assets/home-image/file.png'
@@ -72,27 +64,27 @@ import facebookImg from '@/assets/home-image/facebook.png'
 
 const services = ref([
   {
-    title: '培训体系',
+    title: '致员工的一封信',
     icon: trainingImg,
-    link: '/training-home',
+    link:'/system/letter-to-employee',
     description: ''
   },
   {
-    title: '运营报告',
+    title: '行业知识&网站分析',
     icon: fileImg,
-    link: '#',
+    link:'/system/digital-marketing',
     description: ''
   },
   {
-    title: '讲师体系',
+    title: 'Google广告',
     icon: googleImg,
-    link: '#',
+    link:'#',
     description: ''
   },
   {
-    title: '需求系统',
+    title: 'Criteo广告',
     icon: facebookImg,
-    link: '#',
+    link:'#',
     description: ''
   }
 ])
@@ -162,13 +154,16 @@ const services = ref([
 
 .hero {
   background: linear-gradient(135deg, #0046BE 0%, #1E88E5 100%);
-  height: 1000px;
+  height: 250px;
   color: white;
   display: flex;
   align-items: center;
   padding: 0 10%;
   position: relative;
-  background-image: url(../assets/home-image/banner.png);
+  background-image: url(../assets/home-image/output.png);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .logo img {
@@ -224,12 +219,11 @@ const services = ref([
 .service-card {
   margin-bottom: 30px;
   padding: 20px;
-  background: linear-gradient(134deg, #F3F5F8 0%, #FEFEFE 100%);
-  box-shadow: 0px 0px 18px 1px rgba(188, 197, 214, 0.16);
-  border: 2px solid #FFFFFF;
+  background: linear-gradient( 134deg, #F3F5F8 0%, #FEFEFE 100%);
+box-shadow: 0px 0px 18px 1px rgba(188,197,214,0.16);
+border: 2px solid #FFFFFF;
 }
-
-:deep(.el-card__body) {
+:deep(.el-card__body)  {
   display: flex;
   gap: 45px;
 }
@@ -247,14 +241,12 @@ const services = ref([
   color: white;
   text-align: center;
 }
-
 .contact-content {
   display: flex;
   justify-content: space-around;
   align-items: center;
   text-align: left;
 }
-
 .contact-content h2 {
   font-size: 32px;
   margin-bottom: 20px;
@@ -265,11 +257,8 @@ const services = ref([
   padding: 6px 12px;
   border-radius: 4px;
   text-decoration: none;
-  color: #fff;
-  background-color: #00367C;
-  border: none;
+  color: #fff;background-color: #00367C;border: none;
 }
-
 :deep(.el-link:hover) {
   background-color: #004db1;
   text-decoration: none;
@@ -284,4 +273,6 @@ const services = ref([
   transform: translateY(-5px);
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
+
+
 </style>

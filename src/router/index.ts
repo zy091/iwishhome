@@ -13,6 +13,11 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      path: '/training-home',
+      name: 'training-home',
+      component: () => import('../views/TrainingHome.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: Login,
@@ -47,6 +52,31 @@ const router = createRouter({
           path: 'customer',
           name: 'customer',
           component: () => import('../views/system/Customer.vue'),
+        },
+        {
+          path: 'letter-to-employee',
+          name: 'letter-to-employee',
+          component: () => import('../views/TrainingHome/Letter.vue'),
+        },
+        {
+          path: 'company-introduction',
+          name: 'company-introduction',
+          component: () => import('../views/TrainingHome/Introduce.vue'),
+        },
+        {
+          path: 'apply-for-registration',
+          name: 'apply-for-registration',
+          component: () => import('../views/TrainingHome/Register.vue'),
+        },
+        {
+          path: 'digital-marketing',
+          name: 'digital-marketing',
+          component: () => import('../views/TrainingHome/DigitalMarketing.vue'),
+        },
+        {
+          path: 'website-layout',
+          name: 'website-layout',
+          component: () => import('../views/TrainingHome/WebsiteLayout.vue'),
         },
         {
           path: 'nas-files', // NAS文件管理
@@ -209,6 +239,31 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
             requiresAdmin: true,
+          }
+        },
+        {
+          path: 'file-converter',
+          name: 'file-converter',
+          component: () => import('@/views/system/DataManagement/FileConverter.vue'),
+          meta: {
+            requiresAuth: true,
+            requiresAdmin: true,
+          }
+        },
+        {
+          path: 'word-viewer/:id',
+          name: 'word-viewer',
+          component: () => import('@/views/system/DataManagement/WordViewer.vue'),
+          meta: {
+            requiresAuth: true,
+          }
+        },
+        {
+          path: 'word-file-manager',
+          name: 'word-file-manager',
+          component: () => import('@/views/system/DataManagement/WordFileManager.vue'),
+          meta: {
+            requiresAuth: true,
           }
         },
         {

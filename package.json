@@ -14,11 +14,15 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.1",
+    "@types/marked": "^5.0.2",
     "element-plus": "^2.9.4",
+    "highlight.js": "^11.11.1",
     "jodit": "^4.6.2",
-    "mammoth": "^1.9.0",
-    "pdfjs-dist": "^5.2.133",
+    "mammoth": "^1.10.0",
+    "marked": "^16.2.1",
+    "pdfjs-dist": "^5.4.149",
     "pinia": "^3.0.1",
+    "turndown": "^7.2.1",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "xlsx": "^0.18.5"

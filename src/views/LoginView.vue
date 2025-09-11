@@ -33,10 +33,11 @@
 import { reactive, ref } from 'vue'
 import type { FormInstance } from 'element-plus'
 
-import { useRouter } from 'vue-router' // 导入路由
+import { useRouter ,useRoute} from 'vue-router' // 导入路由
 import { useUserStore } from '@/stores/user';
 
 const router = useRouter(); // 创建路由实例
+const route = useRoute();
 const formLabelAlign = reactive<{
     email: string,
     password: string,
@@ -51,7 +52,11 @@ const submitForm = async () => {
 
     const {error } = await userStore.login(email, password)
     if (!error) {
-        router.push('/system'); // 登录成功后跳转
+        if (route.query.redirect) {
+            router.push(route.query.redirect as string);
+        } else {
+            router.push('/system');
+        }
     } 
 
 }

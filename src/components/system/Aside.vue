@@ -3,33 +3,82 @@
         style="position: fixed;z-index: 999; height: calc(100vh - 84px);left: 0; width:240px;" :router="true"
         :unique-opened="true" :default-active="activeIndex" :default-openeds="openedMenus" @select="handleMenuSelect"
         :loading="loading">
+        <template v-if="route.name === 'letter-to-employee' || route.name === 'company-introduction' || route.name === 'apply-for-registration' ">
+            <el-menu-item index="/training-home">
+                <el-icon>
+                    <ArrowLeft />
+                </el-icon>
+                <span>返回</span>
+            </el-menu-item>
+            <el-menu-item index="/system/letter-to-employee">
+                <el-icon>
+                    <Document />
+                </el-icon>
+                <span>致员工的一封信</span>
+            </el-menu-item>
+            <el-menu-item index="/system/company-introduction">
+                <el-icon>
+                    <DataBoard />
+                </el-icon>
+                <span>了解艾维</span>
+            </el-menu-item>
+            <el-menu-item index="/system/apply-for-registration">
+                <el-icon>
+                    <InfoFilled />
+                </el-icon>
+                <span>申请注册</span>
+            </el-menu-item>
 
-        <template v-for="item in menus" :key="item.id">
-            <el-sub-menu v-if="item.children && item.children.length > 0" :index="`/system${item.path}`">
-                <template #title>
+        </template>
+        <template v-else-if="route.name === 'digital-marketing' || route.name === 'website-layout'">
+            <el-menu-item index="/training-home">
+                <el-icon>
+                    <ArrowLeft />
+                </el-icon>
+                <span>返回</span>
+            </el-menu-item>
+            <el-menu-item index="/system/digital-marketing">
+                <el-icon>
+                    <Document />
+                </el-icon>
+                <span>了解数字营销与品牌独立站</span>
+            </el-menu-item>
+            <el-menu-item index="/system/website-layout">
+                <el-icon>
+                    <DataAnalysis />
+                </el-icon>
+                <span>独立站的布局及优化诊断</span>
+            </el-menu-item>
+        </template>
+
+        <template v-else>
+            <template v-for="item in menus" :key="item.id">
+                <el-sub-menu v-if="item.children && item.children.length > 0" :index="`/system${item.path}`">
+                    <template #title>
+                        <el-icon>
+                            <component :is="item.icon" />
+                        </el-icon>
+                        <span>{{ item.name }}</span>
+                    </template>
+                    <el-menu-item v-for="children in item.children" :key="children.id"
+                        :index="`/system${children.path}`">{{
+                            children.name
+                        }}</el-menu-item>
+                </el-sub-menu>
+                <el-menu-item v-else-if="item.path === '/demand'" @click="handleDemandRedirect">
                     <el-icon>
                         <component :is="item.icon" />
                     </el-icon>
                     <span>{{ item.name }}</span>
-                </template>
-                <el-menu-item v-for="children in item.children" :key="children.id" :index="`/system${children.path}`">{{
-                    children.name
-                }}</el-menu-item>
-            </el-sub-menu>
-            <el-menu-item v-else-if="item.path === '/demand'" @click="handleDemandRedirect">
-                <el-icon>
-                    <component :is="item.icon" />
-                </el-icon>
-                <span>{{ item.name }}</span>
-            </el-menu-item>
-            <el-menu-item v-else :index="`/system${item.path}`">
-                <el-icon>
-                    <component :is="item.icon" />
-                </el-icon>
-                <span>{{ item.name }}</span>
-            </el-menu-item>
+                </el-menu-item>
+                <el-menu-item v-else :index="`/system${item.path}`">
+                    <el-icon>
+                        <component :is="item.icon" />
+                    </el-icon>
+                    <span>{{ item.name }}</span>
+                </el-menu-item>
+            </template>
         </template>
-
     </el-menu>
 </template>
 
@@ -52,10 +101,13 @@ import {
     Folder,
     Notebook,
     DocumentAdd,
-    Management
+    Management,
+    DataBoard,
 } from '@element-plus/icons-vue'
 import type { ElSubMenu } from 'element-plus'
 const router = useRouter()
+const route = useRoute()
+console.log(router, '==========', route.name)
 const activeIndex = ref('')
 const openedMenus = ref<string[]>([])
 import { useUserStore } from '@/stores/user' // 确保导入 useUserStore
@@ -111,11 +163,11 @@ const accessToken = ref('')
 onMounted(async () => {
     loading.value = true
     await userStore.fetchMenus()
-    
+
     // 获取 session 和 access token
     const { data: { session } } = await supabase.auth.getSession()
     accessToken.value = session?.access_token || ''
-    
+
     loading.value = false
 })
 
