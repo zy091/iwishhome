@@ -66,13 +66,13 @@ const services = ref([
   {
     title: '致员工的一封信',
     icon: trainingImg,
-    link:'/system/letter-to-employee',
+    link:'/system/training-letter',
     description: ''
   },
   {
     title: '行业知识&网站分析',
     icon: fileImg,
-    link:'/system/digital-marketing',
+    link:'/system/training-marketing',
     description: ''
   },
   {

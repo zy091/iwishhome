@@ -2,7 +2,7 @@
     <div class="layout">
         <Breadbcrum :breadbcrum="breadbcrum" />
         <div class="layout-title">
-            <h1 class="title">培训学习</h1>
+            <h1 class="title">考试内容---------------待重新开发</h1>
         </div>
 
         <div class="training-content test-grid">

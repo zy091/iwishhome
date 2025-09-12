@@ -10,19 +10,19 @@
                 </el-icon>
                 <span>返回</span>
             </el-menu-item>
-            <el-menu-item index="/system/letter-to-employee">
+            <el-menu-item index="/system/training-letter">
                 <el-icon>
                     <Document />
                 </el-icon>
                 <span>致员工的一封信</span>
             </el-menu-item>
-            <el-menu-item index="/system/company-introduction">
+            <el-menu-item index="/system/training-company">
                 <el-icon>
                     <DataBoard />
                 </el-icon>
                 <span>了解艾维</span>
             </el-menu-item>
-            <el-menu-item index="/system/apply-for-registration">
+            <el-menu-item index="/system/training-apply">
                 <el-icon>
                     <InfoFilled />
                 </el-icon>
@@ -37,13 +37,13 @@
                 </el-icon>
                 <span>返回</span>
             </el-menu-item>
-            <el-menu-item index="/system/digital-marketing">
+            <el-menu-item index="/system/training-marketing">
                 <el-icon>
                     <Document />
                 </el-icon>
                 <span>了解数字营销与品牌独立站</span>
             </el-menu-item>
-            <el-menu-item index="/system/website-layout">
+            <el-menu-item index="/system/training-website">
                 <el-icon>
                     <DataAnalysis />
                 </el-icon>

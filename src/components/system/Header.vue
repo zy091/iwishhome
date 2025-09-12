@@ -19,8 +19,10 @@
                         </el-icon>
                         <template #dropdown>
                             <el-dropdown-menu>
+                                <template v-if="!isTrainingHome">
                                 <el-dropdown-item><el-link href="/system/personal-data">
                                         个人中心</el-link></el-dropdown-item>
+                                </template>
                                 <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
@@ -33,14 +35,14 @@
 
 <script setup lang="ts">
 import { Menu as IconMenu, Message, Setting, CaretBottom } from '@element-plus/icons-vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const userStore = useUserStore()
 const user = ref(userStore.user)
 console.log(user.value, 'user')
-
+const route = useRoute()
 const circleUrl = ref('') // Define circleUrl as a reactive reference
 onMounted(() => {
     // userStore.fetchUserProfile(user.value?.id)
@@ -50,6 +52,11 @@ const handleLogout = () => {
     userStore.logout()
     router.push('/login')
 }
+
+const isTrainingHome = computed(() => {
+    return route.path.includes('/training-') || route.path.includes('/training-home')
+})
+
 </script>
 
 <style scoped>

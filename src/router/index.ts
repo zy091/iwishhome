@@ -53,30 +53,52 @@ const router = createRouter({
           name: 'customer',
           component: () => import('../views/system/Customer.vue'),
         },
+        // 培训体系
         {
-          path: 'letter-to-employee',
+          path: 'training-letter',
           name: 'letter-to-employee',
           component: () => import('../views/TrainingHome/Letter.vue'),
         },
         {
-          path: 'company-introduction',
+          path: 'training-company',
           name: 'company-introduction',
           component: () => import('../views/TrainingHome/Introduce.vue'),
         },
         {
-          path: 'apply-for-registration',
+          path: 'training-apply',
           name: 'apply-for-registration',
           component: () => import('../views/TrainingHome/Register.vue'),
         },
         {
-          path: 'digital-marketing',
+          path: 'training-marketing',
           name: 'digital-marketing',
           component: () => import('../views/TrainingHome/DigitalMarketing.vue'),
         },
         {
-          path: 'website-layout',
+          path: 'training-website',
           name: 'website-layout',
           component: () => import('../views/TrainingHome/WebsiteLayout.vue'),
+        },
+        //谷歌广告
+        {
+          path: 'assessment-requirements',
+          name: 'assessment-requirements',
+          component: () => import('../views/system/GoogleAds/AssessmentRequirements.vue'),
+        },
+        {
+          path: 'google-ads',
+          name: 'google-ads',
+          component: () => import('../views/system/GoogleAds/AboutAds.vue'),
+        },
+        {
+          path: 'learning-outline',
+          name: 'learning-outline',
+          component: () => import('../views/system/GoogleAds/LearningOutline.vue'),
+        },
+        {
+          path: 'search-principle',
+          name: 'search-principle',
+          component: () => import('../views/system/GoogleAds/SearchAds/SearchPrinciple.vue'),
         },
         {
           path: 'nas-files', // NAS文件管理

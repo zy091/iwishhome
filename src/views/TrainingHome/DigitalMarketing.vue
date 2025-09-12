@@ -1,13 +1,19 @@
 <template>
-    <div>
-        <h1>Digital Marketing</h1>
-    </div>
+    <WordDocumentViewer 
+        :document-url="documentUrl"
+        :title="title"
+        :show-back-button="false"
+    />
 </template>
 
-<script setup>
+<script setup lang="ts">
+import WordDocumentViewer from '@/components/WordDocumentViewer.vue'
 
+// 文档配置
+const documentUrl = 'https://oziqjzzrouoclocfgoub.supabase.co/storage/v1/object/public/documents/word-files/Learn-about-digital-marketing.docx'
+const title = '数字营销学习资料'
 </script>
 
 <style scoped>
-
+/* 组件样式由WordDocumentViewer组件内部处理 */
 </style>
