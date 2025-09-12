@@ -78,7 +78,7 @@ const services = ref([
   {
     title: 'Google广告',
     icon: googleImg,
-    link:'#',
+    link:'/system/',
     description: ''
   },
   {
