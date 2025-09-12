@@ -93,14 +93,24 @@ const activeSection = ref('')
 const tableOfContents = ref<any[]>([])
 
 const openFullScreenLoading = () => {
+    // 如果已经有loading实例，先关闭它
+    if (loading.value && typeof loading.value.close === 'function') {
+        loading.value.close()
+    }
+    
     loading.value = ElLoading.service({
         lock: true,
         text: 'Loading',
         background: 'rgba(0, 0, 0, 0.7)',
     })
+    
+    // 设置超时保护，避免loading一直存在
     setTimeout(() => {
+        if (loading.value && typeof loading.value.close === 'function') {
+            loading.value.close()
+        }
         loading.value = null
-    }, 2000)
+    }, 10000) // 增加超时时间到10秒
 }
 // 引用
 const wordContentRef = ref<HTMLElement>()
@@ -194,7 +204,9 @@ const loadWordDocument = async () => {
         console.error('加载文档失败:', error)
         ElMessage.error(`加载文档失败: ${error.message}`)
     } finally {
-        loading.value.close()
+        if (loading.value && typeof loading.value.close === 'function') {
+            loading.value.close()
+        }
         loading.value = null
     }
 }
@@ -425,9 +437,15 @@ onMounted(() => {
     window.addEventListener('scroll', handleScroll)
 })
 
-// 组件卸载时移除事件监听
+// 组件卸载时移除事件监听和清理loading
 onBeforeUnmount(() => {
     window.removeEventListener('scroll', handleScroll)
+    
+    // 清理loading实例
+    if (loading.value && typeof loading.value.close === 'function') {
+        loading.value.close()
+    }
+    loading.value = null
 })
 </script>
 
