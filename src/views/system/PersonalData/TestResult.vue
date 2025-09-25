@@ -267,7 +267,7 @@ const getQuestionTypeLabel = (type: string) => {
 const startLearning = () => {
     if (hasMark.value) {
         const mark = userStore.user?.role?.mark[0]
-        router.push(`/system/training-and-learning?platform=${mark}`)
+        router.push(`/system/exam-content?platform=${mark}`)
     } else {
         ElMessage.error('您没有权限进行学习')
     }

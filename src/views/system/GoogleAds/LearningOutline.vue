@@ -1,57 +1,504 @@
 <template>
-    <div class="learning-outline-container">
-        <div class="outline-header">
-            <h1>Google学习大纲</h1>
+    <div class="mindmap-container">
+        <div class="mindmap-header">
+            <h1>Google基本知识框架</h1>
+            <p>点击节点展开/收起内容</p>
         </div>
         
-        <div class="outline-content">
+        <div class="mindmap-content">
             <!-- 中心节点 -->
-            <div class="central-node">
-                <div class="central-title">Google学习大纲</div>
+            <div class="center-node">
+                <div class="node-content">
+                    <div class="node-title">Google Ads</div>
+                </div>
             </div>
             
-            <!-- 连接线 -->
-            <div class="connection-line"></div>
-            
-            <!-- 分支节点 -->
-            <div class="branch-nodes">
-                <div 
-                    v-for="(topic, index) in learningTopics" 
-                    :key="index"
-                    class="topic-node"
-                    :class="`topic-${index + 1}`"
-                    @click="selectTopic(topic)"
-                >
-                    <div class="node-content">
-                        <div class="node-icon">{{ topic.icon }}</div>
-                        <div class="node-title">{{ topic.title }}</div>
-                        <div class="node-desc">{{ topic.description }}</div>
+            <!-- 主要分支 - 垂直布局 -->
+            <div class="main-branches">
+                <!-- 分支1: Google广告形式 -->
+                <div class="branch-container">
+                    <div class="center-line"></div>
+                    <div class="main-branch-node" @click="toggleBranch('googleAds')">
+                        <div class="expand-icon" :class="{ 'expanded': expandedBranches.googleAds }">
+                            {{ expandedBranches.googleAds ? '−' : '+' }}
+                        </div>
+                        <div class="node-title">Google广告形式</div>
+                        <div class="node-count">(6)</div>
                     </div>
-                    <div class="node-connector"></div>
+                    
+                    <!-- 子分支 -->
+                    <div class="sub-branches" v-if="expandedBranches.googleAds">
+                        <!-- 搜索广告 -->
+                        <div class="sub-branch-container">
+                            <div class="sub-line"></div>
+                            <div class="sub-branch-node" @click="toggleSubBranch('searchAds')">
+                                <div class="expand-icon" :class="{ 'expanded': expandedSubBranches.searchAds }">
+                                    {{ expandedSubBranches.searchAds ? '−' : '+' }}
+                                </div>
+                                <div class="node-title">搜索广告</div>
+                                <div class="node-count">(4)</div>
+                            </div>
+                            
+                            <div class="third-level" v-if="expandedSubBranches.searchAds">
+                                <!-- 关键字 -->
+                                <div class="third-level-container">
+                                    <div class="third-line"></div>
+                                    <div class="third-level-node" @click="toggleThirdLevel('keywords')">
+                                        <div class="expand-icon" :class="{ 'expanded': expandedThirdLevel.keywords }">
+                                            {{ expandedThirdLevel.keywords ? '−' : '+' }}
+                                        </div>
+                                        <div class="node-title">关键字</div>
+                                        <div class="node-count">(4)</div>
+                                    </div>
+                                    
+                                    <div class="fourth-level" v-if="expandedThirdLevel.keywords">
+                                        <div class="fourth-level-container">
+                                            <div class="fourth-line"></div>
+                                            <div class="fourth-level-node" @click="toggleFourthLevel('keywordTypes')">
+                                                <div class="expand-icon" :class="{ 'expanded': expandedFourthLevel.keywordTypes }">
+                                                    {{ expandedFourthLevel.keywordTypes ? '−' : '+' }}
+                                                </div>
+                                                <div class="node-title">关键字分类</div>
+                                                <div class="node-count">(5)</div>
+                                            </div>
+                                            
+                                            <div class="fifth-level" v-if="expandedFourthLevel.keywordTypes">
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">品牌词</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">品类词</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">长尾词</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">竞品词</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">促销词</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="fourth-level-container">
+                                            <div class="fourth-line"></div>
+                                            <div class="fourth-level-node" @click="toggleFourthLevel('matchTypes')">
+                                                <div class="expand-icon" :class="{ 'expanded': expandedFourthLevel.matchTypes }">
+                                                    {{ expandedFourthLevel.matchTypes ? '−' : '+' }}
+                                                </div>
+                                                <div class="node-title">匹配方式</div>
+                                                <div class="node-count">(4)</div>
+                                            </div>
+                                            
+                                            <div class="fifth-level" v-if="expandedFourthLevel.matchTypes">
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">广泛匹配</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">词组匹配</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">完全匹配</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">否定关键字</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="fourth-level-container">
+                                            <div class="fourth-line"></div>
+                                            <div class="fourth-level-node" @click="toggleFourthLevel('qualityScore')">
+                                                <div class="expand-icon" :class="{ 'expanded': expandedFourthLevel.qualityScore }">
+                                                    {{ expandedFourthLevel.qualityScore ? '−' : '+' }}
+                                                </div>
+                                                <div class="node-title">质量得分</div>
+                                                <div class="node-count">(3)</div>
+                                            </div>
+                                            
+                                            <div class="fifth-level" v-if="expandedFourthLevel.qualityScore">
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">广告相关性</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">预估点击率</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">着陆页体验</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="fourth-level-container">
+                                            <div class="fourth-line"></div>
+                                            <div class="fourth-level-node" @click="toggleFourthLevel('biddingStrategy')">
+                                                <div class="expand-icon" :class="{ 'expanded': expandedFourthLevel.biddingStrategy }">
+                                                    {{ expandedFourthLevel.biddingStrategy ? '−' : '+' }}
+                                                </div>
+                                                <div class="node-title">出价方式</div>
+                                                <div class="node-count">(3)</div>
+                                            </div>
+                                            
+                                            <div class="fifth-level" v-if="expandedFourthLevel.biddingStrategy">
+                                                <div class="fifth-level-container">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="fifth-level-node" @click="toggleFifthLevel('manualBidding')">
+                                                        <div class="expand-icon" :class="{ 'expanded': expandedFifthLevel.manualBidding }">
+                                                            {{ expandedFifthLevel.manualBidding ? '−' : '+' }}
+                                                        </div>
+                                                        <div class="node-title">手动出价</div>
+                                                        <div class="node-count">(1)</div>
+                                                    </div>
+                                                    
+                                                    <div class="sixth-level" v-if="expandedFifthLevel.manualBidding">
+                                                        <div class="sixth-level-node">
+                                                            <div class="sixth-line"></div>
+                                                            <div class="node-title">CPC</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="fifth-level-container">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="fifth-level-node" @click="toggleFifthLevel('autoBidding')">
+                                                        <div class="expand-icon" :class="{ 'expanded': expandedFifthLevel.autoBidding }">
+                                                            {{ expandedFifthLevel.autoBidding ? '−' : '+' }}
+                                                        </div>
+                                                        <div class="node-title">自动出价</div>
+                                                        <div class="node-count">(2)</div>
+                                                    </div>
+                                                    
+                                                    <div class="sixth-level" v-if="expandedFifthLevel.autoBidding">
+                                                        <div class="sixth-level-node">
+                                                            <div class="sixth-line"></div>
+                                                            <div class="node-title">尽可能提高转化价值 (Troas可选)</div>
+                                                        </div>
+                                                        <div class="sixth-level-node">
+                                                            <div class="sixth-line"></div>
+                                                            <div class="node-title">尽可能提高点击化次数 (TCPA可选)</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">组合出价</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 广告语 -->
+                                <div class="third-level-container">
+                                    <div class="third-line"></div>
+                                    <div class="third-level-node" @click="toggleThirdLevel('adCopy')">
+                                        <div class="expand-icon" :class="{ 'expanded': expandedThirdLevel.adCopy }">
+                                            {{ expandedThirdLevel.adCopy ? '−' : '+' }}
+                                        </div>
+                                        <div class="node-title">广告语</div>
+                                        <div class="node-count">(3)</div>
+                                    </div>
+                                    
+                                    <div class="fourth-level" v-if="expandedThirdLevel.adCopy">
+                                        <div class="fourth-level-container">
+                                            <div class="fourth-line"></div>
+                                            <div class="fourth-level-node" @click="toggleFourthLevel('headlines')">
+                                                <div class="expand-icon" :class="{ 'expanded': expandedFourthLevel.headlines }">
+                                                    {{ expandedFourthLevel.headlines ? '−' : '+' }}
+                                                </div>
+                                                <div class="node-title">标题</div>
+                                                <div class="node-count">(2)</div>
+                                            </div>
+                                            
+                                            <div class="fifth-level" v-if="expandedFourthLevel.headlines">
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">插入关键字、倒计时、地理位置</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">优化轮播</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="fourth-level-container">
+                                            <div class="fourth-line"></div>
+                                            <div class="fourth-level-node" @click="toggleFourthLevel('descriptions')">
+                                                <div class="expand-icon" :class="{ 'expanded': expandedFourthLevel.descriptions }">
+                                                    {{ expandedFourthLevel.descriptions ? '−' : '+' }}
+                                                </div>
+                                                <div class="node-title">描述</div>
+                                                <div class="node-count">(1)</div>
+                                            </div>
+                                            
+                                            <div class="fifth-level" v-if="expandedFourthLevel.descriptions">
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">关键字匹配度</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="fourth-level-container">
+                                            <div class="fourth-line"></div>
+                                            <div class="fourth-level-node" @click="toggleFourthLevel('landingPages')">
+                                                <div class="expand-icon" :class="{ 'expanded': expandedFourthLevel.landingPages }">
+                                                    {{ expandedFourthLevel.landingPages ? '−' : '+' }}
+                                                </div>
+                                                <div class="node-title">着陆页</div>
+                                                <div class="node-count">(2)</div>
+                                            </div>
+                                            
+                                            <div class="fifth-level" v-if="expandedFourthLevel.landingPages">
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">加载速度</div>
+                                                </div>
+                                                <div class="fifth-level-node">
+                                                    <div class="fifth-line"></div>
+                                                    <div class="node-title">文本内容匹配</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 受众信号 -->
+                                <div class="third-level-container">
+                                    <div class="third-line"></div>
+                                    <div class="third-level-node" @click="toggleThirdLevel('audienceSignals')">
+                                        <div class="expand-icon" :class="{ 'expanded': expandedThirdLevel.audienceSignals }">
+                                            {{ expandedThirdLevel.audienceSignals ? '−' : '+' }}
+                                        </div>
+                                        <div class="node-title">受众信号</div>
+                                        <div class="node-count">(2)</div>
+                                    </div>
+                                    
+                                    <div class="fourth-level" v-if="expandedThirdLevel.audienceSignals">
+                                        <div class="fourth-level-node">
+                                            <div class="fourth-line"></div>
+                                            <div class="node-title">购买意向类</div>
+                                        </div>
+                                        <div class="fourth-level-node">
+                                            <div class="fourth-line"></div>
+                                            <div class="node-title">兴趣相关类</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 搜索广告数据维度与优化 -->
+                                <div class="third-level-container">
+                                    <div class="third-line"></div>
+                                    <div class="third-level-node">
+                                        <div class="node-title">搜索广告数据维度与优化</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 其他广告类型 -->
+                        <div class="sub-branch-container">
+                            <div class="sub-line"></div>
+                            <div class="sub-branch-node" @click="toggleSubBranch('shoppingAds')">
+                                <div class="expand-icon" :class="{ 'expanded': expandedSubBranches.shoppingAds }">
+                                    {{ expandedSubBranches.shoppingAds ? '−' : '+' }}
+                                </div>
+                                <div class="node-title">购物广告</div>
+                                <div class="node-count">(3)</div>
+                            </div>
+                            
+                            <div class="third-level" v-if="expandedSubBranches.shoppingAds">
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">Feed设置</div>
+                                </div>
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">标题优化</div>
+                                </div>
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">图片管理</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sub-branch-container">
+                            <div class="sub-line"></div>
+                            <div class="sub-branch-node" @click="toggleSubBranch('pmaxAds')">
+                                <div class="expand-icon" :class="{ 'expanded': expandedSubBranches.pmaxAds }">
+                                    {{ expandedSubBranches.pmaxAds ? '−' : '+' }}
+                                </div>
+                                <div class="node-title">PMax广告</div>
+                                <div class="node-count">(3)</div>
+                            </div>
+                            
+                            <div class="third-level" v-if="expandedSubBranches.pmaxAds">
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">系列结构</div>
+                                </div>
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">受众信号</div>
+                                </div>
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">素材内容</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sub-branch-container">
+                            <div class="sub-line"></div>
+                            <div class="sub-branch-node" @click="toggleSubBranch('demandGenAds')">
+                                <div class="expand-icon" :class="{ 'expanded': expandedSubBranches.demandGenAds }">
+                                    {{ expandedSubBranches.demandGenAds ? '−' : '+' }}
+                                </div>
+                                <div class="node-title">Demand Gen广告</div>
+                                <div class="node-count">(3)</div>
+                            </div>
+                            
+                            <div class="third-level" v-if="expandedSubBranches.demandGenAds">
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">广告类型</div>
+                                </div>
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">素材内容</div>
+                                </div>
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">受众分层</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sub-branch-container">
+                            <div class="sub-line"></div>
+                            <div class="sub-branch-node" @click="toggleSubBranch('videoAds')">
+                                <div class="expand-icon" :class="{ 'expanded': expandedSubBranches.videoAds }">
+                                    {{ expandedSubBranches.videoAds ? '−' : '+' }}
+                                </div>
+                                <div class="node-title">视频广告</div>
+                                <div class="node-count">(2)</div>
+                            </div>
+                            
+                            <div class="third-level" v-if="expandedSubBranches.videoAds">
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">广告类型</div>
+                                </div>
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">内容要素</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sub-branch-container">
+                            <div class="sub-line"></div>
+                            <div class="sub-branch-node" @click="toggleSubBranch('remarketingAds')">
+                                <div class="expand-icon" :class="{ 'expanded': expandedSubBranches.remarketingAds }">
+                                    {{ expandedSubBranches.remarketingAds ? '−' : '+' }}
+                                </div>
+                                <div class="node-title">再营销广告</div>
+                                <div class="node-count">(2)</div>
+                            </div>
+                            
+                            <div class="third-level" v-if="expandedSubBranches.remarketingAds">
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">受众列表</div>
+                                </div>
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">广告类型</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- 详细信息面板 -->
-        <div class="detail-panel" v-if="selectedTopic">
-            <div class="panel-header">
-                <h3>{{ selectedTopic.title }}</h3>
-                <button @click="closeDetail" class="close-btn">×</button>
-            </div>
-            <div class="panel-content">
-                <div class="topic-details">
-                    <h4>学习内容：</h4>
-                    <ul class="detail-list">
-                        <li v-for="item in selectedTopic.details" :key="item">{{ item }}</li>
-                    </ul>
+                
+                <!-- 分支2: 网站优化排查 -->
+                <div class="branch-container">
+                    <div class="center-line"></div>
+                    <div class="main-branch-node">
+                        <div class="node-title">网站优化排查</div>
+                    </div>
                 </div>
-                <div class="learning-objectives">
-                    <h4>学习目标：</h4>
-                    <p>{{ selectedTopic.objectives }}</p>
+                
+                <!-- 分支3: 新账户前期设置与关联 -->
+                <div class="branch-container">
+                    <div class="center-line"></div>
+                    <div class="main-branch-node">
+                        <div class="node-title">新账户前期设置与关联 (ads、ga4、gmc)</div>
+                    </div>
                 </div>
-                <!-- <div class="duration-info">
-                    <span class="duration">预计学习时间：{{ selectedTopic.duration }}</span>
-                </div> -->
+                
+                <!-- 分支4: Google广告账户结构框架 -->
+                <div class="branch-container">
+                    <div class="center-line"></div>
+                    <div class="main-branch-node">
+                        <div class="node-title">Google广告账户结构框架</div>
+                    </div>
+                </div>
+                
+                <!-- 分支5: Google报表创建逻辑 -->
+                <div class="branch-container">
+                    <div class="center-line"></div>
+                    <div class="main-branch-node" @click="toggleBranch('reportCreation')">
+                        <div class="expand-icon" :class="{ 'expanded': expandedBranches.reportCreation }">
+                            {{ expandedBranches.reportCreation ? '−' : '+' }}
+                        </div>
+                        <div class="node-title">Google报表创建逻辑</div>
+                        <div class="node-count">(2)</div>
+                    </div>
+                    
+                    <div class="sub-branches" v-if="expandedBranches.reportCreation">
+                        <div class="sub-branch-container">
+                            <div class="sub-line"></div>
+                            <div class="sub-branch-node">
+                                <div class="node-title">数据整理(新客户)</div>
+                            </div>
+                        </div>
+                        <div class="sub-branch-container">
+                            <div class="sub-line"></div>
+                            <div class="sub-branch-node" @click="toggleSubBranch('advertising')">
+                                <div class="expand-icon" :class="{ 'expanded': expandedSubBranches.advertising }">
+                                    {{ expandedSubBranches.advertising ? '−' : '+' }}
+                                </div>
+                                <div class="node-title">广告</div>
+                                <div class="node-count">(2)</div>
+                            </div>
+                            
+                            <div class="third-level" v-if="expandedSubBranches.advertising">
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">客户数据分析表-datastudio</div>
+                                </div>
+                                <div class="third-level-node">
+                                    <div class="third-line"></div>
+                                    <div class="node-title">客户数据汇总表-google sheet</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -60,445 +507,587 @@
 <script setup>
 import { ref } from 'vue'
 
-// 学习主题数据
-const learningTopics = ref([
-    {
-        title: '数字营销与品牌独立站',
-        description: '了解数字营销基础概念和独立站建设',
-        icon: '🌐',
-        details: [
-            '数字营销基础概念与趋势',
-            '品牌独立站的重要性',
-            '独立站与平台电商的区别',
-            '独立站建设流程与要点',
-            '用户体验优化策略',
-            '转化率优化技巧'
-        ],
-        objectives: '掌握数字营销基础理论，了解独立站运营的核心要素，能够独立分析和优化网站用户体验。',
-        duration: '2-3天'
-    },
-    {
-        title: '了解Google',
-        description: '深入理解Google生态系统',
-        icon: '🔍',
-        details: [
-            'Google公司发展历程',
-            'Google产品生态体系',
-            'Google Ads平台介绍',
-            'Google Analytics 4 (GA4)',
-            'Google Search Console',
-            'Google Merchant Center',
-            'Google Tag Manager'
-        ],
-        objectives: '全面了解Google生态系统，掌握各个平台的功能和用途，为后续广告投放打下坚实基础。',
-        duration: '1-2天'
-    },
-    {
-        title: 'Google广告形式及数据分析',
-        description: '掌握各种Google广告类型和数据分析方法',
-        icon: '📊',
-        details: [
-            '搜索广告 (Search Ads)',
-            '购物广告 (Shopping Ads)',
-            '展示广告 (Display Ads)',
-            '视频广告 (Video Ads)',
-            '应用广告 (App Ads)',
-            '智能购物广告 (Smart Shopping)',
-            'Performance Max广告',
-            '数据分析基础概念',
-            '关键指标解读',
-            '数据报告制作'
-        ],
-        objectives: '熟练掌握各种Google广告形式的特点和适用场景，具备独立进行数据分析和报告制作的能力。',
-        duration: '3-4天'
-    },
-    {
-        title: 'Google广告账户前期设置与关联',
-        description: '学习账户创建和平台关联',
-        icon: '⚙️',
-        details: [
-            'Google Ads账户创建',
-            '账户结构规划',
-            '支付方式设置',
-            '账户权限管理',
-            'Google Analytics关联',
-            'Google Search Console关联',
-            'Google Merchant Center关联',
-            '转化跟踪设置',
-            '目标受众设置',
-            '账户安全设置'
-        ],
-        objectives: '能够独立完成Google广告账户的创建和配置，建立完整的账户体系，确保各平台间的有效关联。',
-        duration: '1-2天'
-    },
-    {
-        title: 'Google广告结构搭建',
-        description: '学习广告账户结构设计和搭建',
-        icon: '🏗️',
-        details: [
-            '账户层级结构设计',
-            '广告系列创建与设置',
-            '广告组规划与管理',
-            '关键词策略制定',
-            '广告文案撰写',
-            '着陆页优化',
-            '出价策略选择',
-            '预算分配策略',
-            '投放时间设置',
-            '地理位置定位'
-        ],
-        objectives: '掌握Google广告账户的完整搭建流程，能够根据业务需求设计合理的账户结构，制定有效的投放策略。',
-        duration: '2-3天'
-    },
-    {
-        title: 'Google报表制作逻辑梳理',
-        description: '学习数据报表的制作和分析逻辑',
-        icon: '📈',
-        details: [
-            '报表制作基础原则',
-            '关键指标选择与计算',
-            '数据可视化技巧',
-            '日报制作流程',
-            '周报分析框架',
-            '月报总结方法',
-            '异常数据识别',
-            '优化建议提出',
-            '客户汇报技巧',
-            '数据驱动决策'
-        ],
-        objectives: '具备独立制作各类数据报表的能力，能够通过数据分析发现问题并提出有效的优化建议，为客户提供专业的汇报服务。',
-        duration: '2-3天'
-    }
-])
+// 展开状态管理
+const expandedBranches = ref({
+    googleAds: false,
+    websiteOptimization: false,
+    accountSetup: false,
+    accountStructure: false,
+    reportCreation: false
+})
 
-// 选中的主题
-const selectedTopic = ref(null)
+const expandedSubBranches = ref({
+    searchAds: false,
+    shoppingAds: false,
+    pmaxAds: false,
+    demandGenAds: false,
+    videoAds: false,
+    remarketingAds: false,
+    advertising: false
+})
 
-// 选择主题
-const selectTopic = (topic) => {
-    selectedTopic.value = topic
+const expandedThirdLevel = ref({
+    keywords: false,
+    adCopy: false,
+    audienceSignals: false
+})
+
+const expandedFourthLevel = ref({
+    keywordTypes: false,
+    matchTypes: false,
+    qualityScore: false,
+    biddingStrategy: false,
+    headlines: false,
+    descriptions: false,
+    landingPages: false
+})
+
+const expandedFifthLevel = ref({
+    manualBidding: false,
+    autoBidding: false
+})
+
+// 切换主分支展开状态
+const toggleBranch = (branchKey) => {
+    expandedBranches.value[branchKey] = !expandedBranches.value[branchKey]
 }
 
-// 关闭详情面板
-const closeDetail = () => {
-    selectedTopic.value = null
+// 切换子分支展开状态
+const toggleSubBranch = (subBranchKey) => {
+    expandedSubBranches.value[subBranchKey] = !expandedSubBranches.value[subBranchKey]
+}
+
+// 切换三级分支展开状态
+const toggleThirdLevel = (thirdLevelKey) => {
+    expandedThirdLevel.value[thirdLevelKey] = !expandedThirdLevel.value[thirdLevelKey]
+}
+
+// 切换四级分支展开状态
+const toggleFourthLevel = (fourthLevelKey) => {
+    expandedFourthLevel.value[fourthLevelKey] = !expandedFourthLevel.value[fourthLevelKey]
+}
+
+// 切换五级分支展开状态
+const toggleFifthLevel = (fifthLevelKey) => {
+    expandedFifthLevel.value[fifthLevelKey] = !expandedFifthLevel.value[fifthLevelKey]
 }
 </script>
 
 <style scoped>
-.learning-outline-container {
+.mindmap-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    padding: 20px;
-    font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+    background: #ffffff;
+    padding: 30px;
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    overflow: auto;
 }
 
-.outline-header {
+.mindmap-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
+    color: #333;
 }
 
-.outline-header h1 {
-    color: #2c3e50;
+.mindmap-header h1 {
     font-size: 2.5em;
+    margin: 0 0 10px 0;
+    color: #2c3e50;
     font-weight: 600;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.outline-content {
+.mindmap-header p {
+    font-size: 1.1em;
+    color: #666;
+    margin: 0;
+}
+
+.mindmap-content {
     position: relative;
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
 }
 
-.central-node {
-    position: absolute;
-    left: 50px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: linear-gradient(135deg, #3498db, #2980b9);
+/* 中心节点 */
+.center-node {
+    background: #4a90e2;
     color: white;
-    padding: 20px 30px;
+    padding: 25px 35px;
     border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
     z-index: 10;
-    min-width: 200px;
+    min-width: 150px;
     text-align: center;
+    border: 3px solid #357abd;
+    margin-bottom: 20px;
 }
 
-.central-title {
+.center-node .node-title {
     font-size: 1.4em;
     font-weight: 600;
     margin: 0;
 }
 
-.connection-line {
-    position: absolute;
-    left: 250px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 100px;
-    height: 4px;
-    background: linear-gradient(90deg, #3498db, #e74c3c);
-    border-radius: 2px;
-    z-index: 5;
-}
-
-.branch-nodes {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 60%;
-    height: 100%;
+/* 主分支容器 */
+.main-branches {
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
-    padding: 20px 0;
+    align-items: center;
+    gap: 60px;
+    width: 100%;
 }
 
-.topic-node {
+.branch-container {
     position: relative;
-    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* 主分支节点 */
+.main-branch-node {
+    background: #f8f9fa;
+    color: #333;
+    padding: 15px 20px;
     border-radius: 12px;
-    padding: 20px;
-    margin: 10px 0;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 2px solid #4a90e2;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    min-width: 250px;
+    text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    border-left: 5px solid #3498db;
-}
-
-.topic-node:hover {
-    transform: translateX(-10px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    border-left-color: #e74c3c;
-}
-
-.topic-node::before {
-    content: '';
-    position: absolute;
-    left: -20px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 15px;
-    height: 15px;
-    background: #3498db;
-    border-radius: 50%;
-    z-index: 5;
-}
-
-.topic-1 { border-left-color: #e74c3c; }
-.topic-2 { border-left-color: #f39c12; }
-.topic-3 { border-left-color: #27ae60; }
-.topic-4 { border-left-color: #9b59b6; }
-.topic-5 { border-left-color: #e67e22; }
-.topic-6 { border-left-color: #1abc9c; }
-
-.node-content {
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: center;
+    gap: 10px;
 }
 
-.node-icon {
-    font-size: 2em;
+.main-branch-node:hover {
+    background: #e3f2fd;
+    transform: scale(1.02);
+}
+
+.main-branch-node .node-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+    flex: 1;
+}
+
+/* 展开图标 */
+.expand-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #4a90e2;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
     flex-shrink: 0;
 }
 
-.node-title {
-    font-size: 1.2em;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 5px;
+.expand-icon:hover {
+    background: #357abd;
+    transform: scale(1.1);
 }
 
-.node-desc {
-    font-size: 0.9em;
-    color: #7f8c8d;
-    line-height: 1.4;
+.expand-icon.expanded {
+    background: #e74c3c;
 }
 
-.detail-panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 400px;
-    height: 100vh;
-    background: white;
-    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    overflow-y: auto;
-    animation: slideIn 0.3s ease;
+/* 节点数量样式 */
+.node-count {
+    background: #f0f0f0;
+    color: #666;
+    font-size: 0.8em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 8px;
+    font-weight: 500;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
 }
 
-@keyframes slideIn {
+.main-branch-node .node-count {
+    background: #e3f2fd;
+    color: #1976d2;
+    border-color: #bbdefb;
+}
+
+.sub-branch-node .node-count {
+    background: #f3e5f5;
+    color: #7b1fa2;
+    border-color: #ce93d8;
+}
+
+.third-level-node .node-count {
+    background: #e8f5e8;
+    color: #388e3c;
+    border-color: #a5d6a7;
+    font-size: 0.75em;
+}
+
+.fourth-level-node .node-count {
+    background: #fff3e0;
+    color: #f57c00;
+    border-color: #ffcc02;
+    font-size: 0.7em;
+}
+
+.fifth-level-node .node-count {
+    background: #fce4ec;
+    color: #c2185b;
+    border-color: #f8bbd9;
+    font-size: 0.65em;
+}
+
+/* 连接线到中心 */
+.center-line {
+    position: absolute;
+    left: 50%;
+    top: -30px;
+    width: 2px;
+    height: 30px;
+    background: #4a90e2;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+/* 子分支 */
+.sub-branches {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    animation: slideDown 0.3s ease;
+    width: 100%;
+}
+
+@keyframes slideDown {
     from {
-        transform: translateX(100%);
+        opacity: 0;
+        transform: translateY(-20px);
     }
     to {
-        transform: translateX(0);
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-.panel-header {
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: white;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.panel-header h3 {
-    margin: 0;
-    font-size: 1.3em;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5em;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 50%;
-    transition: background 0.3s ease;
-}
-
-.close-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.panel-content {
-    padding: 20px;
-}
-
-.topic-details h4,
-.learning-objectives h4 {
-    color: #2c3e50;
-    font-size: 1.1em;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
-    border-bottom: 2px solid #3498db;
-}
-
-.detail-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 20px 0;
-}
-
-.detail-list li {
-    padding: 8px 0;
-    color: #495057;
+.sub-branch-container {
     position: relative;
-    padding-left: 20px;
-    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
 }
 
-.detail-list li::before {
-    content: "•";
-    position: absolute;
-    left: 0;
-    color: #3498db;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.learning-objectives p {
-    color: #495057;
-    line-height: 1.6;
-    margin: 0 0 20px 0;
-}
-
-.duration-info {
-    background: #f8f9fa;
-    padding: 15px;
+.sub-branch-node {
+    background: #ffffff;
+    color: #333;
+    padding: 12px 16px;
     border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    min-width: 200px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.sub-branch-node:hover {
+    background: #f0f8ff;
+    border-color: #4a90e2;
+    transform: scale(1.02);
+}
+
+.sub-branch-node .node-title {
+    font-size: 0.95em;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.3;
+    flex: 1;
+}
+
+/* 子分支连接线 */
+.sub-line {
+    position: absolute;
+    left: 50%;
+    top: -15px;
+    width: 2px;
+    height: 15px;
+    background: #4a90e2;
+    transform: translateX(-50%);
+}
+
+/* 三级分支 */
+.third-level {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    animation: slideDown 0.3s ease;
+    width: 100%;
+}
+
+.third-level-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.third-level-node {
+    background: #fafafa;
+    color: #444;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    min-width: 180px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.third-level-node:hover {
+    background: #f5f5f5;
+    border-color: #4a90e2;
+}
+
+.third-level-node .node-title {
+    font-size: 0.9em;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.2;
+    flex: 1;
+}
+
+.third-level-node .expand-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+}
+
+/* 三级连接线 */
+.third-line {
+    position: absolute;
+    left: 50%;
+    top: -12px;
+    width: 2px;
+    height: 12px;
+    background: #bbb;
+    transform: translateX(-50%);
+}
+
+/* 四级分支 */
+.fourth-level {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    animation: slideDown 0.3s ease;
+    width: 100%;
+}
+
+.fourth-level-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.fourth-level-node {
+    background: #f5f5f5;
+    color: #555;
+    padding: 8px 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    min-width: 160px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.fourth-level-node:hover {
+    background: #f0f0f0;
+    border-color: #4a90e2;
+}
+
+.fourth-level-node .node-title {
+    font-size: 1.1em;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.2;
+    flex: 1;
+}
+
+.fourth-level-node .expand-icon {
+    width: 14px;
+    height: 14px;
+    font-size: 10px;
+}
+
+.fourth-line {
+    position: absolute;
+    left: 50%;
+    top: -10px;
+    width: 2px;
+    height: 10px;
+    background: #ccc;
+    transform: translateX(-50%);
+}
+
+/* 五级分支 */
+.fifth-level {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    animation: slideDown 0.3s ease;
+    width: 100%;
+}
+
+.fifth-level-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.fifth-level-node {
+    background: #f9f9f9;
+    color: #666;
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    min-width: 140px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.fifth-level-node:hover {
+    background: #f0f0f0;
+    border-color: #4a90e2;
+}
+
+.fifth-level-node .node-title {
+    font-size: 1em;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.2;
+    flex: 1;
+}
+
+.fifth-level-node .expand-icon {
+    width: 12px;
+    height: 12px;
+    font-size: 8px;
+}
+
+.fifth-line {
+    position: absolute;
+    left: 50%;
+    top: -8px;
+    width: 2px;
+    height: 8px;
+    background: #ddd;
+    transform: translateX(-50%);
+}
+
+/* 六级分支 */
+.sixth-level {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    animation: slideDown 0.3s ease;
+    width: 100%;
+}
+
+.sixth-level-node {
+    background: #fcfcfc;
+    color: #777;
+    padding: 5px 6px;
+    border-radius: 3px;
+    border: 1px solid #f0f0f0;
+    min-width: 120px;
+    font-size: 0.75em;
     text-align: center;
 }
 
-.duration {
-    color: #27ae60;
-    font-weight: 600;
-    font-size: 1.1em;
+.sixth-level-node .node-title {
+    font-size: 0.75em;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.sixth-line {
+    position: absolute;
+    left: 50%;
+    top: -6px;
+    width: 2px;
+    height: 6px;
+    background: #eee;
+    transform: translateX(-50%);
 }
 
 /* 响应式设计 */
-@media (max-width: 1024px) {
-    .outline-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .central-node {
-        position: static;
-        transform: none;
-        margin-bottom: 30px;
-    }
-    
-    .connection-line {
-        display: none;
-    }
-    
-    .branch-nodes {
-        position: static;
-        width: 100%;
-        max-width: 800px;
-    }
-    
-    .detail-panel {
-        width: 100%;
-        height: 70vh;
-        top: auto;
-        bottom: 0;
-        right: 0;
-        border-radius: 15px 15px 0 0;
+@media (max-width: 1200px) {
+    .mindmap-content {
+        max-width: 100%;
+        padding: 0 20px;
     }
 }
 
 @media (max-width: 768px) {
-    .learning-outline-container {
-        padding: 10px;
-    }
-    
-    .outline-header h1 {
-        font-size: 2em;
-    }
-    
-    .central-node {
-        padding: 15px 20px;
-        min-width: 150px;
-    }
-    
-    .central-title {
-        font-size: 1.2em;
-    }
-    
-    .topic-node {
+    .mindmap-container {
         padding: 15px;
-        margin: 8px 0;
     }
     
-    .node-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
+    .main-branch-node {
+        min-width: 200px;
+        font-size: 0.9em;
     }
     
-    .node-icon {
-        font-size: 1.5em;
-    }
-    
-    .node-title {
-        font-size: 1.1em;
-    }
-    
-    .node-desc {
-        font-size: 0.85em;
+    .sub-branch-node {
+        min-width: 150px;
     }
 }
 </style>

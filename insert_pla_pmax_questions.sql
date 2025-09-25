@@ -1,0 +1,58 @@
+-- 插入PLA与Pmax综合考试题目
+-- 考试ID: 07aef045-ec70-4d18-a717-c5e5c0b7ff82
+
+-- 单选题 (1-40题)
+INSERT INTO public.googlequestions (text, options, correct_answer, question_type, platform, tests_id, tests_title, is_multiple) VALUES
+('标准购物广告的核心展示信息不包括以下哪一项？', ARRAY['产品图片', '商品标题', '用户搜索关键词', '产品价格'], '用户搜索关键词', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('标准购物广告主要依赖哪类数据源进行广告匹配？', ARRAY['搜索关键词', '网站标签数据', '产品 feed（商品数据）', '第三方数据平台'], '产品 feed（商品数据）', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('标准购物广告使用哪一工具提交产品数据？', ARRAY['Google Ads', 'Google Tag Manager', 'Google Analytics', 'Google Merchant Center'], 'Google Merchant Center', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('标准购物广告中，可以通过以下哪种方式对商品进行分组？', ARRAY['产品类型或品牌', '搜索关键词', '投放渠道', '页面 URL'], '产品类型或品牌', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('以下哪项是标准购物广告的独特优势？', ARRAY['自动生成展示广告', '直接连接商品落地页', '视频素材灵活可控', '广告优先匹配受众兴趣'], '直接连接商品落地页', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('在标准购物广告中，不支持以下哪种出价策略？', ARRAY['手动 CPC', '最大化转化次数', '目标 CPA', '按展示付费 CPM'], '按展示付费 CPM', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('广告商品优先级的设置位置是？', ARRAY['GMC feed 层级', '广告组层级', '广告系列层级', '产品级别'], '广告系列层级', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('如果产品 Feed 中商品被拒登，最常见的解决方式是？', ARRAY['增加预算', '优化关键词', '查看 GMC 诊断信息', '创建 PMax 替代广告'], '查看 GMC 诊断信息', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('标准购物广告的点击后用户被引导到哪里？', ARRAY['品牌主页', '店铺目录页', '商品详情页', '谷歌地图'], '商品详情页', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('想要排除某些不相关搜索词，该操作应在何处完成？', ARRAY['商品 feed', 'Google Ads 否定关键词', 'PMax 信号设置', '广告素材设置'], 'Google Ads 否定关键词', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('商品的可投放状态可在哪查看？', ARRAY['Ads 账户首页', 'Merchant Center 商品诊断', '受众列表中', '转化设置中'], 'Merchant Center 商品诊断', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('若 Feed 中未设置商品类别，将影响广告的？', ARRAY['展示频率', '落地页速度', '匹配相关性', '素材生成'], '匹配相关性', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('商品价格发生变动但未同步至 GMC，可能导致？', ARRAY['预算限制', '商品拒登', '广告停投', '转化追踪失败'], '商品拒登', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('设置 feed 商品 ID 的主要作用是？', ARRAY['定义关键词意图', '设置广告排名', '保证数据一致性和追踪准确性', '自动创建视频素材'], '保证数据一致性和追踪准确性', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('Merchant Center 可以连接几个 Google Ads 帐号？', ARRAY['1', '最多3个', '没有限制', '仅限主账户'], '没有限制', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('哪一项不是 Google Merchant Center 的功能？', ARRAY['feed 数据上传', '商品政策诊断', '广告素材生成', '商品投放审核'], '广告素材生成', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('适用于标准购物广告的主要广告网络是？', ARRAY['搜索网络', '展示网络', 'YouTube', 'Gmail'], '搜索网络', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('若同一商品被多个广告系列同时投放，优先展示？', ARRAY['出价更高', '优先级更高的系列', '预算更多', '转化率高者'], '优先级更高的系列', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('以下哪项会导致 GMC 商品审核失败？', ARRAY['商品描述中带有感叹号', '商品图片模糊', 'feed 更新过于频繁', '商品价格不含税'], '商品图片模糊', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('为优化点击率，可优先优化以下哪项？', ARRAY['商品价格', '商品图片和标题', '页面加载速度', '预算设置'], '商品图片和标题', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('PMax 广告的主要优势是？', ARRAY['更精准的关键词控制', '多平台统一投放优化', '视频广告完全自动生成', '展示广告高曝光率'], '多平台统一投放优化', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('PMax 可以覆盖以下哪些渠道？', ARRAY['搜索、展示、YouTube、发现、Gmail、地图', '搜索和展示', '购物和 Gmail', '仅 YouTube 和发现'], '搜索、展示、YouTube、发现、Gmail、地图', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('启用 PMax 广告必须提供什么？', ARRAY['搜索关键词', '商品关键词列表', '多种广告资产组素材', '高 ROAS 门槛'], '多种广告资产组素材', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('PMax 资产组中，哪项是必须的？', ARRAY['网址链接', 'Logo', '商品 feed', '受众信号'], '网址链接', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('PMax 默认的智能出价策略包括？', ARRAY['手动 CPC', '最大化点击', '最大化转化/转化价值', 'CPV 出价'], '最大化转化/转化价值', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('若购物广告投放重叠，哪个系列优先展示？', ARRAY['出价高的标准购物系列', '启用了智能出价的系列', 'PMax 系列', '广告排名较高的系列'], 'PMax 系列', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('若想要屏蔽某些搜索词，可在 PMax 中设置？', ARRAY['系列否定关键词', 'Audience Signal', '资产组设置', 'Google Analytics 过滤器'], '系列否定关键词', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('以下哪项不是 PMax 广告可优化的目标？', ARRAY['购买', '潜在客户提交', '网站访问', '邮件订阅数量'], '邮件订阅数量', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('PMax 效果差时，优先优化什么？', ARRAY['增加预算', '增加素材多样性', '提高出价', '增加否定关键词'], '增加素材多样性', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('PMax 的"受众信号"作用是？', ARRAY['精准锁定受众范围', '决定展示平台', '向系统提供学习方向', '限定展示频率'], '向系统提供学习方向', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('在使用 PMax 广告时，以下哪种做法最有助于加快学习期并提升初期效果？', ARRAY['每日频繁更改预算', '提供尽可能多样的资产组素材', '禁用所有非购物渠道', '启用受众排除功能'], '提供尽可能多样的资产组素材', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('使用标准购物广告时，以下哪个字段不会直接影响广告展示？', ARRAY['商品标题', '商品描述', '落地页的颜色布局', '商品类别（Google 分类）'], '落地页的颜色布局', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('哪一项是 PMax 广告中衡量广告效果的重要指标？', ARRAY['曝光频次', '视频观看时长', 'ROAS（广告支出回报率）', '用户停留时间'], 'ROAS（广告支出回报率）', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('若你希望通过 PMax 投放只专注于购物广告部分，你应该？', ARRAY['删除资产组', '降低预算', '使用仅包含商品 feed 的资产组', '使用"最大化点击"出价策略'], '使用仅包含商品 feed 的资产组', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('PMax 广告对新产品尤其依赖哪些数据源的质量？', ARRAY['网站地图文件', '商品 feed 与广告素材资产', '用户上传的评论', 'SEO 元数据'], '商品 feed 与广告素材资产', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('想要通过 GMC 实现跨国家投放，最关键的设置是？', ARRAY['设置网页语言翻译', 'Feed 中包含多个币种价格', '使用对应国家的 shipping 信息与语言 feed', '申请品牌备案'], '使用对应国家的 shipping 信息与语言 feed', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('以下哪种行为会阻碍 PMax 学习阶段的完成？', ARRAY['每天查看报表', '在学习期间频繁更换目标出价设置', '设置较低预算', '上传新的图片素材'], '在学习期间频繁更换目标出价设置', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('若广告组商品数量远超 1,000 条，建议的做法是？', ARRAY['拆分为多个广告系列或广告组，便于控制与分析', '保持集中管理，利于智能出价学习', '优先按产品 ID 设置关键词出价', '将商品平均出价'], '拆分为多个广告系列或广告组，便于控制与分析', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('在 PMax 中启用"最终 URL 扩展"会导致？', ARRAY['系统自动修改落地页 URL', '用户访问的页面被中断', '系统推荐最适合用户意图的页面落地', '禁用原 URL 设置'], '系统推荐最适合用户意图的页面落地', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null),
+('如果你需要让某些产品不被 PMax 使用，你应该如何设置？', ARRAY['从 GMC 中删除这些商品', '暂停 PMax 广告系列', '在 PMax 中使用"排除商品 ID"功能', '使用否定关键词排除'], '在 PMax 中使用"排除商品 ID"功能', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', null);
+
+-- 多选题 (41-50题)
+INSERT INTO public.googlequestions (text, options, correct_answer, question_type, platform, tests_id, tests_title, is_multiple) VALUES
+('你是一家卖高端咖啡机的电商品牌负责人，近期使用 PMax 广告投放，发现曝光量很好但转化率不高，ROAS 持续偏低。你应该采取哪些优化措施？（多选）', ARRAY['增加资产组数量，丰富素材组合', '精细化商品 feed，确保商品属性准确且详尽', '添加否定关键词以避免低意图搜索', '降低预算，等待数据积累'], '增加资产组数量，丰富素材组合;精细化商品 feed，确保商品属性准确且详尽;添加否定关键词以避免低意图搜索', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', true),
+('你为一款新品（厨房搅拌机）投放标准购物广告，发现商品展示率很低，点击量几乎没有。可能的原因有哪些？（多选）', ARRAY['商品 feed 缺少品牌字段或标题不清晰', '商品价格高于市场平均水平', '广告系列优先级设置为"低"', '使用了"最大化转化价值"出价策略'], '商品 feed 缺少品牌字段或标题不清晰;商品价格高于市场平均水平;广告系列优先级设置为"低"', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', true),
+('你想要对比 PMax 与标准购物广告在新品销售上的实际效果，最合理的操作是什么？（多选）', ARRAY['创建相同商品的两个系列分别投放 PMax 和标准购物广告', '为标准购物广告设置"高"优先级', '为 PMax 系列设置否定关键词避免冲突', '分别设置清晰的转化目标并进行对比分析'], '创建相同商品的两个系列分别投放 PMax 和标准购物广告;为标准购物广告设置"高"优先级;分别设置清晰的转化目标并进行对比分析', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', true),
+('你的购物广告系列点击率下降明显，怀疑是商品图片不够吸引。你应该如何优化？（多选）', ARRAY['替换更清晰专业的主图', '在 GMC 中添加产品视频', '在图片中加促销文案', '在 Merchant Center 添加补充素材 feed'], '替换更清晰专业的主图;在 GMC 中添加产品视频;在 Merchant Center 添加补充素材 feed', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', true),
+('你投放 PMax 广告后发现品牌词 CPC 成本飙升，且与转化无关。你应该怎么做？（多选）', ARRAY['添加品牌词否定关键词', '拆分品牌词并转至单独搜索广告系列', '提高 ROAS 目标以降低出价', '减少资产组中文案中的品牌词使用频率'], '添加品牌词否定关键词;拆分品牌词并转至单独搜索广告系列', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', true),
+('你负责的店铺主要销售季节性产品，广告数据波动大，PMax 学习效果差。你的优化方法应包括哪些？（多选）', ARRAY['增加转化数量以支持机器学习', '提前准备季节性资产组', '强化受众信号设置，引导系统方向', '临时切换为搜索广告'], '增加转化数量以支持机器学习;提前准备季节性资产组;强化受众信号设置，引导系统方向', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', true),
+('购物广告系列中部分商品无法展示，GMC 中提示"目标网页不可访问"。你应怎么处理？（多选）', ARRAY['检查商品链接是否正确跳转', '检查网页是否对移动设备可访问', '将商品状态改为"暂停"', '修复商品页面后请求重新抓取'], '检查商品链接是否正确跳转;检查网页是否对移动设备可访问;修复商品页面后请求重新抓取', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', true),
+('你发现在 GMC 中某个高销量商品因"价格不一致"被拒登。你需要做哪些优化？（多选）', ARRAY['检查落地页是否含税一致', 'feed 中的价格是否为最终价格', '商品是否含有自动折扣机制', '删除该商品重新提交'], '检查落地页是否含税一致;feed 中的价格是否为最终价格;商品是否含有自动折扣机制', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', true),
+('你在使用 PMax 投放新品类产品，但始终没有展示量。你可以尝试哪些优化？（多选）', ARRAY['创建新的受众信号', '提供更完整的广告资产组', '调整 ROAS 目标为更宽松', '使用相同商品重建标准购物系列'], '创建新的受众信号;提供更完整的广告资产组;调整 ROAS 目标为更宽松;使用相同商品重建标准购物系列', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', true),
+('你想通过 Google 广告提高电商 GMV，主要依赖 PMax 系列投放。以下哪些方式能提升广告带货能力？（多选）', ARRAY['利用 GMC Promotions 提交折扣信息', '多语言落地页适配', '创建节日促销专属资产组', '频繁更改目标 ROAS'], '利用 GMC Promotions 提交折扣信息;多语言落地页适配;创建节日促销专属资产组', 'select', 'google', '07aef045-ec70-4d18-a717-c5e5c0b7ff82', 'PLA与Pmax综合考试', true);

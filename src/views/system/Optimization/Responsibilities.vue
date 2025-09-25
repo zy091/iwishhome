@@ -16,7 +16,7 @@
 import Breadbcrum from '@/components/system/Breadcrumb.vue'
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-//获取路由参数/training-and-learning?platform=google
+//获取路由参数/exam-content?platform=google
 const route = useRoute()
 const platform = ref(route.query.platform || 'google')
 //监听路由参数的变化

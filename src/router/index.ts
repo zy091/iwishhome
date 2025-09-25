@@ -81,9 +81,14 @@ const router = createRouter({
         },
         //谷歌广告
         {
-          path: 'assessment-requirements',
-          name: 'assessment-requirements',
+          path: 'google-assessment-requirements',
+          name: 'google-assessment-requirements',
           component: () => import('../views/system/GoogleAds/AssessmentRequirements.vue'),
+        },
+        {
+          path: 'google-learning-framework',
+          name: 'google-learning-framework',
+          component: () => import('../views/system/GoogleAds/LearningFramework.vue'),
         },
         {
           path: 'google-ads',
@@ -91,14 +96,22 @@ const router = createRouter({
           component: () => import('../views/system/GoogleAds/AboutAds.vue'),
         },
         {
-          path: 'learning-outline',
-          name: 'learning-outline',
+          path: 'google-learning-outline',
+          name: 'google-learning-outline',
           component: () => import('../views/system/GoogleAds/LearningOutline.vue'),
         },
         {
-          path: 'search-principle',
-          name: 'search-principle',
-          component: () => import('../views/system/GoogleAds/SearchAds/SearchPrinciple.vue'),
+          path: 'google-search-ads',
+          name: 'google-search-ads',
+          component: () => import('../views/system/GoogleAds/SearchAds.vue'),
+          redirect: '/system/google-search-ads/principle',
+          children: [
+            {
+              path: 'principle',
+              name: 'principle',
+              component: () => import('../views/system/GoogleAds/AdsLayout.vue'),
+            },
+          ]
         },
         {
           path: 'nas-files', // NAS文件管理
@@ -121,8 +134,8 @@ const router = createRouter({
           component: () => import('../views/system/Optimization/Responsibilities.vue'),
         },
         {
-          path: 'training-and-learning', // 培训学习
-          name: 'training-and-learning',
+          path: 'exam-content', // 培训学习
+          name: 'exam-content',
           component: () => import('../views/system/Optimization/TrainingAndLearning.vue'),
         },
         // 培训
@@ -258,6 +271,15 @@ const router = createRouter({
           path: 'question-management',
           name: 'question-management',
           component: () => import('@/views/system/DataManagement/QuestionManagement.vue'),
+          meta: {
+            requiresAuth: true,
+            requiresAdmin: true,
+          }
+        },
+        {
+          path: 'test-management',
+          name: 'test-management',
+          component: () => import('@/views/system/DataManagement/TestManagement.vue'),
           meta: {
             requiresAuth: true,
             requiresAdmin: true,

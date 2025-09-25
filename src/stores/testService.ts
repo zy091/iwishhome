@@ -73,11 +73,6 @@ export const useTestStore = defineStore('test', () => {
                 query = query.eq('platform', params.platform)
             }
 
-            // 按章节筛选
-            if (params?.chapter) {
-                query = query.eq('chapter', params.chapter)
-            }
-
             // 添加分页
             if (params?.page && params?.pageSize) {
                 const from = (params.page - 1) * params.pageSize

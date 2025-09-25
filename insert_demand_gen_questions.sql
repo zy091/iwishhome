@@ -1,0 +1,58 @@
+-- 插入Demand Gen综合测试题目
+-- 考试ID: 844099e9-67a2-4882-9ec4-0b5ff312a324
+
+-- 单选题 (1-40题)
+INSERT INTO public.googlequestions (text, options, correct_answer, question_type, platform, tests_id, tests_title, is_multiple) VALUES
+('Demand Gen 广告的主要展示位置包括以下哪一个？', ARRAY['Google Youtube', 'Google Search 结果页', 'Google Play 商店', 'Google Cloud 控制台'], 'Google Youtube', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('与 Display 广告相比，Demand Gen 的核心区别在于：', ARRAY['更高的关键词覆盖率', '更强的自然搜索表现', '更侧重沉浸式创意和再营销触达', '更多样的站外投放渠道'], '更侧重沉浸式创意和再营销触达', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('Demand Gen 广告系列主要的营销目标是？', ARRAY['品牌保护', '提高点击率', '推动需求发现和潜在转化', '增加关键词排名'], '推动需求发现和潜在转化', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('在创建 Demand Gen 广告时，系统必须要求你提供以下哪项资源？', ARRAY['搜索关键词', '商品 Feed', '创意资产组', '邮件列表'], '创意资产组', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('Demand Gen 的广告系列默认使用哪种出价策略？', ARRAY['最大化转化', '目标 ROAS', '最大化点击次数', '增强型手动 CPC'], '最大化转化', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('以下哪一个不是 Demand Gen 的流量来源？', ARRAY['YouTube 首页', 'YouTube Shorts', 'Gmail Promotions', 'Google 搜索页面'], 'Google 搜索页面', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('Demand Gen 更适用于哪种营销阶段？', ARRAY['品牌认知和兴趣激发', '用户转化和再营销', '售后客服沟通', '搜索排名优化'], '品牌认知和兴趣激发', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('要追踪 Demand Gen 广告的成效，以下哪项设置最关键？', ARRAY['否定关键词', 'Google Analytics 连接和转化跟踪', '受众排除设置', '用户标签分类'], 'Google Analytics 连接和转化跟踪', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('以下哪个是设置 Demand Gen 广告系列时不可缺少的？', ARRAY['商品 Feed', '受众信号', '广告排期', '展示广告扩展'], '受众信号', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('Demand Gen 支持哪些广告素材类型？', ARRAY['仅图像', '图像与短视频', '视频与文字', '仅文字内容'], '图像与短视频', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('一个 Demand Gen 广告系列可以包含多少个广告组？', ARRAY['1 个', '最多 3 个', '多个，无上限限制', '最多 20 个'], '多个，无上限限制', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('以下哪种操作可以提升 Demand Gen 素材相关性？', ARRAY['增加目标国家', '提供高质量原生视频与图像素材', '启用 ROAS 出价', '限制预算消耗'], '提供高质量原生视频与图像素材', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('Demand Gen 中的"Lookalike 受众"功能主要基于：', ARRAY['兴趣行为标签', '网站 SEO 数据', '已有第一方数据的建模扩展', 'YouTube 观看时长'], '已有第一方数据的建模扩展', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('若你想覆盖对某类商品感兴趣但尚未访问你网站的用户，应使用哪类受众？', ARRAY['Remarketing', 'Interest based audiences', 'Lookalike audiences', 'CRM audiences'], 'Lookalike audiences', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('在 Demand Gen 中，资产组的作用是：', ARRAY['提供广告预算配置', '提供受众排除控制', '控制创意素材与受众匹配', '设置关键词出价'], '控制创意素材与受众匹配', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('如果你希望在 Gmail promotion 标签页中出现广告，应选择哪种系列？', ARRAY['Demand Gen', 'Display', 'Performance Max', 'Shopping'], 'Demand Gen', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('以下哪项不是 Demand Gen 可追踪的标准转化指标？', ARRAY['页面浏览量', '添加至购物车', '网站转化', '品牌曝光印象分'], '品牌曝光印象分', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('在创建资产组时，上传的视频建议时长为？', ARRAY['6–10 秒', '15–60 秒', '1–3 分钟', '超过 5 分钟'], '15–60 秒', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('Demand Gen 广告会优先展示给谁？', ARRAY['最近搜索过关键词的用户', '已点击过广告的用户', '系统判定为潜在兴趣相关用户', '使用 Gmail 的所有用户'], '系统判定为潜在兴趣相关用户', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('系统优化展示的方式主要基于以下哪个技术？', ARRAY['人工标签打分', '第三方平台数据', '机器学习与受众信号匹配', '静态内容匹配'], '机器学习与受众信号匹配', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('以下哪项优化策略最适合提升 Demand Gen 的点击率？', ARRAY['调整受众排除', '使用动态广告格式', '更换更具吸引力的主图或视频封面', '减少预算以限制低质点击'], '更换更具吸引力的主图或视频封面', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('若你发现广告投放效果较差，以下哪项最不建议立即更改？', ARRAY['替换所有素材', '调整出价策略', '优化 CTA（行动号召）文案', '调整资产组结构'], '替换所有素材', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('在优化广告素材时，建议的视频比例格式是：', ARRAY['1:1 或 4:3', '16:9 或 1:1', '3:4 或 5:4', '2:1 或 9:4'], '16:9 或 1:1', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('若广告素材中的文字超过图像面积的 20%，可能会导致：', ARRAY['视频不能播放', '投放受限或展示质量下降', '系统提示警告', '出价策略失效'], '投放受限或展示质量下降', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('如何评估受众信号对广告成效的影响？', ARRAY['查看广告组预算分配', '对比不同资产组的表现差异', '查看每次展示的费用', '通过 Google Play 控制台分析'], '对比不同资产组的表现差异', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('若你投放的是教育行业的课程引流广告，最建议的素材风格是？', ARRAY['产品动图演示', '用户体验与场景类视频', '图文并茂的长篇介绍', '静态品牌图标展示'], '用户体验与场景类视频', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('若你的广告目标是网站流量提升，建议使用以下哪种出价策略？', ARRAY['目标 ROAS', '最大化转化', '最大化点击次数', '手动 CPC'], '最大化点击次数', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('若你发现视频素材的转化率较高，应该：', ARRAY['停用图片素材', '调高预算并增加相似风格视频素材', '降低出价获取更多量级', '使用视频转文字自动替换文案'], '调高预算并增加相似风格视频素材', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('下列哪种方式可帮助系统更快完成学习阶段？', ARRAY['固定预算不调整', '增加资产组数量与素材丰富度', '减少素材多样性', '降低转化目标价值'], '增加资产组数量与素材丰富度', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('使用哪些工具可以分析素材在 Demand Gen 中的具体表现？', ARRAY['Merchant Center', 'Google Trends', '广告资产报告（Asset Report）', 'GTM 标签预览'], '广告资产报告（Asset Report）', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('如果一个资产组的展示数很高但转化极低，首要检查的是：', ARRAY['预算消耗速度', '广告素材是否符合目标受众偏好', '账户层级转化设置', '投放地区选择'], '广告素材是否符合目标受众偏好', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('Demand Gen 可与以下哪个平台深度联动以提升追踪精度？', ARRAY['Google Data Studio', 'YouTube Studio', 'Google Analytics 4', 'Meta Pixel'], 'Google Analytics 4', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('以下哪种受众类型最适合用于产品重新营销？', ARRAY['兴趣相似受众', 'Lookalike 受众', '网站再访用户（remarketing audiences）', '市场兴趣人群'], '网站再访用户（remarketing audiences）', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('你想查看不同视频素材的表现差异，应使用以下哪项报告？', ARRAY['用户终端报告', '广告系列摘要', '资产组层级素材表现报告', '转化路径模型报告'], '资产组层级素材表现报告', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('若你在推广新品，建议受众设置中应优先考虑：', ARRAY['过去购买用户群体', '网站浏览未转化者', '广泛的兴趣类受众', '社交粉丝列表导入'], '广泛的兴趣类受众', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('若你的 ROAS 持续过低，可能的原因不包括：', ARRAY['广告素材质量低', '出价策略设置不合理', '受众重叠严重', '使用了 Google Analytics 的再营销受众'], '使用了 Google Analytics 的再营销受众', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('Demand Gen 在 Gmail Promotion 中展示广告，属于哪种类型体验？', ARRAY['视频插播', '原生内容卡片', '搜索文字匹配', '纯展示横幅'], '原生内容卡片', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('Demand Gen 的定位策略相比传统 GDN 更依赖于：', ARRAY['手动选择兴趣标签', '机器学习优化与受众意图推测', '广告位置排除表', '自动出价历史记录'], '机器学习优化与受众意图推测', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('以下哪一项可视为"强信号"以提高广告投放精准性？', ARRAY['预算分配规则', '店铺名称', '第一方客户数据', '广告系列命名规范'], '第一方客户数据', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null),
+('若素材与转化路径严重不一致，系统通常会：', ARRAY['降低素材展示频次', '自动更换落地页', '终止系列投放', '提高点击单价'], '降低素材展示频次', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', null);
+
+-- 多选题 (41-50题)
+INSERT INTO public.googlequestions (text, options, correct_answer, question_type, platform, tests_id, tests_title, is_multiple) VALUES
+('哪些是 Demand Gen 的主要广告展示平台？（多选）', ARRAY['YouTube Shorts', 'Google Discover', 'Gmail', 'Google Search'], 'YouTube Shorts;Google Discover;Gmail', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', true),
+('以下哪些方法有助于提升 Demand Gen 的素材表现？（多选）', ARRAY['上传多样化格式的视频与图像', '使用 A/B 测试不同 CTA', '每天更换素材保持新鲜', '精简为一个核心素材以便集中优化'], '上传多样化格式的视频与图像;使用 A/B 测试不同 CTA', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', true),
+('在以下哪些情况下，建议创建多个资产组？（多选）', ARRAY['针对不同人群定制创意方向', '测试不同出价策略', '为不同的产品线设置独立素材', '管理预算拆分'], '针对不同人群定制创意方向;为不同的产品线设置独立素材', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', true),
+('若想用 CRM 数据触达相似用户，可以使用哪些功能？（多选）', ARRAY['客户列表上传', 'Lookalike 受众', 'Remarketing audience', '搜索广告匹配列表'], '客户列表上传;Lookalike 受众', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', true),
+('哪些指标有助于衡量 Demand Gen 广告的最终效果？（多选）', ARRAY['点击率（CTR）', '成本/每次转化（CPA）', '转化数', '平均搜索排名'], '点击率（CTR）;成本/每次转化（CPA）;转化数', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', true),
+('优质广告素材应具备哪些特点？（多选）', ARRAY['清晰的 CTA', '高清图像和字幕', '信息密集、文字多', '适应移动端浏览'], '清晰的 CTA;高清图像和字幕;适应移动端浏览', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', true),
+('哪些情况可能导致广告系列未获展示？（多选）', ARRAY['没有受众信号', '素材未通过审核', '预算设置太低', '系列中无关键词'], '没有受众信号;素材未通过审核;预算设置太低', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', true),
+('多资产组策略的优点包括？（多选）', ARRAY['测试不同人群组合', '提高系统学习效率', '集中出价以提高转化', '避免单组过度竞争'], '测试不同人群组合;提高系统学习效率;避免单组过度竞争', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', true),
+('哪些操作能帮助提高 Gmail 广告打开率？（多选）', ARRAY['使用强引导文案标题', '保持品牌标识一致', '增加预算上限', '合理使用促销语言'], '使用强引导文案标题;保持品牌标识一致;合理使用促销语言', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', true),
+('以下哪些属于强转化意图的行为？（多选）', ARRAY['观看视频 75% 以上', '加入购物车', '点击广告但未停留', '填写表单并提交'], '观看视频 75% 以上;加入购物车;填写表单并提交', 'select', 'google', '844099e9-67a2-4882-9ec4-0b5ff312a324', 'Demand Gen综合测试', true);

@@ -9,6 +9,7 @@
         
         <DynamicForm  
             :questions="questions" 
+            :scoreWeight="score_weight"
             :testId="testId" 
             :testName="testName" 
             :type="type"
@@ -34,7 +35,7 @@ const questions = ref<{ id: number; text: string; options: string[]; correct_ans
 //接收路由参数
 const route = useRoute();
 const router = useRouter();
-
+const score_weight = ref( route.query.score_weight ? Number(route.query.score_weight) : 100); 
 const testId = ref(route.query.testId?.toString() || 'case-study-test'); 
 const testName = ref(route.query.testName?.toString() || '未命名测试'); 
 const platform = ref(route.query.platform?.toString()); 

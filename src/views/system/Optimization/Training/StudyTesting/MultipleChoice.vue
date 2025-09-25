@@ -4,10 +4,10 @@
             <template #content>
                 <span class="text-large font-600 mr-3"> 选择题 </span>
             </template>
-            <div class="subtitle">共{{ questions.length }}道选择题，每题10分，满分{{ questions.length * 10 }}分。</div>
+            <div class="subtitle">共{{ questions.length }}道选择题，每题{{ parseFloat((score_weight/questions.length).toFixed(2)) }}分，满分{{  score_weight}}分。</div>
         </el-page-header>
         
-        <DynamicForm  :questions="questions" :testId="testId" :testName="testName" :type="type" @submitAnswers="submitAnswers" />
+        <DynamicForm :scoreWeight="score_weight" :questions="questions" :testId="testId" :testName="testName" :type="type" @submitAnswers="submitAnswers" />
         <ScoreDialog :Score="Score" :centerDialogVisible="centerDialogVisible" :incorrectAnswers="incorrectAnswers"
         @update:centerDialogVisible="(value) => centerDialogVisible = value" />
     </el-card>
@@ -24,7 +24,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { useUserStore } from '@/stores/user'
 import { testResultService } from '@/stores/testResultService'
 
-const questions = ref<{ id: number; text: string; options: string[]; correct_answer: string; question_type: string; platform: string; chapter: string }[]>([]); // Update type definition
+const questions = ref<{ id: number;is_multiple: boolean;text: string; options: string[]; correct_answer: string; question_type: string; platform: string; chapter: string }[]>([]); // Update type definition
 
 //接收路由参数
 const route = useRoute();
@@ -32,28 +32,23 @@ const router = useRouter();
 
 const testId = ref(route.query.testId?.toString() || 'multiple-choice-test'); 
 const testName = ref(route.query.testName?.toString() || '未命名测试'); 
-const platform = ref(route.query.platform?.toString()); 
-const chapter = ref(route.query.chapter?.toString()); 
 const type = ref(route.query.type?.toString() || 'select'); // 添加默认值 'select'
-
+const score_weight = ref( route.query.score_weight ? Number(route.query.score_weight) : 100); // 添加默认值 '1'
 const goBack = () => {
     router.back();
 }
 
 const fetchQuestions = async () => {
-
     const { data, error } = await supabase
-        .rpc('get_limited_google_questions', {
-            p_question_type: type.value=='case' ? 'reading' : type.value,
-            p_platform: platform.value,
-            p_chapter: chapter.value
-        });
+        .from('googlequestions')
+        .select('*')
+        .eq('tests_id', testId.value);
 
     if (error) {
-        ElMessage.error(`获取问题时出错:${error}, 请检查网络连接或联系管理员`);// 提示用户
+        ElMessage.error(`获取问题时出错:${error.message}, 请检查网络连接或联系管理员`);
     } else {
-        questions.value = data;
-        console.log(questions.value);
+        questions.value = data || [];
+        console.log('获取到的题目:', questions.value);
     }
 };
 
@@ -87,4 +82,12 @@ const submitAnswers = async (data: {
 
 </script>
 
-<style scoped></style>
+<style scoped>
+
+.el-form-item__label-wrap {
+    width: 100%;
+}
+.el-form-item__label {
+    flex:1 !important;
+}
+</style>

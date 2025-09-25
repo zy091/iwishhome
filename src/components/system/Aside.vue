@@ -1,6 +1,6 @@
 <template>
     <el-menu class="el-menu-vertical-demo" active-text-color="#fff" background-color="#05479a" text-color="#fff"
-        style="position: fixed;z-index: 999; height: calc(100vh - 84px);left: 0; width:240px;" :router="true"
+        style="position: fixed;z-index: 999; height: calc(100vh - 84px);left: 0; width:240px; overflow-y: auto;overflow-x: hidden;" :router="true"
         :unique-opened="true" :default-active="activeIndex" :default-openeds="openedMenus" @select="handleMenuSelect"
         :loading="loading">
         <template v-if="route.name === 'letter-to-employee' || route.name === 'company-introduction' || route.name === 'apply-for-registration' ">
@@ -229,6 +229,30 @@ const getUserRole = (roleId: number | undefined): string => {
 .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: 200px;
     min-height: 400px;
+}
+
+/* 自定义滚动条样式 */
+.el-menu-vertical-demo::-webkit-scrollbar {
+    width: 6px;
+}
+
+.el-menu-vertical-demo::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.el-menu-vertical-demo::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.el-menu-vertical-demo::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* 平滑滚动 */
+.el-menu-vertical-demo {
+    scroll-behavior: smooth;
 }
 
 .el-menu-item.is-active span,

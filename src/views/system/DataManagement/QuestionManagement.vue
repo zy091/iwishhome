@@ -54,19 +54,19 @@
                         </el-tooltip>
                     </template>
                 </el-table-column>
-                <el-table-column prop="platform" label="平台" >
+                <el-table-column prop="platform" label="平台"  width="100">
                     <template #default="{ row }">
                         {{ getPlatformName(row.platform) }}
                     </template>
                 </el-table-column>
-                <el-table-column prop="chapter" label="章节" width="200">
+                <el-table-column prop="tests_title" label="所属测试" width="220">
                     <template #default="{ row }">
-                        <el-tag type="success" class="chapter-tag" size="large"
-                            v-if="row.chapter === 'base'">基础</el-tag>
-                        <el-tag type="warning" class="chapter-tag" size="large"
-                            v-if="row.chapter === 'middle'">中级</el-tag>
-                        <el-tag type="danger" class="chapter-tag" size="large"
-                            v-if="row.chapter === 'advanced'">高级</el-tag>
+                        <el-tag type="primary" class="test-tag" size="large" v-if="row.tests_title">
+                            {{ row.tests_title }}
+                        </el-tag>
+                        <el-tag type="info" class="test-tag" size="large" v-else>
+                            未分配
+                        </el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" width="220" fixed="right">
@@ -89,7 +89,10 @@
                 <el-form-item label="题型" prop="question_type">
                     <el-radio-group v-model="questionForm.question_type">
                         <el-radio label="select">选择题</el-radio>
-                        <el-radio label="reading">简答题</el-radio>
+                        <el-radio label="judge">判断题</el-radio>
+                        <el-radio label="fill">填空题</el-radio>
+                        <el-radio label="question">问答题</el-radio>
+                        <el-radio label="reading">阅读题</el-radio>
                     </el-radio-group>
                 </el-form-item>
                 <el-form-item label="平台" prop="platform">
@@ -98,11 +101,17 @@
                             :value="platform.value" />
                     </el-select>
                 </el-form-item>
-                <el-form-item label="章节" prop="chapter">
-                    <el-select v-model="questionForm.chapter" placeholder="请选择章节" style="width: 100%">
-                        <el-option v-for="chapter in chapters" :key="chapter.value" :label="chapter.label"
-                            :value="chapter.value" />
+                <el-form-item label="所属测试" prop="tests_id">
+                    <el-select v-model="questionForm.tests_id" placeholder="请选择测试" style="width: 100%" 
+                        @change="handleTestChange" clearable>
+                        <el-option v-for="test in availableTests" :key="test.id" :label="test.title"
+                            :value="test.id" />
                     </el-select>
+                </el-form-item>
+                <el-form-item v-if="questionForm.question_type === 'select'" label="题目类型">
+                    <el-switch v-model="questionForm.is_multiple" 
+                        active-text="多选题" 
+                        inactive-text="单选题" />
                 </el-form-item>
                 <el-form-item label="试题内容" prop="text">
                     <el-input v-if="questionForm.question_type === 'select'" v-model="questionForm.text" type="textarea"
@@ -139,7 +148,15 @@
                         </div>
                     </el-form-item>
                     <el-form-item label="正确答案" prop="correct_answer">
-                        <el-select v-model="questionForm.correct_answer" placeholder="请选择正确答案" style="width: 100%">
+                        <!-- 单选题 -->
+                        <el-select v-if="!questionForm.is_multiple" v-model="questionForm.correct_answer" 
+                            placeholder="请选择正确答案" style="width: 100%">
+                            <el-option v-for="(option, index) in questionForm.options" :key="index"
+                                :label="`${String.fromCharCode(65 + index)}. ${option}`" :value="option" />
+                        </el-select>
+                        <!-- 多选题 -->
+                        <el-select v-else v-model="questionForm.correct_answer" 
+                            placeholder="请选择正确答案（多选）" style="width: 100%" multiple>
                             <el-option v-for="(option, index) in questionForm.options" :key="index"
                                 :label="`${String.fromCharCode(65 + index)}. ${option}`" :value="option" />
                         </el-select>
@@ -157,12 +174,12 @@
             <div class="question-details">
                 <div class="detail-row">
                     <p><strong>题型:</strong> <span>{{ getQuestionTypeName(selectedQuestion?.question_type) }}</span></p>
+                    <p v-if="selectedQuestion?.question_type === 'select'"><strong>类型:</strong> 
+                        <el-tag :type="selectedQuestion?.is_multiple ? 'warning' : 'primary'" size="small">
+                            {{ selectedQuestion?.is_multiple ? '多选题' : '单选题' }}
+                        </el-tag>
+                    </p>
                     <p><strong>平台:</strong> <span>{{ getPlatformName(selectedQuestion?.platform) }}</span></p>
-                    <el-tag :type="selectedQuestion?.chapter === 'base' ? 'success' :
-                        selectedQuestion?.chapter === 'middle' ? 'warning' : 'danger'"
-                        class="chapter-detail-tag">
-                        {{ getChapterName(selectedQuestion?.chapter) }}
-                    </el-tag>
                 </div>
                 <p><strong>试题内容:</strong></p>
                 <div class="question-text">{{ selectedQuestion?.text }}</div>
@@ -174,9 +191,9 @@
                     <p><strong>选项:</strong></p>
                     <div class="options-list">
                         <div v-for="(option, index) in selectedQuestion?.options" :key="index" class="option-item">
-                            <div :class="{ 'correct-answer': option === selectedQuestion?.correct_answer }">
+                            <div :class="{ 'correct-answer': isCorrectAnswer(option, selectedQuestion) }">
                                 {{ String.fromCharCode(65 + index) }}. {{ option }}
-                                <el-tag v-if="option === selectedQuestion?.correct_answer" size="small"
+                                <el-tag v-if="isCorrectAnswer(option, selectedQuestion)" size="small"
                                     type="success">正确答案</el-tag>
                             </div>
                         </div>
@@ -222,6 +239,7 @@ const viewDialogVisible = ref(false)
 const isEdit = ref(false)
 const selectedQuestion = ref<any | null>(null)
 const questionFormRef = ref(null)
+const availableTests = ref<any[]>([])
 
 // 问题表单
 const questionForm = reactive({
@@ -231,13 +249,18 @@ const questionForm = reactive({
     correct_answer: '',
     question_type: 'select',
     platform: '',
-    chapter: ''
+    tests_id: null as string | null,
+    tests_title: '',
+    is_multiple: false
 })
 
 // 题型选项
 const questionTypes = [
     { label: '选择题', value: 'select' },
-    { label: '简答题', value: 'reading' }
+    { label: '判断题', value: 'judge' },
+    { label: '填空题', value: 'fill' },
+    { label: '问答题', value: 'question' },
+    { label: '阅读题', value: 'reading' }
 ]
 
 // 平台选项
@@ -249,12 +272,7 @@ const platforms = [
     { value: 'other', label: 'Other' }
 ]
 
-// 章节选项
-const chapters = [
-    { value: 'base', label: '基础' },
-    { value: 'middle', label: '中级' },
-    { value: 'advanced', label: '高级' }
-]
+
 
 // 分页配置
 const pagination = reactive<PaginationType>({
@@ -267,7 +285,6 @@ const pagination = reactive<PaginationType>({
 const rules = {
     question_type: [{ required: true, message: '请选择题型', trigger: 'change' }],
     platform: [{ required: true, message: '请选择平台', trigger: 'change' }],
-    chapter: [{ required: true, message: '请输入章节', trigger: 'blur' }],
     text: [{ required: true, message: '请输入问题内容', trigger: 'blur' }],
     correct_answer: [{ required: true, message: '请选择正确答案', trigger: 'change' }]
 }
@@ -284,10 +301,44 @@ const getPlatformName = (platform: string) => {
     return found ? found.label : platform
 }
 
-// 获取章节名称
-const getChapterName = (chapter: string) => {
-    const found = chapters.find(c => c.value === chapter)
-    return found ? found.label : chapter
+// 判断选项是否为正确答案
+const isCorrectAnswer = (option: string, question: any) => {
+    if (!question || !question.correct_answer) return false
+    
+    if (question.is_multiple) {
+        // 多选题：correct_answer是分号分隔的字符串
+        const correctAnswers = question.correct_answer.split(';')
+        return correctAnswers.includes(option)
+    } else {
+        // 单选题：直接比较
+        return option === question.correct_answer
+    }
+}
+
+// 获取可用测试列表
+const fetchAvailableTests = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('tests')
+            .select('id, title')
+            .order('created_at', { ascending: false })
+
+        if (error) throw error
+        availableTests.value = data || []
+    } catch (error) {
+        console.error('获取测试列表失败:', error)
+        ElMessage.error('获取测试列表失败')
+    }
+}
+
+// 处理测试选择变化
+const handleTestChange = (testId: string | null) => {
+    if (testId) {
+        const selectedTest = availableTests.value.find(test => test.id === testId)
+        questionForm.tests_title = selectedTest?.title || ''
+    } else {
+        questionForm.tests_title = ''
+    }
 }
 
 // 分页更新处理
@@ -360,13 +411,23 @@ const showEditDialog = (question: any) => {
     questionForm.text = question.text
     questionForm.question_type = question.question_type
     questionForm.platform = question.platform
-    questionForm.chapter = question.chapter
+    questionForm.tests_id = question.tests_id
+    questionForm.tests_title = question.tests_title || ''
+    questionForm.is_multiple = question.is_multiple || false
 
     // 处理选择题特有字段
     if (question.question_type === 'select') {
         questionForm.options = [...question.options]
+        
+        // 处理多选题的正确答案
+        if (question.is_multiple && question.correct_answer) {
+            questionForm.correct_answer = question.correct_answer.split(';')
+        } else {
+            questionForm.correct_answer = question.correct_answer
+        }
+    } else {
+        questionForm.correct_answer = question.correct_answer
     }
-    questionForm.correct_answer = question.correct_answer
 
     dialogVisible.value = true
 }
@@ -385,7 +446,9 @@ const resetForm = () => {
     questionForm.correct_answer = ''
     questionForm.question_type = 'select'
     questionForm.platform = ''
-    questionForm.chapter = ''
+    questionForm.tests_id = null
+    questionForm.tests_title = ''
+    questionForm.is_multiple = false
 }
 
 // 添加选项
@@ -419,17 +482,28 @@ const saveQuestion = async () => {
             text: questionForm.text,
             question_type: questionForm.question_type,
             platform: questionForm.platform,
-            chapter: questionForm.chapter
+            tests_id: questionForm.tests_id,
+            tests_title: questionForm.tests_title
         }
 
         // 选择题特有字段
         if (questionForm.question_type === 'select') {
             questionData.options = questionForm.options
-            questionData.correct_answer = questionForm.correct_answer
+            questionData.is_multiple = questionForm.is_multiple
+            
+            // 处理正确答案格式
+            if (questionForm.is_multiple && Array.isArray(questionForm.correct_answer)) {
+                // 多选题：将数组转换为分号分隔的字符串
+                questionData.correct_answer = questionForm.correct_answer.join(';')
+            } else {
+                // 单选题：直接使用字符串
+                questionData.correct_answer = questionForm.correct_answer
+            }
         } else {
             // 问答题不需要选项和正确答案
             questionData.options = null
             questionData.correct_answer = null
+            questionData.is_multiple = false
         }
 
         let result
@@ -526,6 +600,7 @@ const handleBatchDelete = async () => {
 }
 
 onMounted(() => {
+    fetchAvailableTests()
     searchQuestions()
 })
 </script>
@@ -580,8 +655,8 @@ onMounted(() => {
     align-items: flex-start;
 }
 
-.chapter-tag {
-    font-size: 14px;
+.test-tag {
+    font-size: 12px;
 }
 
 .detail-row {

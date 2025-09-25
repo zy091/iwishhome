@@ -7,10 +7,9 @@
         @open="setText(Score)" class="score-dialog">
         <h3>{{ Score }}</h3>
         <p>Open the dialog from the center from the screen</p>
-        <ul style="margin-top: 10px; font-size: 13px;color: #e30707;">
-            <li style="list-style:decimal;" v-for="answer in localIncorrectAnswers" :key="answer.questionId"> {{ answer.questionIndex }}错误，你的答案：{{
-                answer.userAnswer }}，正确答案：{{ answer.correctAnswer }}</li>
-        </ul>
+        <div v-if="localIncorrectAnswers.length > 0" style="margin-top: 10px; font-size: 14px; color: #606266;">
+            <el-text type="info">错误题目已在答题区域标红显示，正确答案显示在题目下方</el-text>
+        </div>
         <template #footer>
             <div class="dialog-footer">
                 <el-button type="primary" @click="ClickCloseDialog">

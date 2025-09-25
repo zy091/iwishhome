@@ -113,10 +113,187 @@
                 </div>
             </div>
 
-            <!-- 岗位晋升通道 -->
+            <!-- 阶段学习内容及要求 -->
             <div class="section">
                 <div class="section-header">
                     <div class="section-number">3</div>
+                    <h2>阶段学习内容及要求</h2>
+                </div>
+                <div class="section-content">
+                    <!-- 第一个月学习计划 -->
+                    <div class="month-section">
+                        <h3 class="month-title">第一个月学习计划</h3>
+                        <div class="month-target">
+                            <h4>阶段目标：</h4>
+                            <p>1.完成搜索广告和购物广告的内容学习并输出学习文档<br>
+                            2.能够完成搜索广告文案及产品feed的提案并进行实操<br>
+                            3.能够独立上线搜索广告和购物广告</p>
+                        </div>
+                        <div class="learning-schedule">
+                            <div class="schedule-table">
+                                <table class="learning-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="period-col">学习期</th>
+                                            <th class="content-col">学习内容</th>
+                                            <th class="requirement-col">要求</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="period-cell">第一周</td>
+                                            <td class="content-cell">
+                                                1.完成搜索广告学习-原理、组成、出价策略的学习文档<br>
+                                                2.提写搜索广告官方案-品牌词、行业词<br>
+                                                3.独立上线搜索广告
+                                            </td>
+                                            <td class="requirement-cell">
+                                                1.基础理论学习需输出学习文档，学习总结，疑惑点记录（需了解搜索广告是什么，组成，前端展示，匹配逻辑，重要性等）<br>
+                                                2.提写搜索广告官方案需包含至少20个网站的加价信息（开拓搜索前端展示）<br>
+                                                3.上线搜索广告各种认证方式，地理位置，语言等基础设置重点
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="period-cell">第二周</td>
+                                            <td class="content-cell">
+                                                1.完成购物广告学习-原理、组成、GMC、Feed要求的学习<br>
+                                                2.提写产品feed保证正确性<br>
+                                                3.独立上线标准购物广告
+                                            </td>
+                                            <td class="requirement-cell">
+                                                1.基础理论学习需输出学习文档，学习总结，疑惑点记录（了解购物广告是什么，组成，前端展示，与搜索的区别，匹配逻辑等）<br>
+                                                2.提写产品feed保证正确性必须项目<br>
+                                                3.上线标准购物广告需保证基础设置重点，且能理解产品拉取逻辑并正确拉出需要产品组
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="period-cell">第三周</td>
+                                            <td class="content-cell">
+                                                1.开始进入客户账户进行数据分析与优化调整<br>
+                                                2.根据客户效果优化搜索广告和购物广告并跟进效果实化
+                                            </td>
+                                            <td class="requirement-cell">
+                                                1.每日提写客户数据分析表与优化调整及跟进<br>
+                                                2.主动反馈客户数据问题与接下来的预计调整计划
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="period-cell">第四周</td>
+                                            <td class="content-cell">
+                                                1.持续跟进客户情况并完成每日数据实化跟进及优化策<br>
+                                                2.学习网站优化相关文档并针对客户网站提写优化建议<br>
+                                                3.完成客户周报撰写
+                                            </td>
+                                            <td class="requirement-cell">
+                                                1.每日提写客户数据分析表与优化调整及跟进<br>
+                                                2.能够输出客户网站优化建议<br>
+                                                3.能够完成客户周报撰写
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第二个月学习计划 -->
+                    <div class="month-section">
+                        <h3 class="month-title">第二个月学习计划</h3>
+                        <div class="month-target">
+                            <h4>阶段目标：</h4>
+                            <p>1.完成Pmax广告学习并输出学习文档<br>
+                            2.完成Demand Gen广告学习并输出学习文档<br>
+                            3.完成视频广告学习并输出学习文档<br>
+                            4.能够进行客户基础数据分析与广告优化建议<br>
+                            5.能够在客户群里进行日常客户沟通工作</p>
+                        </div>
+                        <div class="learning-schedule">
+                            <div class="schedule-table">
+                                <table class="learning-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="period-col">学习期</th>
+                                            <th class="content-col">学习内容</th>
+                                            <th class="requirement-col">要求</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="period-cell">第一、第二周</td>
+                                            <td class="content-cell">
+                                                1.完成Pmax广告学习-原理、区别、组成、出价、优化<br>
+                                                2.持续跟踪还原客户数据情况
+                                            </td>
+                                            <td class="requirement-cell">
+                                                1.每日提写客户数据分析表与优化调整及跟进<br>
+                                                2.基础理论学习需输出学习文档，学习总结，疑惑点记录
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="period-cell">第三、第四周</td>
+                                            <td class="content-cell">
+                                                1.完成Demand Gen广告学习-原理、组成、素材要求<br>
+                                                2.完成视频广告学习-原理、组成、素材要求、展示样式<br>
+                                                3.日常查看服务客户素材，整理优化素材参考
+                                            </td>
+                                            <td class="requirement-cell">
+                                                1.每日提写客户数据分析表与优化调整及跟进<br>
+                                                2.基础理论学习需输出学习文档，学习总结，疑惑点记录（了解Demand Gen、视频广告是什么，广告形式，组成，前端展示，素材要求，受众区分等）
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第三个月学习计划 -->
+                    <div class="month-section">
+                        <h3 class="month-title">第三个月学习计划</h3>
+                        <div class="month-target">
+                            <h4>阶段目标：</h4>
+                            <p>1.学习GA4知识内容<br>
+                            2.能够熟练进行日常数据实化跟进及优化调整计划<br>
+                            3.能够独立在群里与客户进行沟通<br>
+                            4.能够独立会议与客户进行数据复盘与广告调整计划同步<br>
+                            5.通过Google技能学考试</p>
+                        </div>
+                        <div class="learning-schedule">
+                            <div class="schedule-table">
+                                <table class="learning-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="period-col">学习期</th>
+                                            <th class="content-col">学习内容</th>
+                                            <th class="requirement-col">要求</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="period-cell">整月</td>
+                                            <td class="content-cell">
+                                                1.学习GA4知识内容<br>
+                                                2.能够熟练进行日常数据实化跟进及优化调整计划<br>
+                                                3.能够独立在群里与客户进行沟通<br>
+                                                4.能够独立会议与客户进行数据复盘与广告调整计划同步<br>
+                                                5.通过Google技能学考试
+                                            </td>
+                                            <td class="requirement-cell">
+                                                1.基础理论学习需输出学习文档，学习总结，疑惑点记录（GA4是什么，GA4常用版块，GA4归因逻辑，GA4数据同步）
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 岗位晋升通道 -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-number">4</div>
                     <h2>岗位晋升通道</h2>
                 </div>
                 <div class="section-content">
@@ -454,6 +631,139 @@ const promotionSteps = ref([
     font-size: 18px;
     font-weight: bold;
     margin: 0 5px;
+}
+
+/* 月份学习计划样式 */
+.month-section {
+    margin-bottom: 40px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 25px;
+    border: 2px solid #dee2e6;
+}
+
+.month-section:last-child {
+    margin-bottom: 0;
+}
+
+.month-title {
+    color: #2c3e50;
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.month-target {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #3498db;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.month-target h4 {
+    color: #2c3e50;
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 10px;
+    margin-top: 0;
+}
+
+.month-target p {
+    color: #495057;
+    line-height: 1.6;
+    margin: 0;
+    font-size: 1.05em;
+}
+
+/* 学习计划表格样式 */
+.learning-schedule {
+    background: white;
+    padding: 0;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-table {
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.learning-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.learning-table th {
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    color: white;
+    padding: 15px 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 15px;
+    border: 1px solid #357abd;
+}
+
+.learning-table td {
+    padding: 15px 12px;
+    border: 1px solid #dee2e6;
+    vertical-align: top;
+    background: white;
+}
+
+.period-col {
+    width: 20%;
+    min-width: 120px;
+}
+
+.content-col {
+    width: 40%;
+    min-width: 300px;
+}
+
+.requirement-col {
+    width: 40%;
+    min-width: 300px;
+}
+
+.period-cell {
+    background: #fff3e0;
+    font-weight: 600;
+    color: #ef6c00;
+    text-align: center;
+    border-left: 3px solid #ff9800;
+}
+
+.content-cell {
+    background: white;
+    color: #495057;
+    line-height: 1.6;
+}
+
+.content-cell br {
+    margin-bottom: 8px;
+}
+
+.requirement-cell {
+    background: #f0f8ff;
+    color: #495057;
+    line-height: 1.6;
+    border-left: 3px solid #2196f3;
+}
+
+.requirement-cell br {
+    margin-bottom: 8px;
 }
 
 /* 响应式设计 */
