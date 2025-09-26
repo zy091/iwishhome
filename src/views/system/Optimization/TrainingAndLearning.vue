@@ -52,7 +52,7 @@
                             </div>
                             <div class="info-item">
                                 <i class="el-icon-refresh"></i>
-                                <span>尝试次数: {{ getTestAttemptCount(test.id) }}/3</span>
+                                <span>尝试次数: {{ getTestAttemptCount(test.id) }}/{{ maxAttempts }}</span>
                             </div>
                         </div>
 
@@ -72,7 +72,7 @@
 
                         <div class="test-actions">
                             <el-button type="primary" :disabled="getTestResult(test.id)?.completion_status === 'in_progress' ||
-                                ( getTestAttemptCount(test.id) >= 3)"
+                                ( getTestAttemptCount(test.id) >= maxAttempts)"
                                 @click="startTest(test)">
                                 {{ getActionButtonText(getTestResult(test.id)?.completion_status, test) }}
                             </el-button>
@@ -172,7 +172,7 @@ const testResults = ref<Record<string, TestResult>>({});
 const searchQuery = ref('');
 const testType = ref('');
 const historyDialogVisible = ref(false);
-
+const maxAttempts = 2; // maxAttempts限制
 const pagination = reactive<PaginationType>({
     page: 1,
     pageSize: 10,
@@ -269,8 +269,8 @@ const startTest = (test: Test) => {
     // 案例分析题检查尝试次数限制
     if (test.type === 'case') {
         const attemptCount = getTestAttemptCount(test.id);
-        if (attemptCount >= 3) {
-            ElMessage.warning('您已达到最大尝试次数(3次)，不能再次作答');
+        if (attemptCount >= maxAttempts) {
+            ElMessage.warning(`您已达到maxAttempts(${maxAttempts}次)，不能再次作答`);
             return;
         }
     }
@@ -377,7 +377,7 @@ const getTestAttemptCount = (testId: string) => {
 
 // 获取操作按钮文本
 const getActionButtonText = (status?: string, test?: Test) => {
-    if (getTestAttemptCount(test?.id || '') >= 3) {
+    if (getTestAttemptCount(test?.id || '') >= maxAttempts) {
         return '尝试次数已用完';
     }
 

@@ -539,29 +539,57 @@ const createUser = async () => {
             organizationPath = orgPath.map(org => org.name).join(' > ');
         }
 
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: newUser.email,
-            password: newUser.password
+        // 使用RPC函数创建用户，避免影响当前登录状态
+        const { data: rpcData, error: rpcError } = await supabase.rpc('create_user_with_profile', {
+            user_email: newUser.email,
+            user_password: newUser.password,
+            user_full_name: newUser.full_name,
+            user_role_id: newUser.role_id,
+            user_organization_id: newUser.organization_id,
+            user_organization_parent_id: organizationParentId,
+            user_organization_path: organizationPath,
+            user_phone_number: newUser.phone_number
         });
 
-        if (authError) throw authError;
-
-        const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert({
-                user_id: authData.user!.id,
-                full_name: newUser.full_name,
+        if (rpcError) {
+            // 如果RPC函数不存在，回退到原来的方法但需要重新登录当前用户
+            console.warn('RPC函数不存在，使用备用方法创建用户');
+            
+            // 保存当前用户会话信息
+            const currentSession = await supabase.auth.getSession();
+            const currentUser = currentSession.data.session?.user;
+            
+            const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: newUser.email,
-                role_id: newUser.role_id,
-                organization_id: newUser.organization_id,
-                organization_parent_id: organizationParentId,
-                organization_path: organizationPath,
-                phone_number: newUser.phone_number,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
+                password: newUser.password
             });
 
-        if (profileError) throw profileError;
+            if (authError) throw authError;
+
+            const { error: profileError } = await supabase
+                .from('user_profiles')
+                .insert({
+                    user_id: authData.user!.id,
+                    full_name: newUser.full_name,
+                    email: newUser.email,
+                    role_id: newUser.role_id,
+                    organization_id: newUser.organization_id,
+                    organization_parent_id: organizationParentId,
+                    organization_path: organizationPath,
+                    phone_number: newUser.phone_number,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+
+            if (profileError) throw profileError;
+
+            // 如果有当前用户会话，需要重新登录以恢复会话
+            if (currentUser && currentSession.data.session) {
+                // 注意：这里需要管理员权限或特殊处理来恢复会话
+                // 建议使用RPC函数或者提醒用户重新登录
+                ElMessage.warning('用户创建成功，但可能需要重新登录以保持当前会话');
+            }
+        }
 
         ElMessage.success('用户创建成功');
         createDialogVisible.value = false;

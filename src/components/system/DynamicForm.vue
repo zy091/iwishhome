@@ -108,7 +108,7 @@ const userAnswers = ref<Record<number, string>>({});
 const form = ref({}); // {{ edit_1 }} Define the form object
 const showReAnswer = ref(false);
 const isSubmitting = ref(false);
-const maxAttempts = 3; // 最大尝试次数限制
+const maxAttempts = 2; // 最大尝试次数限制
 const answerResults = ref<Record<number, { userAnswer: string; isCorrect: boolean }>>({});
 
 // 格式化正确答案显示
