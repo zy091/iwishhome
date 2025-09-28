@@ -81,7 +81,7 @@
             <el-tab-pane label="文件夹管理" name="folders">
                 <!-- 文件夹管理面板 -->
                 <el-card style="margin-bottom: 20px;">
-                    <el-space alignment="start" :size="30">
+                    <el-space wrap alignment="start" :size="30">
                         <el-input 
                             v-model="folderSearchQuery" 
                             placeholder="搜索文件夹名称" 

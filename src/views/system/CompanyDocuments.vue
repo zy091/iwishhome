@@ -17,7 +17,7 @@
 
         <!-- 搜索功能 -->
         <el-card shadow="always" style="margin-bottom: 20px;">
-            <el-space alignment="start" :size="30">
+            <el-space wrap alignment="start" :size="30">
                 <el-input v-model="searchQuery" style="width: 240px" placeholder="请输入文档标题" :suffix-icon="Search"
                     size="large" clearable />
                 <el-date-picker v-model="dateRange" type="daterange" unlink-panels range-separator="至"

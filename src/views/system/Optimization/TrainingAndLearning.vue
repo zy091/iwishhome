@@ -14,7 +14,7 @@
         <div class="training-content" >
             <div class="test-list-container">
         <el-card class="testing-search" style="margin-bottom: 20px;">
-            <el-space alignment="start" :size="30">
+            <el-space wrap alignment="start" :size="30">
                 <el-input size="large" style="width: 240px" v-model="searchQuery" placeholder="搜索测验名称"
                     class="search-input" clearable @input="handleSearch" />
                 <el-select size="large" style="width: 240px" v-model="testType" placeholder="测验类型"

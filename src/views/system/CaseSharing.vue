@@ -13,7 +13,7 @@
 
         <!-- 搜索功能 -->
         <el-card shadow="always" style="margin-bottom: 20px;">
-            <el-space alignment="start" :size="30">
+            <el-space wrap alignment="start" :size="30">
                 <el-input v-model="searchQuery" style="width: 400px" placeholder="搜索标题、分享人、部门（支持模糊搜索）" :suffix-icon="Search"
                     size="large" clearable />
                 <el-select v-model="categoryFilter" placeholder="分享类型" clearable style="width: 180px" size="large">
@@ -230,7 +230,7 @@
             <el-dialog v-model="attachmentDialogVisible" title="附件预览" width="80%" destroy-on-close>
                 <div class="attachment-preview">
                     <template v-if="isImageAttachment">
-                        <img :src="selectedAttachmentUrl" class="attachment-image" />
+                        <img :src="selectedAttachmentUrl" class="attachment-image" @click="openFullscreen" />
                     </template>
                     <template v-else-if="isPdfAttachment">
                         <iframe :src="selectedAttachmentUrl" class="attachment-frame"></iframe>
@@ -240,6 +240,26 @@
                             <p>无法预览此类型的文件，请下载后查看</p>
                             <el-button type="primary" @click="downloadAttachment">下载附件</el-button>
                         </div>
+                    </template>
+                </div>
+                <template #footer>
+                    <span class="dialog-footer">
+                        <el-button @click="attachmentDialogVisible = false">关闭</el-button>
+                        <el-button v-if="isImageAttachment || isPdfAttachment" type="primary" @click="openFullscreen">
+                            全屏查看
+                        </el-button>
+                    </span>
+                </template>
+            </el-dialog>
+
+            <!-- 全屏预览对话框 -->
+            <el-dialog v-model="fullscreenVisible" title="全屏预览" width="100%" top="0" :show-close="true" destroy-on-close class="fullscreen-dialog">
+                <div class="fullscreen-preview">
+                    <template v-if="isImageAttachment">
+                        <img :src="selectedAttachmentUrl" class="fullscreen-image" />
+                    </template>
+                    <template v-else-if="isPdfAttachment">
+                        <iframe :src="selectedAttachmentUrl" class="fullscreen-frame"></iframe>
                     </template>
                 </div>
             </el-dialog>
@@ -359,6 +379,7 @@ const categoryFilter = ref('')
 const attachmentDialogVisible = ref(false)
 const selectedAttachmentUrl = ref('')
 const selectedAttachmentType = ref('')
+const fullscreenVisible = ref(false)  // 全屏预览对话框
 
 const newCase = reactive({
     id: '',
@@ -550,6 +571,11 @@ const downloadAttachment = () => {
     if (selectedAttachmentUrl.value) {
         window.open(selectedAttachmentUrl.value, '_blank')
     }
+}
+
+// 打开全屏预览
+const openFullscreen = () => {
+    fullscreenVisible.value = true
 }
 
 // 打开链接
@@ -975,6 +1001,7 @@ onMounted(() => {
 .attachment-image {
     max-width: 100%;
     max-height: 70vh;
+    cursor: pointer;
 }
 
 .attachment-frame {
@@ -986,6 +1013,42 @@ onMounted(() => {
 .attachment-download {
     text-align: center;
     padding: 30px;
+}
+
+.fullscreen-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.fullscreen-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.fullscreen-frame {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+}
+
+/* 全屏对话框样式 */
+:deep(.fullscreen-dialog .el-dialog) {
+    margin: 0 !important;
+    height: 100vh;
+    max-height: 100vh;
+}
+
+:deep(.fullscreen-dialog .el-dialog__body) {
+    padding: 0;
+    height: calc(100vh - 60px);
+}
+
+:deep(.fullscreen-dialog .el-dialog__header) {
+    padding: 10px 20px;
+    background-color: #f5f7fa;
 }
 
 .dialog-footer {
