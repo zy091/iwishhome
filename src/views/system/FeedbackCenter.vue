@@ -1,6 +1,6 @@
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">FAQ中心</h1>
             <div class="status-tabs" >
@@ -214,11 +214,11 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { feedbackService, hasAdminPermission } from '@/stores/feedbackService'
 import type { FeedbackWithUser, FeedbackReplyWithUser } from '@/stores/feedbackService'
 import { useUserStore } from '@/stores/user'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
 
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: 'FAQ中心',
         path: '/system/feedback-center'

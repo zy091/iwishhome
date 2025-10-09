@@ -101,6 +101,11 @@ const router = createRouter({
           component: () => import('../views/system/GoogleAds/LearningOutline.vue'),
         },
         {
+          path: 'google-form',
+          name: 'google-form',
+          component: () => import('../views/system/GoogleAds/AdsForm.vue'),
+        },
+        {
           path: 'google-search-ads',
           name: 'google-search-ads',
           component: () => import('../views/system/GoogleAds/SearchAds.vue'),
@@ -108,9 +113,44 @@ const router = createRouter({
           children: [
             {
               path: 'principle',
-              name: 'principle',
-              component: () => import('../views/system/GoogleAds/AdsLayout.vue'),
+              name: 'google-search-ads-principle',
+              component: () => import('../views/system/GoogleAds/AdsForm.vue'),
+              props: (route) => ({
+                adsForm: 'google-search-ads'
+              })
             },
+            {
+              path: 'core-elements',
+              name: 'google-search-ads-core-elements',
+              component: () => import('../views/system/GoogleAds/AdsForm.vue'),
+              props: (route) => ({
+                adsForm: 'google-search-ads'
+              })
+            },
+            {
+              path: 'bidding-strategy',
+              name: 'google-search-ads-bidding-strategy',
+              component: () => import('../views/system/GoogleAds/AdsForm.vue'),
+              props: (route) => ({
+                adsForm: 'google-search-ads'
+              })
+            },
+            {
+              path: 'creation',
+              name: 'google-search-ads-creation',
+              component: () => import('../views/system/GoogleAds/AdsForm.vue'),
+              props: (route) => ({
+                adsForm: 'google-search-ads'
+              })
+            },
+            {
+              path: 'optimization',
+              name: 'google-search-ads-optimization',
+              component: () => import('../views/system/GoogleAds/AdsForm.vue'),
+              props: (route) => ({
+                adsForm: 'google-search-ads'
+              })
+            }
           ]
         },
         {
@@ -228,6 +268,16 @@ const router = createRouter({
               component: () => import('@/views/system/Optimization/DailyWork/PersonalAssignmentList.vue')
             }
           ]
+        },
+        // 管理员广告内容管理
+        {
+          path: 'admin-ads-management',
+          name: 'admin-ads-management',
+          component: () => import('@/views/system/DataManagement/AdminAdsManagement.vue'),
+          meta: {
+            requiresAuth: true,
+            requiresAdmin: true
+          }
         },
         // 管理员学习笔记
         {

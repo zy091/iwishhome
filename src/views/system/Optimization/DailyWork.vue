@@ -1,6 +1,6 @@
 <template>
     <div class="daily-work">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="daily-work-title">
             <h1 class="title">日常作业</h1>
         </div>
@@ -18,7 +18,7 @@
 import { ref ,onMounted,reactive,watch,computed} from 'vue'
 import { useRoute } from 'vue-router'
 
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 
 const route = useRoute()
 const activeIndex = ref('/system/daily-work/personal-assignments')
@@ -47,7 +47,7 @@ const platformName = computed(() => {
             return '谷歌'
     }
 })
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: `${platformName.value}优化`,
         path: `/system/optimize?platform=${platform.value}`

@@ -1,6 +1,6 @@
 <template>
      <div class="training">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="training-title">
             <h1 class="title">{{ platformName }}考试内容</h1>
         </div>
@@ -115,7 +115,7 @@ import { ArrowLeft } from '@element-plus/icons-vue'
 import { supabase } from '@/lib/supabaseClient'
 import { useUserStore } from '@/stores/user'
 
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 
 //activeIndex的值需要和路由的path对应，首次进入获取路由的path，然后赋值给activeIndex
 const route = useRoute()
@@ -145,7 +145,7 @@ const platformName = computed(() => {
 // const handleSelect = (key: string, keyPath: string[]) => {
 //     console.log(key, keyPath)
 // }
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: `${platformName.value}培训过程考核`,
         path: `/system/optimize?platform=${platform.value}`

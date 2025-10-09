@@ -1,6 +1,7 @@
+
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">学习资料管理</h1>
         </div>
@@ -352,20 +353,21 @@ import { ref, onMounted, reactive, computed, watch, onBeforeUnmount } from 'vue'
 import { Search, ArrowLeft, House } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { supabase } from '@/lib/supabaseClient'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
 import UploadMaterials from './UploadMaterials.vue'
 import { Jodit } from 'jodit'
+import 'jodit/es2021/jodit.min.css'
 import mammoth from 'mammoth'
 import * as XLSX from 'xlsx'
 import { marked } from 'marked'
 import hljs from 'highlight.js'
 
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: '数据管理',
-        path: '/system/data-management'
+        path: ''
     },
     {
         name: '学习资料管理',
@@ -608,6 +610,7 @@ const showViewDialog = async (material: any) => {
             toolbar: false,
             statusbar: false,
             language: 'zh_cn',
+            disablePlugins: ['cdn'],
             uploader: {
                 insertImageAsBase64URI: true
             }

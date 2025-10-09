@@ -1,6 +1,6 @@
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">NAS文件管理</h1>
             <div class="status-tabs">
@@ -404,10 +404,10 @@
 import { ref, onMounted, watch } from 'vue'
 import { UploadFilled, Folder, Document, Picture, VideoPlay } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 import UGREENStorageService from '@/stores/ugreenNas'
 
-const breadbcrum = [
+const breadcrumb = [
 
     {
         name: 'NAS文件管理',

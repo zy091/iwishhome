@@ -1,6 +1,6 @@
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">文件转换工具</h1>
             <p class="subtitle">将Word文档和PDF文件转换为Markdown格式</p>
@@ -213,7 +213,7 @@ import { marked } from 'marked'
 import hljs from 'highlight.js'
 import mammoth from 'mammoth'
 import * as pdfjsLib from 'pdfjs-dist'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 
 // 配置 PDF.js worker - 使用多个备用CDN源
 const pdfWorkerSources = [
@@ -225,10 +225,10 @@ const pdfWorkerSources = [
 // 设置第一个可用的worker源
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSources[0]
 
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: '数据管理',
-        path: '/system/data-management'
+        path: ''
     },
     {
         name: '文件转换工具',

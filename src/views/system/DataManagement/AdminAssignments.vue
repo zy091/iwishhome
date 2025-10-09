@@ -1,6 +1,6 @@
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">作业管理</h1>
             <div class="status-tabs">
@@ -300,14 +300,14 @@ import { assignmentService } from '@/stores/assignmentService'
 import type { Assignment, AssignmentReply } from '@/stores/assignmentService'
 import { useUserStore } from '@/stores/user'
 import { supabase } from '@/lib/supabaseClient'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
 
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: '数据管理',
-        path: '/system/data-management'
+        path: ''
     },
     {
         name: '作业管理',

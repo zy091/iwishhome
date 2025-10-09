@@ -1,6 +1,6 @@
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">{{platformName}}培训过程考核</h1>
         </div>
@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, watch } from 'vue'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 import { useRoute } from 'vue-router'
 //获取路由参数/exam-content?platform=google
 const route = useRoute()
@@ -52,7 +52,7 @@ const platformName = computed(() => {
             return 'Google'
     }
 })
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: `${platformName.value}培训过程考核`,
         path: '/system/optimize?platform='+platform.value

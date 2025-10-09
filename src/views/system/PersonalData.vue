@@ -5,7 +5,7 @@
 -->
 <template>
     <div class="layout">
-        <Breadcrumb :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">个人中心</h1>
         </div>
@@ -150,7 +150,7 @@ const userFormRef = ref()
 const loading = ref(true)
 const isEditing = ref(false)
 const avatarUrl = ref('')
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: '个人信息',
         path: '/system/personal-information'

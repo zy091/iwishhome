@@ -355,6 +355,7 @@ import { User, Document, Reading, ChatLineRound, Setting, EditPen } from '@eleme
 import { useUserStore } from '@/stores/user'
 import { supabase } from '@/lib/supabaseClient'
 import { formatDate } from '@/utils/dateUtils'
+import 'jodit/es2021/jodit.min.css'
 
 // 导入图片
 import bannerImg from '@/assets/home-image/banner.png'

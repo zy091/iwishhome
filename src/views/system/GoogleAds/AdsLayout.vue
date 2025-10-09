@@ -12,7 +12,7 @@ import WordDocumentViewer from '@/components/WordDocumentViewer.vue'
 
 // 文档配置
 const documentUrl = 'https://oziqjzzrouoclocfgoub.supabase.co/storage/v1/object/public/documents/word-files/Search%20Advertising%20Principles.docx'
-const title = '搜索广告原则'
+const title = '搜索广告原理'
 </script>
 
 <style scoped>

@@ -1,6 +1,6 @@
 <template>
     <div class="search-ads">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="search-ads-title">
             <h1 class="title">搜索广告学习指南</h1>
             <p class="subtitle">全面掌握Google搜索广告的核心知识与实践技能</p>
@@ -21,11 +21,11 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 
 const route = useRoute()
 
-const activeIndex = ref('/system/google-ads/search-ads/principle')
+const activeIndex = ref('/system/google-search-ads/principle')
 onMounted(() => {
     activeIndex.value = route.path // 获取当前路由的路径
     console.log(activeIndex.value)
@@ -35,14 +35,14 @@ const handleSelect = (key: string, keyPath: string[]) => {
     console.log(key, keyPath)
 }
 
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
-        name: 'Google广告',
+        name: 'Google广告形式学习',
         path: '/system/google-ads'
     },
     {
         name: '搜索广告',
-        path: '/system/google-ads/search-ads'
+        path: '/system/google-search-ads'
     }
 ])
 </script>

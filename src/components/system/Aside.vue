@@ -107,7 +107,6 @@ import {
 import type { ElSubMenu } from 'element-plus'
 const router = useRouter()
 const route = useRoute()
-console.log(router, '==========', route.name)
 const activeIndex = ref('')
 const openedMenus = ref<string[]>([])
 import { useUserStore } from '@/stores/user' // 确保导入 useUserStore

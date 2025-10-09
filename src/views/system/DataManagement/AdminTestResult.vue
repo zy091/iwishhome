@@ -1,6 +1,6 @@
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">测试记录</h1>
             <div class="status-tabs">
@@ -250,14 +250,14 @@ import { testResultService, type TestResult, type TestAnswerDetail } from '@/sto
 import { studyNoteService, hasViewAllNotesPermission } from '@/stores/studyNoteService'
 import { useUserStore } from '@/stores/user'
 import { supabase } from '@/lib/supabaseClient'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
 
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: '数据管理',
-        path: '/system/admin-test-result'
+        path: ''
     },
     {
         name: '测试记录',
@@ -644,9 +644,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.layout {
+/* .layout {
     padding: 20px;
-}
+} */
 
 .layout-title {
     margin-bottom: 20px;

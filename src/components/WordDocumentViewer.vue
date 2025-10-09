@@ -619,7 +619,7 @@ onBeforeUnmount(() => {
 }
 
 .word-content {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
     line-height: 1.8;
     font-size: 16px;

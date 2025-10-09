@@ -1,6 +1,6 @@
 <template>
     <div class="training">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="training-title">
             <h1 class="title">{{ testName }}</h1>
         </div>
@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { ref ,onMounted,reactive,watch,computed} from 'vue'
 import { useRoute } from 'vue-router'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 
 //activeIndex的值需要和路由的path对应，首次进入获取路由的path，然后赋值给activeIndex
 const route = useRoute()
@@ -47,7 +47,7 @@ const platformName = computed(() => {
 
 
 
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: `${platformName.value}培训过程考核`,
         path: `/system/optimize?platform=${platform.value}`

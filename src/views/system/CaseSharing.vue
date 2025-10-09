@@ -1,6 +1,6 @@
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">知识分享</h1>
             <div class="status-tabs">
@@ -344,13 +344,13 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { caseSharingService, hasAdminPermission } from '@/stores/caseSharingService'
 import type { CaseSharing } from '@/stores/caseSharingService'
 import { useUserStore } from '@/stores/user'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
 import { supabase } from '@/lib/supabaseClient'
 import { ElForm } from 'element-plus'
 
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: '分享分享',
         path: '/system/case-sharing'

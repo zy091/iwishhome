@@ -1,6 +1,6 @@
 <template>
     <div class="study-notes">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="study-notes-title">
             <h1 class="title">学习心得</h1>
         </div>
@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 
 const route = useRoute()
 const activeIndex = ref('/system/study-notes/list')
@@ -48,7 +48,7 @@ const platformName = computed(() => {
     }
 })
 
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: `${platformName.value}优化`,
         path: `/system/optimize?platform=${platform.value}`

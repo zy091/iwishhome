@@ -1,6 +1,6 @@
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">用户管理</h1>
         </div>
@@ -176,7 +176,7 @@ import { ref, onMounted, computed, reactive, watch } from 'vue';
 import { Search, Loading } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { supabase } from '@/lib/supabaseClient'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
 import { useUserStore } from '@/stores/user'
@@ -184,7 +184,7 @@ import { roleService } from '@/stores/roleService'
 import type { Role } from '@/stores/roleService'
 import { organizationService } from '@/stores/organization';
 import type { Organization } from '@/stores/organization';
-const breadbcrum = reactive([
+const breadcrumb = reactive([
     {
         name: '用户管理',
         path: '/system/user'

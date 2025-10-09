@@ -1,6 +1,6 @@
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">角色管理</h1>
         </div>
@@ -90,7 +90,7 @@
 import { ref, onMounted, computed, reactive } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
 import { getRoleList, createRole, updateRole, deleteRole } from '@/api/role'
@@ -106,7 +106,7 @@ interface Role {
     updated_at?: string
 }
 
-const breadbcrum = [
+const breadcrumb = [
     {
         name: '角色管理',
         path: '/system/role-setting'

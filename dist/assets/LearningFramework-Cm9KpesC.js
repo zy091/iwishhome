@@ -1,1 +1,0 @@
-import{b as r}from"./index-UMOi9Opk.js";import{y as e,z as o}from"./vendor-CcmhhHhJ.js";import"./elementPlus-Be5V1zcU.js";import"./supabase-fOlwtt9p.js";const t={};function n(c,a){return o(),e("div",null," xxx ")}const f=r(t,[["render",n]]);export{f as default};

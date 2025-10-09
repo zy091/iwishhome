@@ -1,6 +1,6 @@
 <template>
     <div class="layout">
-        <Breadbcrum :breadbcrum="breadbcrum" />
+        <Breadcrumb :breadcrumb="breadcrumb" />
         <div class="layout-title">
             <h1 class="title">菜单管理</h1>
         </div>
@@ -108,7 +108,7 @@ import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getMenuList, createMenu, updateMenu, deleteMenu } from '@/api/menu'
 import { getRoleList } from '@/api/role'
-import Breadbcrum from '@/components/system/Breadcrumb.vue'
+import Breadcrumb from '@/components/system/Breadcrumb.vue'
 import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
 import {
@@ -138,7 +138,7 @@ interface Role {
     name: string
 }
 
-const breadbcrum = [
+const breadcrumb = [
     {
         name: '菜单管理',
         path: '/system/menu-setting'

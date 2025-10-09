@@ -173,6 +173,7 @@ import { Search, ArrowLeft, House } from '@element-plus/icons-vue'
 import { supabase } from '@/lib/supabaseClient'
 import { useRoute, useRouter } from 'vue-router'
 import { Jodit } from 'jodit'
+import 'jodit/es2021/jodit.min.css'
 import mammoth from 'mammoth'
 import * as XLSX from 'xlsx'
 import * as pdfjsLib from 'pdfjs-dist'
@@ -333,6 +334,7 @@ const fetchMaterialWithContents = async (materialId: string) => {
                 toolbar: false,
                 statusbar: false,
                 language: 'zh_cn',
+                disablePlugins: ['cdn'],
                 uploader: {
                     insertImageAsBase64URI: true
                 }
