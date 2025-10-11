@@ -35,8 +35,11 @@
                 <template #header>
                     <div class="card-header">
                         分享列表
-                        <div class="header-actions" v-if="hasAdminPerm">
-                            <el-button type="danger" :disabled="!selectedCases.length" @click="handleBatchDelete">
+                        <div class="header-actions" >
+                            <el-button type="success" @click="handleBatchShow">
+                                进入共享盘
+                            </el-button>
+                            <el-button v-if="hasAdminPerm" type="danger" :disabled="!selectedCases.length" @click="handleBatchDelete">
                                 批量删除
                             </el-button>
                             <div style="font-size: 14px; color: #909399;">共计{{ pagination.total }}条数据</div>
@@ -264,6 +267,42 @@
                 </div>
             </el-dialog>
 
+            <!-- 共享盘选择弹窗 -->
+            <el-dialog v-model="shareDiskDialogVisible" title="登录&注册共享盘" width="400px" center>
+                <div class="share-disk-dialog">
+                    <div class="disk-options">
+                        <el-button 
+                            type="primary" 
+                            size="large" 
+                            class="disk-button"
+                            @click="openShareDisk('ugospro')"
+                        >
+                            <div class="button-content">
+                                <el-icon size="24"><Monitor /></el-icon>
+                                <span>登录共享盘</span>
+                            </div>
+                        </el-button>
+                        
+                        <el-button 
+                            type="success" 
+                            size="large" 
+                            class="disk-button"
+                            @click="openShareDisk('iwish')"
+                        >
+                            <div class="button-content">
+                                <el-icon size="24"><Cloudy /></el-icon>
+                                <span>注册共享盘账号</span>
+                            </div>
+                        </el-button>
+                    </div>
+                </div>
+                <template #footer>
+                    <span class="dialog-footer">
+                        <el-button @click="shareDiskDialogVisible = false">取消</el-button>
+                    </span>
+                </template>
+            </el-dialog>
+
             <!-- 创建分享对话框 -->
             <el-dialog :title="isEditing ? '编辑分享' : '知识分享'" v-model="createDialogVisible" width="50%" :close-on-click-modal="false">
                 <el-form :model="newCase" :rules="caseRules" ref="caseForm" label-width="80px" style="max-width: 800px">
@@ -339,7 +378,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, reactive, onBeforeUnmount } from 'vue'
-import { Search, User, Calendar, Collection, Download, UploadFilled, Paperclip, Link, OfficeBuilding } from '@element-plus/icons-vue'
+import { Search, User, Calendar, Collection, Download, UploadFilled, Paperclip, Link, OfficeBuilding, Monitor, Cloudy } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { caseSharingService, hasAdminPermission } from '@/stores/caseSharingService'
 import type { CaseSharing } from '@/stores/caseSharingService'
@@ -380,6 +419,20 @@ const attachmentDialogVisible = ref(false)
 const selectedAttachmentUrl = ref('')
 const selectedAttachmentType = ref('')
 const fullscreenVisible = ref(false)  // 全屏预览对话框
+const shareDiskDialogVisible = ref(false)  // 共享盘弹窗
+const openShareDisk = (type: string) => {
+    let url = ''
+    if (type === 'ugospro') {
+        url = 'https://192-168-1-37.iwish.direct.ug.link:9443/desktop/?os=ugospro#/login/account'
+    } else if (type === 'iwish') {
+        url = 'https://iwish.cn57.ug.link/invite/?code%3D549A366803426187%26LANG%3Dzh-CN'
+    }
+    
+    if (url) {
+        window.open(url, '_blank')
+        shareDiskDialogVisible.value = false
+    }
+}
 
 const newCase = reactive({
     id: '',
@@ -835,6 +888,11 @@ const handleBatchDelete = async () => {
     }
 }
 
+// 进入共享盘弹窗
+const handleBatchShow = () => {
+    shareDiskDialogVisible.value = true
+}
+
 // 处理查看类型变化
 const handleViewTypeChange = (viewType: string) => {
     activeViewType.value = viewType
@@ -842,6 +900,7 @@ const handleViewTypeChange = (viewType: string) => {
     pagination.page = 1
     searchCases()
 }
+
 
 onMounted(() => {
     searchCases()
@@ -1102,6 +1161,38 @@ onMounted(() => {
 :deep(.el-tabs__active-bar) {
     background-color: #409eff;
     height: 3px;
+}
+
+/* 共享盘弹窗样式 */
+.share-disk-dialog {
+    padding: 20px 0;
+}
+
+.disk-options {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+}
+
+.disk-button {
+    width: 280px;
+    height: 80px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.button-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.button-content span {
+    font-size: 14px;
 }
 
 /* 新增样式 */

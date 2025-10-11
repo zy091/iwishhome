@@ -86,11 +86,6 @@ const router = createRouter({
           component: () => import('../views/system/GoogleAds/AssessmentRequirements.vue'),
         },
         {
-          path: 'google-learning-framework',
-          name: 'google-learning-framework',
-          component: () => import('../views/system/GoogleAds/LearningFramework.vue'),
-        },
-        {
           path: 'google-ads',
           name: 'google-ads',
           component: () => import('../views/system/GoogleAds/AboutAds.vue'),
@@ -106,55 +101,14 @@ const router = createRouter({
           component: () => import('../views/system/GoogleAds/AdsForm.vue'),
         },
         {
-          path: 'google-search-ads',
-          name: 'google-search-ads',
-          component: () => import('../views/system/GoogleAds/SearchAds.vue'),
-          redirect: '/system/google-search-ads/principle',
-          children: [
-            {
-              path: 'principle',
-              name: 'google-search-ads-principle',
-              component: () => import('../views/system/GoogleAds/AdsForm.vue'),
-              props: (route) => ({
-                adsForm: 'google-search-ads'
-              })
-            },
-            {
-              path: 'core-elements',
-              name: 'google-search-ads-core-elements',
-              component: () => import('../views/system/GoogleAds/AdsForm.vue'),
-              props: (route) => ({
-                adsForm: 'google-search-ads'
-              })
-            },
-            {
-              path: 'bidding-strategy',
-              name: 'google-search-ads-bidding-strategy',
-              component: () => import('../views/system/GoogleAds/AdsForm.vue'),
-              props: (route) => ({
-                adsForm: 'google-search-ads'
-              })
-            },
-            {
-              path: 'creation',
-              name: 'google-search-ads-creation',
-              component: () => import('../views/system/GoogleAds/AdsForm.vue'),
-              props: (route) => ({
-                adsForm: 'google-search-ads'
-              })
-            },
-            {
-              path: 'optimization',
-              name: 'google-search-ads-optimization',
-              component: () => import('../views/system/GoogleAds/AdsForm.vue'),
-              props: (route) => ({
-                adsForm: 'google-search-ads'
-              })
-            }
-          ]
+          path: 'google-index',
+          name: 'google-index',
+          component: () => import('../views/system/GoogleAds/GoogleDataindex.vue'),
         },
+
+        // NAS文件管理
         {
-          path: 'nas-files', // NAS文件管理
+          path: 'nas-files', 
           name: 'nas-files',
           component: () => import('../views/system/NasFileManagement.vue'),
           meta: {

@@ -11,8 +11,8 @@
 import WordDocumentViewer from '@/components/WordDocumentViewer.vue'
 
 // 文档配置
-const documentUrl = 'https://oziqjzzrouoclocfgoub.supabase.co/storage/v1/object/public/documents/word-files/Search%20Advertising%20Principles.docx'
-const title = '搜索广告原理'
+const documentUrl = 'https://oziqjzzrouoclocfgoub.supabase.co/storage/v1/object/public/documents/word-files/Google%20AdsDataIndex.docx'
+const title = 'Google Ads常用广告指标解读与优化'
 </script>
 
 <style scoped>
