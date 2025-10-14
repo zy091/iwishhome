@@ -44,9 +44,6 @@ class UGREENStorageService {
                 body: file
             });
             
-            console.log('响应状态:', response.status);
-            console.log('响应头:', response.headers);
-            
             if (response.ok) {
                 return {
                     success: true,
@@ -59,7 +56,6 @@ class UGREENStorageService {
                 throw new Error(`Upload failed: ${response.status} - ${errorText}`);
             }
         } catch (error) {
-            console.error('Upload error:', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             return { success: false, error: errorMessage };
         }

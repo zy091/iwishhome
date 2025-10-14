@@ -413,6 +413,12 @@ router.beforeEach(async (to, from, next) => {
       query: { redirect: to.fullPath }
     })
   }
+  if (to.meta.requiresAuth && userStore.roleId== null) {
+    return next({
+      name: 'login',
+      query: { redirect: to.fullPath }
+    })
+  }
 
   // 如果是管理页面需要额外的权限检查
   if (to.meta.requiresAdmin) {

@@ -186,8 +186,6 @@ export const assignmentService = {
             .eq('user_id', userStore.user.user_id)
             .single()
 
-        console.log('当前用户profile:', profile); // 添加日志
-
         if (!profile?.organization_id) throw new Error('用户未加入组织')
         
         // 根据用户角色确定查询范围
@@ -195,7 +193,6 @@ export const assignmentService = {
         
         if (isSupperAdmin) {
             // 超级管理员：查看所有用户
-            console.log('超级管理员，查询所有用户');
             
             const { data, error } = await supabase
                 .from('user_profiles')
@@ -208,8 +205,7 @@ export const assignmentService = {
                     organization_path
                 `)
                 .neq('user_id', userStore.user.user_id) // 排除当前用户
-            
-            console.log('超级管理员查询结果:', data);
+        
             
             if (error) {
                 console.error('超级管理员查询错误:', error);
@@ -218,7 +214,6 @@ export const assignmentService = {
             return data;
         } else {
             // 非超级管理员：只能看到本组织成员
-            console.log('非超级管理员，查询本组织成员:', profile.organization_id);
         
         const { data, error } = await supabase
                 .from('user_profiles')
@@ -232,8 +227,7 @@ export const assignmentService = {
                 `)
                 .eq('organization_id', profile.organization_id)
                 .neq('user_id', userStore.user.user_id) // 排除当前用户
-                
-            console.log('非超级管理员查询结果:', data);
+            
             
             if (error) {
                 console.error('非超级管理员查询错误:', error);
@@ -330,7 +324,6 @@ export const assignmentService = {
         if (!userStore.user) throw new Error('用户未登录')
 
         const userId = userStore.user.user_id
-        console.log('获取个人作业，用户ID:', userId)
         
         try {
             // 直接查询指定给当前用户的作业，不受组织限制
@@ -344,12 +337,10 @@ export const assignmentService = {
             `, { count: 'exact' })
                 .eq('assigned_to', userId) // 只要assigned_to是当前用户，就能看到，不论创建者来自哪个组织
             
-            console.log('查询条件: assigned_to =', userId)
         
         // 添加标题搜索
         if (filters?.query) {
             query = query.ilike('title', `%${filters.query}%`)
-                console.log('添加标题搜索:', filters.query)
         }
         
         // 处理日期范围
@@ -358,18 +349,15 @@ export const assignmentService = {
             query = query
                 .gte('created_at', startUTC)
                 .lte('created_at', endUTC);
-                console.log('添加日期范围:', startUTC, '到', endUTC)
         }
         
         // 添加回复状态过滤
         if (filters?.status === 'replied') {
                 // 查询已完成并已回复的作业
             query = query.not('replies', 'is', null)
-                console.log('过滤状态: 已回复')
         } else if (filters?.status === 'pending') {
                 // 查询待回复的作业
             query = query.not('replies', 'is', null)
-                console.log('过滤状态: 待回复')
         }
 
         // 排序和分页
@@ -382,7 +370,6 @@ export const assignmentService = {
                 throw error
             }
 
-            console.log('查询到的作业数量:', data?.length, '总数:', count)
             console.log('作业详情:', data?.map(item => ({
                 id: item.id,
                 title: item.title,

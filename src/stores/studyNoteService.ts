@@ -40,8 +40,6 @@ export const studyNoteService = {
             throw new Error('无法获取用户ID')
         }
 
-        console.log(`正在获取用户ID为 ${currentUser.user_id} 的笔记`)
-
         const { data, error } = await supabase
             .from('study_notes')
             .select('*')
@@ -68,13 +66,11 @@ export const studyNoteService = {
                 .single()
 
             if (error) {
-                console.error('获取笔记失败:', error)
                 throw new Error(`获取笔记失败: ${error.message}`)
             }
 
             return data as StudyNote
         } catch (error) {
-            console.error('获取笔记出错:', error)
             if (error instanceof Error) {
                 throw error
             }
@@ -108,7 +104,6 @@ export const studyNoteService = {
             .single()
 
         if (error) {
-            console.error('创建笔记失败:', error)
             throw new Error('创建笔记失败')
         }
         return data
@@ -127,7 +122,6 @@ export const studyNoteService = {
             if (error.code === 'PGRST116') {
                 throw new Error(`笔记不存在: ${id}`)
             }
-            console.error('更新笔记失败:', error)
             throw new Error('更新笔记失败')
         }
         return data
@@ -273,13 +267,11 @@ export const studyNoteService = {
                 if (error.code === 'PGRST116') {
                     throw new Error(`笔记不存在: ${id}`)
                 }
-                console.error('更新笔记失败:', error);
                 throw new Error('更新笔记失败');
             }
 
             return data as StudyNote;
         } catch (error) {
-            console.error('更新笔记出错:', error);
             if (error instanceof Error) {
                 throw error;
             }
@@ -296,13 +288,11 @@ export const studyNoteService = {
                 .eq('id', id)
             
             if (error) {
-                console.error('检查笔记是否存在失败:', error)
                 return false
             }
             
             return count !== null && count > 0
         } catch (error) {
-            console.error('检查笔记是否存在出错:', error)
             return false
         }
     }

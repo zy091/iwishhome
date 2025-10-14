@@ -97,8 +97,8 @@
                                 <div class="org-path" v-if="currentUser.organization_path">
                                     <small>组织路径: {{ currentUser.organization_path }}</small>
                                 </div>
-                                <div class="org-path" v-if="currentUser.organization_parent_id">
-                                    <small>上级组织ID: {{ currentUser.organization_parent_id }}</small>
+                                <div class="org-path" >
+                                    <small>提示: 根据用户简介设置组织和角色</small>
                                 </div>
                             </el-form-item>
                             <el-form-item label="角色">

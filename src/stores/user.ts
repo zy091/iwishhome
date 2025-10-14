@@ -4,6 +4,7 @@ import type { User, Session } from '@supabase/supabase-js'
 import { ElMessage } from 'element-plus'
 import { roleService } from './roleService'
 import type { Role } from './roleService'
+import router from '@/router'
 
 // Define a custom type that combines User with profile fields
 type UserProfile = User & {
@@ -90,7 +91,6 @@ export const useUserStore = defineStore('user', {
                 .eq('user_id', userId)
 
             if (profileError) {
-                console.error('Error fetching user profile:', profileError.message)
                 return { error: profileError }
             }
 
@@ -134,7 +134,6 @@ export const useUserStore = defineStore('user', {
                     .single()
 
                 if (error) {
-                    console.error('Error updating user profile:', error.message)
                     return { error }
                 }
 
@@ -148,7 +147,6 @@ export const useUserStore = defineStore('user', {
 
                 return { data }
             } catch (error: any) {
-                console.error('Error in updateUserProfile:', error.message)
                 return { error }
             }
         },
@@ -194,7 +192,6 @@ export const useUserStore = defineStore('user', {
             
             // 监听认证状态变化
             supabase.auth.onAuthStateChange(async (event, session) => {
-                console.log("Auth state changed:", event, session?.user?.id)
                 this.session = session
                 
                 if (session?.user) {
@@ -203,7 +200,6 @@ export const useUserStore = defineStore('user', {
                     if (event === 'SIGNED_IN') {
                         if (currentUser) {
                             // 会话刷新情况：保留当前用户所有信息，仅更新session相关字段
-                            console.log("会话刷新，保留现有用户数据", currentUser.role_id)
                             this.user = {
                                 ...currentUser,
                                 // 只更新这些session相关字段
@@ -220,14 +216,13 @@ export const useUserStore = defineStore('user', {
                             }
                         } else {
                             // 真正的新登录，从服务器获取完整资料
-                            console.log("新登录，获取用户完整资料")
                             if (session.user.id) {
                                 await this.fetchUserProfile(session.user.id);
                             }
                         }
                     } else if (currentUser) {
                         // 其他认证状态变化，保留profile数据
-                        console.log("其他认证状态变化，保留profile数据")
+
                         this.user = {
                             ...currentUser,
                             ...session.user,
@@ -238,7 +233,6 @@ export const useUserStore = defineStore('user', {
                         this.setUser(this.user);
                     } else {
                         // 没有本地数据，设置基本用户信息
-                        console.log("无本地数据，设置基本用户信息")
                         this.user = session.user as UserProfile;
                         // 尝试获取用户资料
                         if (session.user.id) {
@@ -247,7 +241,6 @@ export const useUserStore = defineStore('user', {
                     }
                 } else if (event === 'SIGNED_OUT') {
                     // 登出时清除数据
-                    console.log("用户登出，清除数据")
                     this.user = null;
                     this.setUser(null);
                 }
@@ -255,41 +248,53 @@ export const useUserStore = defineStore('user', {
         },
 
         async login(email: string, password: string) {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            })
-            if (data.session) {
-                this.session = data.session
-                this.user = data.session.user as UserProfile
-                ElMessage.success('登录成功！')
-                // 登录成功后立即获取用户资料
-                const { data: userInfo, error: userError } = await this.fetchUserProfile(data.session.user.id)
-                if (userInfo && userInfo[0]) {
-                    // 确保user_id字段被正确设置
-                    this.user = {
-                        ...this.user,
-                        full_name: userInfo[0].full_name,
-                        role_id: userInfo[0].role_id,
-                        address: userInfo[0].address,
-                        user_id: userInfo[0].user_id || data.session.user.id, // 确保user_id存在
-                        phone_number: userInfo[0].phone_number,
-                        bio: userInfo[0].bio,
-                        department: userInfo[0].department,
-                        avatar_url: userInfo[0].avatar_url
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                })
+                if (data.session) {
+                    this.session = data.session
+                    this.user = data.session.user as UserProfile
+                    
+                    // 登录成功后立即获取用户资料
+                    const { data: userInfo, error: userError } = await this.fetchUserProfile(data.session.user.id)
+                    if (userInfo && userInfo[0]) {
+                        if (userInfo[0].role_id == null) {
+                            ElMessage.warning('请联系管理员分配角色')
+                            //返回到登录页面
+                            router.push('/login')
+                            return
+                        }
+                        ElMessage.success('登录成功！')
+                        // 确保user_id字段被正确设置
+                        this.user = {
+                            ...this.user,
+                            full_name: userInfo[0].full_name,
+                            role_id: userInfo[0].role_id,
+                            address: userInfo[0].address,
+                            user_id: userInfo[0].user_id || data.session.user.id, // 确保user_id存在
+                            phone_number: userInfo[0].phone_number,
+                            bio: userInfo[0].bio,
+                            department: userInfo[0].department,
+                            avatar_url: userInfo[0].avatar_url
+                        }
+                        
+                        // 显式保存到localStorage
+                        this.setUser(this.user)
+                        
+                        // 获取角色详情
+                        await this.fetchUserRole();
                     }
-                    
-                    // 显式保存到localStorage
-                    this.setUser(this.user)
-                    
-                    // 获取角色详情
-                    await this.fetchUserRole();
+                } else {
+                    // 处理错误
+                    ElMessage.error('登录失败，请检查邮箱和密码')
                 }
-            } else {
-                // 处理错误
-                ElMessage.error('登录失败，请检查邮箱和密码')
+                return { data, error }
+            } catch (err: any) {
+                ElMessage.error(`登录失败: ${err.message || '未知错误'}`);
+                return { data: null, error: err };
             }
-            return { data, error }
         },
 
         async logout() {
@@ -302,6 +307,54 @@ export const useUserStore = defineStore('user', {
                 ElMessage.warning('已退出登录！')
             }
             return { error }
+        },
+
+        // 注册方法
+        async register(userData: { username: string; email: string; password: string , bio: string }) {
+            try {
+                // 1. 创建认证用户
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: userData.email,
+                    password: userData.password,
+                })
+
+                if (authError) {
+                    ElMessage.error(`注册失败: ${authError.message}`)
+                    return { error: authError }
+                }
+
+                if (!authData.user) {
+                    ElMessage.error('注册失败: 用户创建失败')
+                    return { error: new Error('用户创建失败') }
+                }
+
+                // 2. 创建用户资料
+                const { data: profileData, error: profileError } = await supabase
+                    .from('user_profiles')
+                    .insert({
+                        user_id: authData.user.id,
+                        full_name: userData.username,
+                        email: userData.email,
+                        role_id: null, // 默认角色ID，可以根据需要调整,
+                        bio: userData.bio,
+                    })
+                    .select()
+                    .single()
+
+                if (profileError) {
+                    // 如果资料创建失败，尝试删除已创建的用户
+                    await supabase.auth.admin.deleteUser(authData.user.id)
+                    ElMessage.error(`注册失败: ${profileError.message}`)
+                    return { error: profileError }
+                }
+
+                // ElMessage.success('注册成功！请检查邮箱验证邮件')
+                return { data: { auth: authData, profile: profileData } }
+
+            } catch (error: any) {
+                ElMessage.error(`注册失败: ${error.message}`)
+                return { error }
+            }
         },
         //处理菜单结构
         transformMenus(rawMenus: MenuItem[]): MenuItem[] {
@@ -368,7 +421,6 @@ export const useUserStore = defineStore('user', {
 
                 return { data: roleData };
             } catch (error: any) {
-                console.error('Error in fetchUserRole:', error.message);
                 return { error };
             }
         },

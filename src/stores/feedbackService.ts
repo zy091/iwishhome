@@ -71,7 +71,6 @@ export const hasAdminPermission = (roleId?: number | null): boolean => {
         const userStore = useUserStore()
         roleId = Number(userStore.roleId || localStorage.getItem('roleId') )
     }
-    console.log(roleId,'roleid============================')
     return roleId !== null && [
         UserRole.ADMIN,
         UserRole.OPERATIONS_MANAGER,
@@ -116,7 +115,6 @@ export const feedbackService = {
         if (isAdmin && options?.showStatus) {
             // If admin and showStatus filter is provided
             query = query.eq('is_show', options.showStatus === 'true')
-            console.log('query', query)
         }
         
         // Filter by search query
@@ -158,7 +156,6 @@ export const feedbackService = {
         const { data, error, count } = await query
         
         if (error) {
-            console.error('获取反馈失败:', error)
             throw new Error('获取反馈失败')
         }
         
@@ -211,7 +208,6 @@ export const feedbackService = {
         const { data, error, count } = await query
         
         if (error) {
-            console.error('获取个人反馈失败:', error)
             throw new Error('获取个人反馈失败')
         }
         
