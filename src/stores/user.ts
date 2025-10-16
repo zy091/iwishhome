@@ -48,6 +48,25 @@ interface MenuItem {
     children?: MenuItem[]
     created_at?: string
     updated_at?: string
+    category: string
+}
+
+// 添加角色常量
+export enum UserRole {
+    ADMIN = 0,
+    OPERATIONS_MANAGER = 1,
+    PRODUCT_MANAGER = 11,
+    TEACHER = 15
+}
+
+// 添加检查权限的函数
+export const hasManagmentPermission = (roleId: number | null): boolean => {
+    return roleId !== null && [
+        UserRole.ADMIN,
+        UserRole.OPERATIONS_MANAGER,
+        UserRole.PRODUCT_MANAGER,
+        UserRole.TEACHER
+    ].includes(roleId);
 }
 
 export const useUserStore = defineStore('user', {
@@ -97,7 +116,7 @@ export const useUserStore = defineStore('user', {
             // 确保有数据返回
             if (userProfileData && userProfileData.length > 0) {
                 const roleId = userProfileData[0]?.role_id
-                
+
                 // 确保用户数据结构完整
                 if (this.user) {
                     this.user = {
@@ -108,16 +127,16 @@ export const useUserStore = defineStore('user', {
                 } else {
                     this.user = userProfileData[0] as UserProfile
                 }
-                
+
                 this.setRoleId(roleId)
                 this.setUser(this.user) // 确保数据保存到localStorage
-                
+
                 // 获取角色详情 - 修复判断条件
                 if (roleId !== undefined && roleId !== null) {
                     await this.fetchUserRole();
                 }
             }
-            
+
             return { data: userProfileData }
         },
 
@@ -155,15 +174,15 @@ export const useUserStore = defineStore('user', {
             // 获取初始会话
             const { data: { session } } = await supabase.auth.getSession()
             this.session = session
-            
+
             // 不直接覆盖用户数据，而是在必要时从localStorage加载
             const storedUser = localStorage.getItem('user');
-            
+
             if (session?.user) {
                 if (!storedUser) {
                     // 如果没有本地存储的用户数据，先设置基本数据
                     this.user = session.user as UserProfile
-                    
+
                     // 然后尝试获取完整的用户资料
                     if (session.user.id) {
                         await this.fetchUserProfile(session.user.id);
@@ -171,7 +190,7 @@ export const useUserStore = defineStore('user', {
                 } else {
                     // 如果已有本地存储的用户数据，优先使用
                     this.user = JSON.parse(storedUser);
-                    
+
                     // 更新session相关字段，但保留profile数据
                     if (this.user) {
                         this.user = {
@@ -189,14 +208,14 @@ export const useUserStore = defineStore('user', {
                 // 无有效会话
                 this.user = null;
             }
-            
+
             // 监听认证状态变化
             supabase.auth.onAuthStateChange(async (event, session) => {
                 this.session = session
-                
+
                 if (session?.user) {
                     const currentUser = this.getUser();
-                    
+
                     if (event === 'SIGNED_IN') {
                         if (currentUser) {
                             // 会话刷新情况：保留当前用户所有信息，仅更新session相关字段
@@ -256,7 +275,7 @@ export const useUserStore = defineStore('user', {
                 if (data.session) {
                     this.session = data.session
                     this.user = data.session.user as UserProfile
-                    
+
                     // 登录成功后立即获取用户资料
                     const { data: userInfo, error: userError } = await this.fetchUserProfile(data.session.user.id)
                     if (userInfo && userInfo[0]) {
@@ -279,10 +298,10 @@ export const useUserStore = defineStore('user', {
                             department: userInfo[0].department,
                             avatar_url: userInfo[0].avatar_url
                         }
-                        
+
                         // 显式保存到localStorage
                         this.setUser(this.user)
-                        
+
                         // 获取角色详情
                         await this.fetchUserRole();
                     }
@@ -304,13 +323,14 @@ export const useUserStore = defineStore('user', {
                 this.user = null
                 localStorage.removeItem('user')
                 localStorage.removeItem('roleId')
+                localStorage.removeItem('category')
                 ElMessage.warning('已退出登录！')
             }
             return { error }
         },
 
         // 注册方法
-        async register(userData: { username: string; email: string; password: string , bio: string }) {
+        async register(userData: { username: string; email: string; password: string, bio: string }) {
             try {
                 // 1. 创建认证用户
                 const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -378,23 +398,31 @@ export const useUserStore = defineStore('user', {
         async fetchMenus() {
             // 确保用户已登录
             if (!this.session?.access_token) {
-                ElMessage.error(' 请先登录！')
+                ElMessage.error('请先登录！')
                 return { error: new Error('Unauthorized') }
             }
+
+            // 可以在这里添加更多的条件判断
+
             const { data, error } = await supabase
                 .from('menu')
                 .select('*')
 
             if (error) {
-                ElMessage.error('获取菜单失败！')
+                ElMessage.error(`获取菜单失败！错误信息: ${error.message}`)
                 return { error }
             }
             this.loadRoleId()
             // 根据角色 ID 筛选菜单
-            const filteredMenus = data.filter(menu =>
+            let filteredMenus = data.filter(menu =>
                 !menu.role_ids ||
                 (this.roleId !== null && menu.role_ids.includes(this.roleId))
             )
+            const category = localStorage.getItem('category')
+            if (category) {
+                filteredMenus = [...filteredMenus.filter(item => item.category == category), ...filteredMenus.filter(item => item.category == 'all')]
+
+            }
             // 转换菜单结构
             this.menus = this.transformMenus(filteredMenus)
             return { data: this.menus }
@@ -409,12 +437,12 @@ export const useUserStore = defineStore('user', {
 
             try {
                 const roleData = await roleService.getRole(Number(this.user.role_id));
-                
+
                 // 将角色信息添加到用户对象中
                 if (roleData && this.user) {
                     // 使用类型断言来明确告诉TypeScript这是安全的
                     (this.user as any).role = roleData;
-                    
+
                     // 更新本地存储
                     localStorage.setItem('user', JSON.stringify(this.user));
                 }

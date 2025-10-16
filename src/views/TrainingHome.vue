@@ -40,7 +40,7 @@
             <div class="service-text">
               <h3 style="margin-bottom: 20px;">{{ service.title }}</h3>
               <p style="margin-bottom: 20px;max-width: 350px;">{{ service.description }}</p>
-              <el-link :href="service.link"  >查看详情</el-link>
+              <el-link :href="service.link" @click="setCategory(service.category)" >查看详情</el-link>
             </div>
           </el-card>
         </el-col>
@@ -48,7 +48,7 @@
     </div>
 
     <!-- Footer -->
-    <Footer />
+    <Footer></Footer>
   </div>
 </template>
 
@@ -67,33 +67,49 @@ const services = ref([
     title: '致员工的一封信',
     icon: trainingImg,
     link:'/system/training-letter',
-    description: ''
+    description: '',
+    category:''
   },
   {
     title: '行业知识&网站分析',
     icon: fileImg,
     link:'/system/training-marketing',
-    description: ''
+    description: '',
+    category:''
   },
   {
     title: 'Google广告',
     icon: googleImg,
     link:'/system/',
-    description: ''
+    description: '',
+    category:'google'
   },
   {
     title: 'Meta广告',
     icon: facebookImg,
-    link:'#',
-    description: ''
+    link:'/system/',
+    description: '',
+    category:'meta',
   },
   {
     title: 'Criteo广告',
     icon: facebookImg,
-    link:'#',
-    description: ''
+    link:'/system/',
+    description: '',
+    category:'criteo'
+  },
+  {
+    title: '管理员入口',
+    icon: facebookImg,
+    link:'/system/',
+    description: '',
+    category:'admin'
   },
 ])
+
+const setCategory=(category:string)=>{
+  localStorage.setItem('category',category)
+}
 </script>
 
 <style scoped>

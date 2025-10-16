@@ -118,6 +118,11 @@ const menus = computed(() => {
 
 })
 
+const routePath = computed(() => {
+    return route.path
+})
+
+
 
 
 // 直接使用 store 中的 menus
@@ -161,7 +166,8 @@ const accessToken = ref('')
 
 onMounted(async () => {
     loading.value = true
-    await userStore.fetchMenus()
+
+    userStore.fetchMenus()
 
     // 获取 session 和 access token
     const { data: { session } } = await supabase.auth.getSession()

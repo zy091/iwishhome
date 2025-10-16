@@ -108,7 +108,7 @@ const router = createRouter({
 
         // NAS文件管理
         {
-          path: 'nas-files', 
+          path: 'nas-files',
           name: 'nas-files',
           component: () => import('../views/system/NasFileManagement.vue'),
           meta: {
@@ -413,7 +413,8 @@ router.beforeEach(async (to, from, next) => {
       query: { redirect: to.fullPath }
     })
   }
-  if (to.meta.requiresAuth && userStore.roleId== null) {
+  // console.log(userStore.user?.role_id,'userStore.roleId')
+  if (to.meta.requiresAuth && userStore.user?.role_id == null) {
     return next({
       name: 'login',
       query: { redirect: to.fullPath }

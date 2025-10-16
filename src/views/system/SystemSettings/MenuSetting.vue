@@ -41,7 +41,12 @@
                             </el-icon>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="order_index" label="排序" width="150" />
+                    <el-table-column prop="order_index" label="排序" width="80" />
+                    <el-table-column prop="category" label="分类" width="80" >
+                        <template #default="{ row }">
+                            {{ categoryList.find(category => category.value === row.category)?.name}}
+                        </template>
+                    </el-table-column>
                     <el-table-column label="角色权限">
                         <template #default="{ row }">
                             <el-tag v-for="role in row.role_ids" :key="role" class="mx-1">
@@ -85,6 +90,11 @@
                     <el-form-item label="排序" prop="order_index">
                         <el-input-number v-model="menuForm.order_index" :min="0" />
                     </el-form-item>
+                    <el-form-item label="分类" prop="category">
+                        <el-select v-model="menuForm.category" clearable>
+                            <el-option v-for="category in categoryList" :key="category.value" :label="category.name" :value="category.value" />
+                        </el-select>
+                    </el-form-item>
                     <el-form-item label="角色权限" prop="role_ids">
                         <el-select v-model="menuForm.role_ids" multiple collapse-tags collapse-tags-tooltip>
                             <el-option v-for="role in roleList" :key="role.role_id" :label="role.name" :value="role.role_id" />
@@ -123,6 +133,7 @@ import {
     ChromeFilled,
     SetUp
 } from '@element-plus/icons-vue'
+import { ca } from 'element-plus/es/locales.mjs'
 interface Menu {
     id?: string | number
     name: string
@@ -131,6 +142,7 @@ interface Menu {
     parent_id: number | null
     order_index: number
     role_ids: number[] | null
+    category: string
 }
 
 interface Role {
@@ -143,6 +155,14 @@ const breadcrumb = [
         name: '菜单管理',
         path: '/system/menu-setting'
     }
+]
+
+const categoryList =[
+    {name:'所有可见',value:'all'},
+    {name:'Google',value:'google'},
+    {name:'Meta',value:'meta'},
+    {name:'Criteo',value:'criteo'},
+    {name:'管理员',value:'admin'},
 ]
 
 const loading = ref(false)
@@ -165,7 +185,8 @@ const menuForm = ref<Menu>({
     icon: '',
     parent_id: null,
     order_index: 0,
-    role_ids: null
+    role_ids: null,
+    category: ''
 })
 
 const rules = {
@@ -246,7 +267,8 @@ const handleAdd = () => {
         icon: '',
         parent_id: null,
         order_index: 0,
-        role_ids: []
+        role_ids: [],
+        category:''
     }
     dialogVisible.value = true
 }
