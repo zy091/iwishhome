@@ -238,6 +238,9 @@
                     <template v-else-if="isPdfAttachment">
                         <iframe :src="selectedAttachmentUrl" class="attachment-frame"></iframe>
                     </template>
+                    <template v-else-if="isWordAttachment">
+                        <WordDocumentViewer :title="selectedAttachmentName" :showBackButton="false" :showDownloadButton="false"  :documentUrl="selectedAttachmentUrl" />
+                    </template>
                     <template v-else>
                         <div class="attachment-download">
                             <p>无法预览此类型的文件，请下载后查看</p>
@@ -248,7 +251,7 @@
                 <template #footer>
                     <span class="dialog-footer">
                         <el-button @click="attachmentDialogVisible = false">关闭</el-button>
-                        <el-button v-if="isImageAttachment || isPdfAttachment" type="primary" @click="openFullscreen">
+                        <el-button v-if="isImageAttachment || isPdfAttachment || isWordAttachment" type="primary" @click="openFullscreen">
                             全屏查看
                         </el-button>
                     </span>
@@ -260,6 +263,9 @@
                 <div class="fullscreen-preview">
                     <template v-if="isImageAttachment">
                         <img :src="selectedAttachmentUrl" class="fullscreen-image" />
+                    </template>
+                     <template v-else-if="isWordAttachment">
+                        <WordDocumentViewer :title="selectedAttachmentName" :showBackButton="false" :showDownloadButton="false"  :documentUrl="selectedAttachmentUrl" />
                     </template>
                     <template v-else-if="isPdfAttachment">
                         <iframe :src="selectedAttachmentUrl" class="fullscreen-frame"></iframe>
@@ -388,6 +394,7 @@ import Pagination from '@/components/system/Pagination.vue'
 import type { PaginationType } from '@/types/pagination'
 import { supabase } from '@/lib/supabaseClient'
 import { ElForm } from 'element-plus'
+import WordDocumentViewer from '@/components/WordDocumentViewer.vue' // 引入 WordDocumentViewer 组件
 
 const breadcrumb = reactive([
     {
@@ -417,6 +424,7 @@ const isEditing = ref(false)
 const categoryFilter = ref('')
 const attachmentDialogVisible = ref(false)
 const selectedAttachmentUrl = ref('')
+const selectedAttachmentName = ref('')
 const selectedAttachmentType = ref('')
 const fullscreenVisible = ref(false)  // 全屏预览对话框
 const shareDiskDialogVisible = ref(false)  // 共享盘弹窗
@@ -523,6 +531,11 @@ const isPdfAttachment = computed(() => {
     return selectedAttachmentType.value === 'application/pdf'
 })
 
+const isWordAttachment = computed(() => {
+    if (!selectedAttachmentType.value) return false
+    return selectedAttachmentType.value === 'application/msword' || selectedAttachmentType.value === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+})
+
 // 类型标签样式
 const getCategoryType = (category: string) => {
     switch (category) {
@@ -605,6 +618,7 @@ const showDetailDialog = async (caseItem: CaseSharing) => {
 const viewAttachment = (caseItem: CaseSharing) => {
     if (caseItem.attachment_url) {
         selectedAttachmentUrl.value = caseItem.attachment_url
+        selectedAttachmentName.value = caseItem.title
         selectedAttachmentType.value = getFileTypeFromName(caseItem.attachment_name)
         attachmentDialogVisible.value = true
     }
@@ -614,6 +628,7 @@ const viewAttachment = (caseItem: CaseSharing) => {
 const viewAttachmentDialog = () => {
     if (selectedCase.value?.attachment_url) {
         selectedAttachmentUrl.value = selectedCase.value.attachment_url
+        selectedAttachmentName.value = selectedCase.value.title
         selectedAttachmentType.value = getFileTypeFromName(selectedCase.value.attachment_name)
         attachmentDialogVisible.value = true
     }
@@ -646,6 +661,10 @@ const getFileTypeFromName = (filename: string | undefined): string => {
         return 'image/' + ext
     } else if (ext === 'pdf') {
         return 'application/pdf'
+    } else if (['doc', 'dot'].includes(ext)) {
+        return 'application/msword'
+    } else if (['docx'].includes(ext)) {
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     }
     return ''
 }
@@ -1094,6 +1113,11 @@ onMounted(() => {
 }
 
 /* 全屏对话框样式 */
+:deep(.fullscreen-dialog ){
+    padding: 0;
+    padding-bottom: 30px;
+    margin: 0;
+}
 :deep(.fullscreen-dialog .el-dialog) {
     margin: 0 !important;
     height: 100vh;
@@ -1102,7 +1126,7 @@ onMounted(() => {
 
 :deep(.fullscreen-dialog .el-dialog__body) {
     padding: 0;
-    height: calc(100vh - 60px);
+    height: 100vh;
 }
 
 :deep(.fullscreen-dialog .el-dialog__header) {
