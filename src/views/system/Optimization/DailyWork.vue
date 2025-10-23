@@ -40,16 +40,16 @@ watch(() => route.query.platform, (newPlatform) => {
 const platformName = computed(() => {
     switch(platform.value){
         case 'google':
-            return '谷歌'
-        case 'facebook':
-            return 'FaceBook'
+            return 'Google'
+        case 'meta':
+            return 'Meta'
         default:
-            return '谷歌'
+            return 'Google'
     }
 })
 const breadcrumb = reactive([
     {
-        name: `${platformName.value}优化`,
+        name: `${platformName.value}培训过程考核`,
         path: `/system/optimize?platform=${platform.value}`
     },
     {

@@ -2,7 +2,7 @@
     <el-breadcrumb :separator-icon="ArrowRight">
         <el-breadcrumb-item :to="{ path: '/system/' }">首页</el-breadcrumb-item>
         <template v-for="(bread, index) in breadcrumb" :key="index">
-            <el-breadcrumb-item v-if="index ===breadcrumb.length - 1">{{ bread.name }}</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="index ===breadcrumb.length - 1 || bread.path === ''">{{ bread.name }}</el-breadcrumb-item>
             <el-breadcrumb-item v-else >
                 <RouterLink :to="bread.path">
                     {{ bread.name }}

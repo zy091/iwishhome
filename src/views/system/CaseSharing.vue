@@ -431,7 +431,7 @@ const shareDiskDialogVisible = ref(false)  // 共享盘弹窗
 const openShareDisk = (type: string) => {
     let url = ''
     if (type === 'ugospro') {
-        url = 'https://192-168-1-37.iwish.direct.ug.link:9443/desktop/?os=ugospro#/login/account'
+        url = 'https://ug.link/iwish'
     } else if (type === 'iwish') {
         url = 'https://iwish.cn57.ug.link/invite/?code%3D549A366803426187%26LANG%3Dzh-CN'
     }

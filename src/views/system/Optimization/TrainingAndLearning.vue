@@ -134,8 +134,8 @@ const platformName = computed(() => {
     switch(platform.value){
         case 'google':
             return 'Google'
-        case 'facebook':
-            return 'FaceBook'
+        case 'meta':
+            return 'Meta'
         default:
             return 'Google'
     }

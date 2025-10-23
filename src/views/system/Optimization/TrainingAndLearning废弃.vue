@@ -60,7 +60,7 @@ const platformName = computed(() => {
 })
 const breadcrumb = reactive([
     {
-        name: `${platformName.value}优化`,
+        name: `${platformName.value}培训过程考核`,
         path: '/system/optimize?platform='+platform.value
     },
     {

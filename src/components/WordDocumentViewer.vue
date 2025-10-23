@@ -202,7 +202,7 @@ const loadWordDocument = async () => {
         ElMessage.success('文档加载成功')
     } catch (error: any) {
         console.error('加载文档失败:', error)
-        ElMessage.error(`加载文档失败: ${error.message}`)
+        ElMessage.error(`加载文档失败`)
     } finally {
         if (loading.value && typeof loading.value.close === 'function') {
             loading.value.close()

@@ -46,8 +46,8 @@ const platformName = computed(() => {
     switch(platform.value){
         case 'google':
             return 'Google'
-        case 'facebook':
-            return 'FaceBook'
+        case 'meta':
+            return 'Meta'
         default:
             return 'Google'
     }
@@ -73,7 +73,7 @@ const facebookTitle = ref(facebookTitleImg)
 const logo = computed(() => {
     if (platform.value == 'google') {
         return googleLogo.value
-    } else if (platform.value == 'facebook') {
+    } else if (platform.value == 'meta') {
         return facebookLogo.value
     }
     // 添加默认值
@@ -82,8 +82,8 @@ const logo = computed(() => {
 const title = computed(() => {
     if (platform.value == 'google') {
         return googleTitle.value || 'Google'
-    } else if (platform.value == 'facebook') {
-        return facebookTitle.value || 'FaceBook'
+    } else if (platform.value == 'meta') {
+        return facebookTitle.value || 'Meta'
     }
     // 添加默认值
     return 'Google'

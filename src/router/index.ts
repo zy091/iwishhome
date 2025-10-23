@@ -105,6 +105,12 @@ const router = createRouter({
           name: 'google-index',
           component: () => import('../views/system/GoogleAds/GoogleDataindex.vue'),
         },
+        //Meta广告
+        {
+          path: 'meta-form',
+          name: 'meta-form',
+          component: () => import('../views/system/GoogleAds/AdsForm.vue'),
+        },
 
         // NAS文件管理
         {
@@ -121,11 +127,6 @@ const router = createRouter({
           path: 'optimize', //
           name: 'optimize',
           component: () => import('../views/system/Optimization.vue'),
-        },
-        {
-          path: 'responsibilities', // 职责
-          name: 'responsibilities',
-          component: () => import('../views/system/Optimization/Responsibilities.vue'),
         },
         {
           path: 'exam-content', // 培训学习

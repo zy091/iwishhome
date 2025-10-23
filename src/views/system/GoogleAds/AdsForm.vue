@@ -45,7 +45,6 @@ const adsFormName = computed(() => {
   }
   return val
 })
-console.log(adsFormName.value,'adsFormName')
 const activeTab = ref('principle')
 const loading = ref(false)
 const adsFormList = ref<any[]>([])
@@ -67,7 +66,6 @@ const fetchAdsData = async () => {
     const { data: adCourses, error: coursesError } = await supabase
       .from('ad_courses')
       .select('*')
-      .order('created_at', { ascending:  true })
 
     if (coursesError) throw coursesError
 
@@ -99,16 +97,26 @@ const fetchAdsData = async () => {
     loading.value = false
   }
 }
-
 // 动态更新面包屑
 const updateBreadcrumb = () => {
   const currentAdsForm = adsFormList.value.find(form => form.adsform === adsFormName.value)
-  
+  const platform = ref(adsFormName.value?.split('-')?.[0])
+  const platformName = computed(() => {
+      switch(platform.value){
+          case 'google':
+              return 'Google'
+          case 'meta':
+              return 'Meta'
+          default:
+              return 'Google'
+      }
+  })
+
   if (currentAdsForm) {
     breadcrumb.value = [
       {
-        name: 'Google广告形式学习',
-        path: '/system/google-ads'
+        name: `${platformName.value}广告学习`,
+        path: ''
       },
       {
         name: currentAdsForm.title,
@@ -119,8 +127,8 @@ const updateBreadcrumb = () => {
     // 默认面包屑
     breadcrumb.value = [
       {
-        name: 'Google广告形式学习',
-        path: '/system/google-ads'
+        name: 'Google广告学习',
+        path: ''
       },
       {
         name: '广告学习',
@@ -177,7 +185,7 @@ onMounted(() => {
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         min-height: 500px;
-        padding: 20px;
+        /* padding: 20px; */
     }
 }
 

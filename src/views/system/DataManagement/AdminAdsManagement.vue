@@ -9,9 +9,9 @@
             <!-- 广告形式管理 -->
             <el-tab-pane label="广告形式管理" name="formats">
                 <el-card shadow="always" style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; justify-content:  start; align-items: center;gap:20px">
+                        <el-input size="large" v-model="searchFormatQuery" placeholder="按标题或标识符搜索(自动搜索)" style="width: 300px;" clearable />
                         <el-button type="primary" size="large" @click="openFormatDialog()">新建广告形式</el-button>
-                        <el-input v-model="searchFormatQuery" placeholder="按标题或标识符搜索" style="width: 300px;" clearable />
                     </div>
                 </el-card>
 
@@ -36,15 +36,16 @@
                             </template>
                         </el-table-column>
                     </el-table>
+                    <Pagination :pagination="paginationFormats" @update:pagination="handlePaginationUpdateFormats" />
                 </el-card>
             </el-tab-pane>
 
             <!-- 广告课程管理 -->
             <el-tab-pane label="广告课程管理" name="courses">
                 <el-card shadow="always" style="margin-bottom: 20px;">
-                     <div style="display: flex; justify-content: space-between; align-items: center;">
+                     <div style="display: flex; justify-content: start; align-items: center;gap:20px;">
+                         <el-input size="large" v-model="searchCourseQuery" placeholder="按课程标题或标识搜索(自动搜索)" style="width: 300px;" clearable />
                         <el-button type="primary" size="large" @click="openCourseDialog()">新建课程</el-button>
-                        <el-input v-model="searchCourseQuery" placeholder="按课程标题或标识搜索" style="width: 300px;" clearable />
                     </div>
                 </el-card>
 
@@ -75,6 +76,7 @@
                             </template>
                         </el-table-column>
                     </el-table>
+                    <Pagination :pagination="paginationCourses" @update:pagination="handlePaginationUpdateCourses" />
                 </el-card>
             </el-tab-pane>
         </el-tabs>
@@ -189,6 +191,8 @@ import type { UploadInstance, UploadProps, UploadRawFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
 import { supabase } from '@/lib/supabaseClient';
 import Breadcrumb from '@/components/system/Breadcrumb.vue';
+import Pagination from '@/components/system/Pagination.vue';
+import type { PaginationType } from '@/types/pagination';
 
 const breadcrumb = reactive([
     {
@@ -206,6 +210,19 @@ const loading = reactive({ formats: false, courses: false });
 const saving = reactive({ format: false, course: false });
 const dialog = reactive({ formatVisible: false, courseVisible: false });
 const isEditMode = reactive({ format: false, course: false });
+
+// 分页状态
+const paginationFormats = reactive<PaginationType>({
+    page: 1,
+    pageSize: 10,
+    total: 0
+});
+
+const paginationCourses = reactive<PaginationType>({
+    page: 1,
+    pageSize: 10,
+    total: 0
+});
 
 // 广告形式
 const adFormats = ref<any[]>([]);
@@ -299,13 +316,33 @@ const getFileName = (url: string) => {
     }
 };
 
+// 更新广告形式分页
+const handlePaginationUpdateFormats = (newPagination: PaginationType) => {
+    paginationFormats.page = newPagination.page;
+    paginationFormats.pageSize = newPagination.pageSize;
+    fetchAdFormats();
+};
+
+// 更新广告课程分页
+const handlePaginationUpdateCourses = (newPagination: PaginationType) => {
+    paginationCourses.page = newPagination.page;
+    paginationCourses.pageSize = newPagination.pageSize;
+    fetchAdCourses();
+};
+
 // 获取所有广告形式
 const fetchAdFormats = async () => {
     loading.formats = true;
     try {
-        const { data, error } = await supabase.from('ad_formats').select('*').order('created_at', { ascending: false });
+        const { data, count, error } = await supabase
+            .from('ad_formats')
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range((paginationFormats.page - 1) * paginationFormats.pageSize, paginationFormats.page * paginationFormats.pageSize - 1);
+        
         if (error) throw error;
         adFormats.value = data;
+        paginationFormats.total = count || 0;
     } catch (error: any) {
         ElMessage.error('获取广告形式失败: ' + error.message);
     } finally {
@@ -317,9 +354,15 @@ const fetchAdFormats = async () => {
 const fetchAdCourses = async () => {
     loading.courses = true;
     try {
-        const { data, error } = await supabase.from('ad_courses').select('*, ad_formats(title)').order('created_at', { ascending: false });
+        const { data, count, error } = await supabase
+            .from('ad_courses')
+            .select('*, ad_formats(title)', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range((paginationCourses.page - 1) * paginationCourses.pageSize, paginationCourses.page * paginationCourses.pageSize - 1);
+        
         if (error) throw error;
         adCourses.value = data;
+        paginationCourses.total = count || 0;
     } catch (error: any) {
         ElMessage.error('获取广告课程失败: ' + error.message);
     } finally {
@@ -441,7 +484,7 @@ const saveCourse = async () => {
         }
 
         // 在upsert时，如果是更新操作，则需要包含id。
-        const { created_at, ad_formats, ...upsertData } = currentCourse.value;
+        const { ad_formats, ...upsertData } = currentCourse.value;
         upsertData.document_url = documentUrl;
 
         const { error } = await supabase.from('ad_courses').upsert(upsertData);
