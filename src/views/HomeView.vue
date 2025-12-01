@@ -86,7 +86,7 @@ const services = ref([
   {
     title: '讲师体系',
     icon: googleImg,
-    link: '#',
+    link: '/instructor/display',
     description: ''
   },
   {

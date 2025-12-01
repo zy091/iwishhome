@@ -32,7 +32,8 @@
       </h2>
 
       <el-row :gutter="30">
-        <el-col :span="12" v-for="(service, index) in services" :key="index">
+        <template v-for="(service, index) in services" :key="index">
+        <el-col :span="12"  >
           <el-card class="service-card">
             <div class="service-icon">
               <img :src="service.icon" alt="" width="100%">
@@ -44,6 +45,7 @@
             </div>
           </el-card>
         </el-col>
+        </template>
       </el-row>
     </div>
 
@@ -53,7 +55,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
 //引入Footer文件
 import Footer from '@/components/Footer.vue'
 // 导入图片
@@ -62,27 +65,51 @@ import fileImg from '@/assets/home-image/file.png'
 import googleImg from '@/assets/home-image/google.png'
 import facebookImg from '@/assets/home-image/facebook.png'
 
-const services = ref([
+// 获取用户 store
+const userStore = useUserStore()
+
+// 定义角色ID常量（根据您提供的表格）
+const ROLE_IDS = {
+  ADMIN: 0,                    // 管理员
+  OPERATIONS_MANAGER: 1,       // 运营管理员
+  PROJECT_MANAGER: 11,         // 项目经理
+  GOOGLE_OPTIMIZER: 12,        // 谷歌优化师
+  META_OPTIMIZER: 14,          // Facebook/Meta优化师
+  TEACHER: 15,                 // 带教
+  CRITEO_OPTIMIZER: 17         // Criteo优化师
+}
+
+// 所有服务卡片
+const allServices = ref([
   {
     title: '致员工的一封信',
     icon: trainingImg,
     link:'/system/training-letter',
     description: '',
-    category:''
+    category:'',
+    roleIds: [] // 空数组表示所有用户可见
   },
   {
     title: '行业知识&网站分析',
     icon: fileImg,
     link:'/system/training-marketing',
     description: '',
-    category:''
+    category:'',
+    roleIds: [] // 空数组表示所有用户可见
   },
   {
     title: 'Google广告',
     icon: googleImg,
     link:'/system/',
     description: '',
-    category:'google'
+    category:'google',
+    roleIds: [
+      ROLE_IDS.ADMIN,
+      ROLE_IDS.OPERATIONS_MANAGER,
+      ROLE_IDS.PROJECT_MANAGER,
+      ROLE_IDS.TEACHER,
+      ROLE_IDS.GOOGLE_OPTIMIZER
+    ]
   },
   {
     title: 'Meta广告',
@@ -90,26 +117,65 @@ const services = ref([
     link:'/system/',
     description: '',
     category:'meta',
+    roleIds: [
+      ROLE_IDS.ADMIN,
+      ROLE_IDS.OPERATIONS_MANAGER,
+      ROLE_IDS.PROJECT_MANAGER,
+      ROLE_IDS.TEACHER,
+      ROLE_IDS.META_OPTIMIZER
+    ]
   },
   {
     title: 'Criteo广告',
     icon: facebookImg,
     link:'/system/',
     description: '',
-    category:'criteo'
+    category:'criteo',
+    roleIds: [
+      ROLE_IDS.ADMIN,
+      ROLE_IDS.OPERATIONS_MANAGER,
+      ROLE_IDS.PROJECT_MANAGER,
+      ROLE_IDS.TEACHER,
+      ROLE_IDS.CRITEO_OPTIMIZER
+    ]
   },
   {
     title: '管理员入口',
     icon: facebookImg,
     link:'/system/',
     description: '',
-    category:'admin'
+    category:'admin',
+    roleIds: [
+      ROLE_IDS.ADMIN,
+      ROLE_IDS.OPERATIONS_MANAGER,
+      ROLE_IDS.PROJECT_MANAGER,
+      ROLE_IDS.TEACHER
+    ]
   },
 ])
+
+// 计算属性：根据用户角色过滤服务
+const services = computed(() => {
+  const userRoleId = userStore.roleId
+  
+  return allServices.value.filter(service => {
+    // 如果 roleIds 为空数组，表示所有用户可见
+    if (service.roleIds.length === 0) {
+      return true
+    }
+    // 检查用户角色是否在允许的角色列表中
+    return userRoleId !== null && service.roleIds.includes(Number(userRoleId))
+  })
+})
 
 const setCategory=(category:string)=>{
   localStorage.setItem('category',category)
 }
+
+// 组件挂载时加载用户角色
+onMounted(() => {
+  userStore.loadRoleId()
+})
 </script>
 
 <style scoped>

@@ -15,6 +15,7 @@ const router = createRouter({
     {
       path: '/training-home',
       name: 'training-home',
+      meta: { requiresAuth: true },
       component: () => import('../views/TrainingHome.vue'),
     },
     {
@@ -110,6 +111,11 @@ const router = createRouter({
           path: 'meta-form',
           name: 'meta-form',
           component: () => import('../views/system/GoogleAds/AdsForm.vue'),
+        },
+        {
+          path: 'meta-assessment',
+          name: 'google-assessment',
+          component: () => import('../views/system/MetaAds/AssessmentRequirements.vue'),
         },
 
         // NAS文件管理
@@ -393,6 +399,35 @@ const router = createRouter({
           ]
         }
       ],
+    },
+    // 讲师体系独立路由
+    {
+      path: '/instructor',
+      name: 'instructor',
+      component: () => import('../views/Instructor/InstructorMain.vue'),
+      redirect: '/instructor/display',
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'display',
+          name: 'instructor-display',
+          component: () => import('../views/Instructor/InstructorDisplay.vue'),
+        },
+        {
+          path: 'manage',
+          name: 'instructor-manage',
+          component: () => import('../views/Instructor/InstructorManage.vue'),
+          meta: {
+            requiresAuth: true,
+            requiresAdmin: true
+          }
+        },
+        {
+          path: 'detail/:id',
+          name: 'instructor-detail',
+          component: () => import('../views/Instructor/InstructorDetail.vue'),
+        }
+      ]
     },
   ],
 })
