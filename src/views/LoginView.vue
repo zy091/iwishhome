@@ -25,7 +25,7 @@
         <el-form v-else label-position="left" label-width="auto" :model="registerForm" :rules="registerRules" ref="registerFormRef" class="register-form">
             <div class="title-container">注册</div>
             <el-form-item label="用户名" prop="username">
-                <el-input v-model="registerForm.username" />
+                <el-input v-model="registerForm.username" placeholder="请输入本人姓名" />
             </el-form-item>
             <el-form-item label="邮箱" prop="email">
                 <el-input v-model="registerForm.email" />
